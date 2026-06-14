@@ -1,0 +1,187 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "schema": "https://schema.org/",
+    "arweave": "https://arweave.org/vocab#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+
+    "Transaction": "arweave:Transaction",
+    "Block": "arweave:Block",
+    "Wallet": "arweave:Wallet",
+    "Chunk": "arweave:Chunk",
+    "Tag": "arweave:Tag",
+    "NetworkInfo": "arweave:NetworkInfo",
+
+    "id": {
+      "@id": "arweave:transactionId",
+      "@type": "xsd:string",
+      "@comment": "Base64URL-encoded SHA-256 hash of the transaction signature"
+    },
+    "format": {
+      "@id": "arweave:format",
+      "@type": "xsd:integer",
+      "@comment": "Transaction format version (1 or 2)"
+    },
+    "last_tx": {
+      "@id": "arweave:lastTx",
+      "@type": "xsd:string",
+      "@comment": "ID of the prior outgoing transaction from this wallet or a block hash"
+    },
+    "owner": {
+      "@id": "arweave:owner",
+      "@type": "xsd:string",
+      "@comment": "Base64URL-encoded RSA public key modulus of the transaction signer"
+    },
+    "tags": {
+      "@id": "arweave:tags",
+      "@container": "@set"
+    },
+    "name": {
+      "@id": "arweave:tagName",
+      "@type": "xsd:string",
+      "@comment": "Base64URL-encoded tag name"
+    },
+    "value": {
+      "@id": "arweave:tagValue",
+      "@type": "xsd:string",
+      "@comment": "Base64URL-encoded tag value"
+    },
+    "target": {
+      "@id": "arweave:target",
+      "@type": "xsd:string",
+      "@comment": "Recipient wallet address for AR token transfers"
+    },
+    "quantity": {
+      "@id": "arweave:quantity",
+      "@type": "xsd:string",
+      "@comment": "Amount of AR to transfer in winstons"
+    },
+    "data_root": {
+      "@id": "arweave:dataRoot",
+      "@type": "xsd:string",
+      "@comment": "Base64URL-encoded Merkle root of the chunked data payload"
+    },
+    "data_size": {
+      "@id": "arweave:dataSize",
+      "@type": "xsd:string",
+      "@comment": "Total size of the data payload in bytes"
+    },
+    "data": {
+      "@id": "arweave:data",
+      "@type": "xsd:string",
+      "@comment": "Base64URL-encoded inline data payload"
+    },
+    "reward": {
+      "@id": "arweave:reward",
+      "@type": "xsd:string",
+      "@comment": "Transaction fee in winstons"
+    },
+    "signature": {
+      "@id": "arweave:signature",
+      "@type": "xsd:string",
+      "@comment": "Cryptographic signature of the transaction"
+    },
+
+    "address": {
+      "@id": "arweave:address",
+      "@type": "xsd:string",
+      "@comment": "Base64URL-encoded SHA-256 hash of the RSA public key modulus"
+    },
+    "balance": {
+      "@id": "arweave:balance",
+      "@type": "xsd:string",
+      "@comment": "Wallet AR balance in winstons"
+    },
+
+    "height": {
+      "@id": "arweave:blockHeight",
+      "@type": "xsd:integer",
+      "@comment": "Block height (sequential block number)"
+    },
+    "indep_hash": {
+      "@id": "arweave:indepHash",
+      "@type": "xsd:string",
+      "@comment": "Independent hash uniquely identifying a block"
+    },
+    "previous_block": {
+      "@id": "arweave:previousBlock",
+      "@type": "xsd:string",
+      "@comment": "Hash of the preceding block"
+    },
+    "timestamp": {
+      "@id": "schema:dateCreated",
+      "@type": "xsd:integer",
+      "@comment": "Unix timestamp of block creation"
+    },
+    "txs": {
+      "@id": "arweave:transactions",
+      "@container": "@set",
+      "@comment": "List of transaction IDs in the block"
+    },
+    "weave_size": {
+      "@id": "arweave:weaveSize",
+      "@type": "xsd:string",
+      "@comment": "Total size of the Arweave weave in bytes at this block"
+    },
+    "reward_addr": {
+      "@id": "arweave:rewardAddress",
+      "@type": "xsd:string",
+      "@comment": "Wallet address of the block miner"
+    },
+    "reward_pool": {
+      "@id": "arweave:rewardPool",
+      "@type": "xsd:string",
+      "@comment": "Current mining reward pool size in winstons"
+    },
+
+    "network": {
+      "@id": "arweave:networkId",
+      "@type": "xsd:string",
+      "@comment": "Network identifier (e.g. arweave.N.1)"
+    },
+    "version": {
+      "@id": "arweave:protocolVersion",
+      "@type": "xsd:integer",
+      "@comment": "Node protocol version"
+    },
+    "peers": {
+      "@id": "arweave:peerCount",
+      "@type": "xsd:integer",
+      "@comment": "Number of known peer nodes"
+    },
+    "current": {
+      "@id": "arweave:currentBlock",
+      "@type": "xsd:string",
+      "@comment": "Hash of the current tip block"
+    },
+
+    "chunk": {
+      "@id": "arweave:chunkData",
+      "@type": "xsd:string",
+      "@comment": "Base64URL-encoded chunk data (max 256 KiB)"
+    },
+    "data_path": {
+      "@id": "arweave:dataPath",
+      "@type": "xsd:string",
+      "@comment": "Base64URL-encoded Merkle inclusion proof for a chunk"
+    },
+    "offset": {
+      "@id": "arweave:offset",
+      "@type": "xsd:string",
+      "@comment": "Byte offset of the chunk within the transaction data"
+    },
+
+    "block_height": {
+      "@id": "arweave:confirmedAtHeight",
+      "@type": "xsd:integer"
+    },
+    "block_indep_hash": {
+      "@id": "arweave:confirmedInBlock",
+      "@type": "xsd:string"
+    },
+    "number_of_confirmations": {
+      "@id": "arweave:confirmationCount",
+      "@type": "xsd:integer"
+    }
+  }
+}

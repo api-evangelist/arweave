@@ -1,0 +1,39 @@
+{
+  "summary": "Submit a data storage transaction",
+  "description": "Example of a format=2 transaction submission storing a small text file on Arweave. The reward was obtained from GET /price/13 and the last_tx from GET /wallet/{address}/last_tx.",
+  "request": {
+    "method": "POST",
+    "url": "https://arweave.net/tx",
+    "headers": {
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
+    "body": {
+      "format": 2,
+      "id": "BNttzDav3jHVnNiV7noWn2KgamiO1m_yI4vI1JcmHco",
+      "last_tx": "jUcuEDZQy3LrMd1b-M0R-GHmC1w4j5tGukPdBfDTRwE",
+      "owner": "rRQJLaVaxdvxqPkxT9JuSElkPRkFNNJnU7EIAFQNexample",
+      "tags": [
+        {
+          "name": "Q29udGVudC1UeXBl",
+          "value": "dGV4dC9wbGFpbg"
+        },
+        {
+          "name": "QXBwLU5hbWU",
+          "value": "TXlBcHA"
+        }
+      ],
+      "target": "",
+      "quantity": "0",
+      "data_root": "",
+      "data_size": "13",
+      "data": "SGVsbG8sIEFyd2VhdmUh",
+      "reward": "321004937",
+      "signature": "NBcuDJKkj-fKPL7example"
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": "OK"
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/json-schema/transaction.json",
+  "title": "Arweave Transaction",
+  "description": "An Arweave transaction object for submitting data storage or AR token transfers to the network. Use format=2 for v2 transactions which support large data uploads via chunked transfers. All token amounts are denominated in winstons (1 AR = 10^12 winstons).",
+  "type": "object",
+  "required": ["format", "id", "last_tx", "owner", "reward", "signature"],
+  "properties": {
+    "format": {
+      "type": "integer",
+      "description": "Transaction format version. Use 2 for new transactions. ECDSA accounts require format=2.",
+      "enum": [1, 2]
+    },
+    "id": {
+      "type": "string",
+      "description": "Transaction ID — the Base64URL-encoded SHA-256 hash of the signature."
+    },
+    "last_tx": {
+      "type": "string",
+      "description": "Block hash or ID of the prior outgoing transaction from this wallet. Use an empty string for the first transaction from a wallet."
+    },
+    "owner": {
+      "type": "string",
+      "description": "RSA public key modulus (Base64URL encoded). Empty string for ECDSA accounts."
+    },
+    "tags": {
+      "type": "array",
+      "description": "Array of Base64URL-encoded name-value tag pairs. Maximum combined size is 2048 bytes.",
+      "items": {
+        "$ref": "#/$defs/Tag"
+      },
+      "default": []
+    },
+    "target": {
+      "type": "string",
+      "description": "Recipient wallet address for AR token transfers (Base64URL encoded). Empty string if no token transfer.",
+      "default": ""
+    },
+    "quantity": {
+      "type": "string",
+      "description": "Amount of AR to transfer expressed in winstons. Use '0' for data-only transactions.",
+      "pattern": "^[0-9]+$",
+      "default": "0"
+    },
+    "data_root": {
+      "type": "string",
+      "description": "Merkle root of the data chunks (Base64URL encoded). Required for format=2 chunked uploads. Empty string for inline data."
+    },
+    "data_size": {
+      "type": "string",
+      "description": "Total size of the data payload in bytes as a string. Used in format=2 transactions.",
+      "pattern": "^[0-9]+$"
+    },
+    "data": {
+      "type": "string",
+      "description": "Base64URL-encoded inline data payload. Maximum 10 MiB for v1, ~12 MiB for v2 inline. Use chunk uploads via POST /chunk for larger data."
+    },
+    "reward": {
+      "type": "string",
+      "description": "Transaction fee in winstons as a numeric string. Obtain the minimum fee from GET /price/{bytes}/{target}.",
+      "pattern": "^[0-9]+$"
+    },
+    "signature": {
+      "type": "string",
+      "description": "Cryptographic signature of the transaction. RSA-PSS with SHA-256 for RSA accounts (Base64URL encoded). 65-byte compact ECDSA signature for ECDSA accounts."
+    }
+  },
+  "$defs": {
+    "Tag": {
+      "type": "object",
+      "title": "Transaction Tag",
+      "description": "A name-value metadata pair attached to a transaction. Both name and value are Base64URL encoded.",
+      "required": ["name", "value"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Tag name (Base64URL encoded UTF-8 string)"
+        },
+        "value": {
+          "type": "string",
+          "description": "Tag value (Base64URL encoded UTF-8 string)"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -10,6 +10,7 @@ tags:
   - GraphQL
 url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/apis.yml
 specificationVersion: '0.19'
+modified: '2026-06-13'
 apis:
   - name: Arweave HTTP Node API
     description: The core Arweave node REST API for submitting and retrieving transactions, uploading data chunks, querying wallet balances, fetching blocks, and inspecting network state. Requests target any Arweave node on port 1984 (default gateway arweave.net). Amounts are denominated in winstons (1 AR = 10^12 winstons).
@@ -27,6 +28,20 @@ apis:
         url: https://docs.arweave.org/developers/arweave-node-server/http-api
       - type: OpenAPI
         url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/openapi.yml
+      - type: JSONSchema
+        url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/json-schema/transaction.json
+      - type: JSONSchema
+        url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/json-schema/network-info.json
+      - type: JSONSchema
+        url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/json-schema/chunk.json
+      - type: Example
+        url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/examples/get-network-info.json
+      - type: Example
+        url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/examples/submit-transaction.json
+      - type: Example
+        url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/examples/get-wallet-balance.json
+      - type: Example
+        url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/examples/get-transaction-price.json
     contact:
       - FN: Arweave Team
         url: https://www.arweave.org/
@@ -96,6 +111,10 @@ common:
     url: https://www.arweave.org/legal/privacy-policy
   - type: Blog
     url: https://arweave.medium.com/
+  - type: Vocabulary
+    url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/vocabulary/arweave-vocabulary.json
+  - type: JSONLDContext
+    url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/json-ld/arweave-context.jsonld
 
 maintainers:
   - FN: Kin Lane

@@ -1,0 +1,153 @@
+{
+  "name": "Arweave API Vocabulary",
+  "description": "Key terms, concepts, and data primitives used in the Arweave HTTP API and protocol.",
+  "version": "1.0.0",
+  "source": "https://docs.arweave.org/developers/arweave-node-server/http-api",
+  "terms": [
+    {
+      "term": "AR",
+      "definition": "The native token of the Arweave network. Used to pay for permanent data storage. Subdivided into winstons (1 AR = 10^12 winstons).",
+      "category": "token"
+    },
+    {
+      "term": "winston",
+      "definition": "The smallest denomination of AR. 1 AR = 1,000,000,000,000 winstons (10^12). All API amounts are expressed in winstons as numeric strings to avoid floating-point precision issues.",
+      "category": "token"
+    },
+    {
+      "term": "transaction",
+      "definition": "The fundamental unit of interaction with Arweave. A transaction can store data on the weave, transfer AR tokens, or both. Each transaction is cryptographically signed and permanently recorded.",
+      "category": "core"
+    },
+    {
+      "term": "transaction ID",
+      "definition": "A Base64URL-encoded SHA-256 hash of the transaction signature. Uniquely identifies a transaction on the network.",
+      "category": "identifier"
+    },
+    {
+      "term": "Base64URL",
+      "definition": "A URL-safe variant of Base64 encoding that uses '-' instead of '+' and '_' instead of '/'. Used throughout the Arweave API for identifiers, keys, and binary data. Case-sensitive.",
+      "category": "encoding"
+    },
+    {
+      "term": "weave",
+      "definition": "The collective storage medium of all Arweave nodes — the permanent, decentralized data store that makes up the Arweave network. Once written, data cannot be deleted from the weave.",
+      "category": "core"
+    },
+    {
+      "term": "wallet",
+      "definition": "A cryptographic key pair (RSA or ECDSA) used to sign transactions and hold AR tokens. A wallet address is the Base64URL-encoded SHA-256 hash of the RSA public key modulus.",
+      "category": "core"
+    },
+    {
+      "term": "wallet address",
+      "definition": "The public identifier for an Arweave account. Derived as the Base64URL-encoded SHA-256 hash of the RSA public key modulus. Case-sensitive — sending to a different-case address will result in lost tokens.",
+      "category": "identifier"
+    },
+    {
+      "term": "block",
+      "definition": "A collection of transactions bundled together and added to the Arweave weave by a miner. Each block references the previous block forming the chain.",
+      "category": "core"
+    },
+    {
+      "term": "block height",
+      "definition": "The sequential block number, starting from 0 (genesis block). Used to uniquely identify blocks by position in the chain.",
+      "category": "identifier"
+    },
+    {
+      "term": "indep_hash",
+      "definition": "The independent hash of a block — a hash computed over all block fields. Used to uniquely identify blocks and verify integrity.",
+      "category": "identifier"
+    },
+    {
+      "term": "last_tx",
+      "definition": "The ID of the most recent outgoing transaction from a wallet, used in new transactions to prevent replay attacks. Obtain via GET /wallet/{address}/last_tx. Use an empty string for the first transaction from a wallet.",
+      "category": "field"
+    },
+    {
+      "term": "owner",
+      "definition": "The RSA public key modulus of the transaction signer (Base64URL encoded). Empty string for ECDSA accounts.",
+      "category": "field"
+    },
+    {
+      "term": "reward",
+      "definition": "The transaction fee in winstons. Must be at or above the minimum returned by GET /price/{bytes}/{target}. Paid to miners and the endowment pool.",
+      "category": "field"
+    },
+    {
+      "term": "data_root",
+      "definition": "The Merkle root of the chunked data payload in a format=2 transaction. Allows verification of individual chunks without downloading all data.",
+      "category": "field"
+    },
+    {
+      "term": "chunk",
+      "definition": "A fragment of a larger data payload uploaded separately via POST /chunk. Maximum chunk size is 256 KiB. Chunks are identified and verified using Merkle proofs.",
+      "category": "core"
+    },
+    {
+      "term": "data_path",
+      "definition": "A Base64URL encoded Merkle inclusion proof that verifies a specific chunk belongs to a transaction's data_root. Maximum size is 256 KiB.",
+      "category": "field"
+    },
+    {
+      "term": "tags",
+      "definition": "Metadata name-value pairs attached to a transaction. Both names and values are Base64URL encoded. Maximum combined size is 2048 bytes. Tags are indexed and queryable via the GraphQL API.",
+      "category": "field"
+    },
+    {
+      "term": "Content-Type tag",
+      "definition": "A transaction tag with name 'Content-Type' that specifies the MIME type of the transaction's data payload. Determines the HTTP Content-Type header when data is retrieved.",
+      "category": "convention"
+    },
+    {
+      "term": "permaweb",
+      "definition": "The permanent, decentralized web built on top of Arweave. Websites and applications stored on Arweave remain accessible forever through any Arweave gateway.",
+      "category": "ecosystem"
+    },
+    {
+      "term": "gateway",
+      "definition": "An HTTP server that provides convenient access to the Arweave network. arweave.net is the primary public gateway. Gateways expose the standard Arweave HTTP API.",
+      "category": "infrastructure"
+    },
+    {
+      "term": "ANS-104",
+      "definition": "Arweave Name Standard 104 — the bundled transaction format enabling high-throughput uploads. Multiple data items are bundled into a single Arweave transaction. Used by the Turbo upload service.",
+      "category": "standard"
+    },
+    {
+      "term": "bundle",
+      "definition": "An ANS-104 bundled transaction containing multiple data items packed into a single Arweave layer-1 transaction. Enables millions of uploads per day at lower cost.",
+      "category": "core"
+    },
+    {
+      "term": "Turbo",
+      "definition": "The ar.io managed bundling upload service that implements ANS-104. Accepts fiat (credit card) and multi-chain crypto payments. Handles automatic retry and sub-100 KiB free tier uploads.",
+      "category": "service"
+    },
+    {
+      "term": "pending",
+      "definition": "A transaction status (HTTP 202) indicating the transaction has been received by a node but has not yet been mined into a block.",
+      "category": "status"
+    },
+    {
+      "term": "confirmation",
+      "definition": "Each block mined after the block containing a transaction counts as one confirmation. More confirmations mean greater permanence and security.",
+      "category": "concept"
+    },
+    {
+      "term": "proof of access (PoA)",
+      "definition": "Arweave's consensus mechanism where miners must prove they can access a random chunk of previously stored data in order to mine a new block. Incentivizes miners to store the complete weave history.",
+      "category": "consensus"
+    },
+    {
+      "term": "RSA-PSS",
+      "definition": "The cryptographic signature scheme used by Arweave for RSA wallet accounts. Signs over a Merkle root of transaction fields using SHA-256.",
+      "category": "cryptography"
+    },
+    {
+      "term": "format",
+      "definition": "Transaction format version. Format 1 is legacy; format 2 is recommended for all new transactions, required for ECDSA accounts, and supports chunked data uploads via data_root.",
+      "category": "field"
+    }
+  ]
+}

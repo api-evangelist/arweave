@@ -1,0 +1,16 @@
+{
+  "summary": "Calculate transaction fee for data upload",
+  "description": "Example of getting the minimum fee in winstons to store 1 MB of data. The result must be used as the reward field in the transaction submission.",
+  "request": {
+    "method": "GET",
+    "url": "https://arweave.net/price/1048576"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "text/plain"
+    },
+    "body": "336700000"
+  },
+  "notes": "Response is the minimum fee in winstons for storing 1,048,576 bytes (1 MiB). Use GET /price/{bytes}/{target} when sending to a specific wallet address."
+}

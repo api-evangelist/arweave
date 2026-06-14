@@ -1,0 +1,810 @@
+openapi: 3.1.0
+info:
+  title: Arweave HTTP Node API
+  description: >
+    The core Arweave node REST API for submitting and retrieving transactions,
+    uploading data chunks, querying wallet balances, fetching blocks, and
+    inspecting network state. Requests target any Arweave node on port 1984
+    (default gateway arweave.net). Amounts are denominated in winstons
+    (1 AR = 10^12 winstons).
+  version: 1.0.0
+  contact:
+    name: Arweave Team
+    url: https://www.arweave.org/
+    email: team@arweave.org
+  termsOfService: https://www.arweave.org/legal/terms-of-use
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+externalDocs:
+  description: Arweave HTTP API Documentation
+  url: https://docs.arweave.org/developers/arweave-node-server/http-api
+servers:
+  - url: https://arweave.net
+    description: Arweave public gateway
+  - url: http://localhost:1984
+    description: Local Arweave node (default port 1984)
+tags:
+  - name: Network
+    description: Endpoints for querying network state and peer information
+  - name: Transactions
+    description: Endpoints for submitting and retrieving transactions
+  - name: Wallets
+    description: Endpoints for querying wallet balances and transaction history
+  - name: Blocks
+    description: Endpoints for retrieving block data
+  - name: Chunks
+    description: Endpoints for uploading and downloading data chunks
+paths:
+  /info:
+    get:
+      operationId: getNetworkInfo
+      summary: Get network information
+      description: >
+        Returns the current network state and node information including block
+        height, current block hash, peer count, and queue status.
+      tags:
+        - Network
+      responses:
+        '200':
+          description: Network info returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetworkInfo'
+              example:
+                network: arweave.N.1
+                version: 5
+                release: 53
+                height: 551511
+                current: XIDpYbc3b5iuiqclQ9Y3Hw7Qkp0wfUxHHhJzPmSPRNIxQrMcQ-DqlHkM7Krd7g
+                blocks: 551512
+                peers: 64
+                queue_length: 0
+                node_state_latency: 18
+  /peers:
+    get:
+      operationId: getPeers
+      summary: Get peer list
+      description: Returns a list of known peer node addresses.
+      tags:
+        - Network
+      responses:
+        '200':
+          description: Peer list returned successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  description: Peer address in host:port format
+              example:
+                - 127.0.0.1:1984
+                - 0.0.0.0:1984
+  /tx:
+    post:
+      operationId: submitTransaction
+      summary: Submit a transaction
+      description: >
+        Submit a new signed transaction to the Arweave network. Transactions
+        can transfer AR tokens, store data, or both. Use format=2 for v2
+        transactions which support large data via chunked uploads. The reward
+        field must be in winstons obtained from the /price endpoint.
+      tags:
+        - Transactions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+            example:
+              format: 2
+              id: BNttzDav3jHVnNiV7noWn2KgamiO1m_yI4vI1JcmHco
+              last_tx: jUcuEDZQy3LrMd1b-M0R-GHmC1w4j5tGukPdBfDTRwE
+              owner: rRQJLaVaxdvxqPkxT9JuSElkPRkFNNJnU7EIAFQN7QU...
+              tags:
+                - name: Q29udGVudC1UeXBl
+                  value: dGV4dC9wbGFpbg
+              target: ''
+              quantity: '0'
+              data_root: s5-IknhMNY-6SPJRCvzOoWYSjHVQkB1nVlKRKcPgbKM
+              data_size: '1234'
+              data: ''
+              reward: '321004937'
+              signature: NBcuDJKkj-fKPL7...
+      responses:
+        '200':
+          description: Transaction accepted
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: OK
+        '208':
+          description: Transaction already processed
+        '400':
+          description: Verification failed or invalid transaction format
+        '429':
+          description: Too many requests
+        '503':
+          description: Service unavailable
+  /tx/{id}:
+    get:
+      operationId: getTransaction
+      summary: Get transaction by ID
+      description: >
+        Retrieve a full transaction object by its transaction ID. Returns 202
+        if the transaction is pending (not yet mined into a block).
+      tags:
+        - Transactions
+      parameters:
+        - $ref: '#/components/parameters/TransactionId'
+      responses:
+        '200':
+          description: Transaction found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        '202':
+          description: Transaction is pending (not yet mined)
+        '404':
+          description: Transaction not found
+  /tx/{id}/status:
+    get:
+      operationId: getTransactionStatus
+      summary: Get transaction confirmation status
+      description: >
+        Returns the confirmation status of a transaction including the block
+        height it was mined into, the block hash, and the number of
+        confirmations.
+      tags:
+        - Transactions
+      parameters:
+        - $ref: '#/components/parameters/TransactionId'
+      responses:
+        '200':
+          description: Transaction status returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionStatus'
+              example:
+                block_height: 551511
+                block_indep_hash: XIDpYbc3b5iuiqclQ9Y3Hw7Qkp0wfUxHHhJzPmSPRNIxQrMcQ-DqlHkM7Krd7g
+                number_of_confirmations: 10
+        '404':
+          description: Transaction not found
+  /tx/{id}/{field}:
+    get:
+      operationId: getTransactionField
+      summary: Get a specific transaction field
+      description: >
+        Fetch a single field from a transaction. Valid fields are: id,
+        last_tx, owner, tags, target, quantity, data, data_root, data_size,
+        reward, signature.
+      tags:
+        - Transactions
+      parameters:
+        - $ref: '#/components/parameters/TransactionId'
+        - name: field
+          in: path
+          required: true
+          description: The transaction field to retrieve
+          schema:
+            type: string
+            enum:
+              - id
+              - last_tx
+              - owner
+              - tags
+              - target
+              - quantity
+              - data
+              - data_root
+              - data_size
+              - reward
+              - signature
+      responses:
+        '200':
+          description: Field value returned
+          content:
+            text/plain:
+              schema:
+                type: string
+        '202':
+          description: Transaction is pending
+        '400':
+          description: Invalid field name or request
+        '404':
+          description: Transaction not found
+  /tx/{id}/data:
+    get:
+      operationId: getTransactionData
+      summary: Get transaction data
+      description: >
+        Download the data payload associated with a transaction. Returns the
+        Base64URL decoded data with the appropriate Content-Type header based
+        on the transaction's Content-Type tag.
+      tags:
+        - Transactions
+      parameters:
+        - $ref: '#/components/parameters/TransactionId'
+      responses:
+        '200':
+          description: Transaction data returned
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '202':
+          description: Transaction is pending
+        '400':
+          description: Invalid request
+        '404':
+          description: Transaction not found
+        '503':
+          description: Data not available
+  /tx/{id}/offset:
+    get:
+      operationId: getTransactionOffset
+      summary: Get transaction offset and size
+      description: >
+        Returns the byte offset of a transaction's data within the Arweave
+        weave along with the data size. Used to retrieve specific chunks.
+      tags:
+        - Transactions
+      parameters:
+        - $ref: '#/components/parameters/TransactionId'
+      responses:
+        '200':
+          description: Offset and size returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  offset:
+                    type: string
+                    description: Byte offset of the transaction data in the weave
+                  size:
+                    type: string
+                    description: Size of the transaction data in bytes
+              example:
+                offset: '2191651060'
+                size: '1234'
+        '400':
+          description: Invalid request
+        '503':
+          description: Service unavailable
+  /tx/{id}/data.{extension}:
+    get:
+      operationId: getTransactionDataByExtension
+      summary: Get transaction data with MIME type hint
+      description: >
+        Download transaction data with the response Content-Type determined
+        by the file extension. For example, /tx/{id}/data.html returns the
+        data with Content-Type text/html.
+      tags:
+        - Transactions
+      parameters:
+        - $ref: '#/components/parameters/TransactionId'
+        - name: extension
+          in: path
+          required: true
+          description: File extension used to determine MIME type (e.g. html, txt, jpg, png, mp4)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Transaction data returned with inferred Content-Type
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Transaction not found
+  /{id}:
+    get:
+      operationId: getTransactionDataById
+      summary: Get decoded transaction data by ID
+      description: >
+        Retrieve and return the decoded data payload for a transaction directly
+        by its ID. This is a shorthand for /tx/{id}/data and sets the
+        appropriate Content-Type header from the transaction's tags.
+      tags:
+        - Transactions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Transaction ID (Base64URL encoded)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Decoded transaction data
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '202':
+          description: Transaction is pending
+        '404':
+          description: Not found
+  /price/{bytes}:
+    get:
+      operationId: getTransactionPrice
+      summary: Get transaction price (data only)
+      description: >
+        Calculate the minimum fee in winstons required to store the specified
+        number of bytes. Use bytes=0 to get the fee for a pure token transfer
+        with no data.
+      tags:
+        - Transactions
+      parameters:
+        - name: bytes
+          in: path
+          required: true
+          description: Size of data in bytes (use 0 for token-only transfers)
+          schema:
+            type: integer
+            minimum: 0
+      responses:
+        '200':
+          description: Fee in winstons returned as a numeric string
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: '321004937'
+  /price/{bytes}/{target}:
+    get:
+      operationId: getTransactionPriceWithTarget
+      summary: Get transaction price (data + target wallet)
+      description: >
+        Calculate the minimum fee in winstons for storing the specified number
+        of bytes and optionally sending to a target wallet address. An extra
+        fee is included for the first transaction sent to a new wallet address.
+      tags:
+        - Transactions
+      parameters:
+        - name: bytes
+          in: path
+          required: true
+          description: Size of data in bytes (use 0 for token-only transfers)
+          schema:
+            type: integer
+            minimum: 0
+        - name: target
+          in: path
+          required: true
+          description: Recipient wallet address (Base64URL encoded)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Fee in winstons returned as a numeric string
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: '321004937'
+  /wallet/{address}/balance:
+    get:
+      operationId: getWalletBalance
+      summary: Get wallet balance
+      description: >
+        Retrieve the AR balance of a wallet address in winstons. Unknown
+        addresses return 0. Convert to AR by dividing by 10^12.
+      tags:
+        - Wallets
+      parameters:
+        - $ref: '#/components/parameters/WalletAddress'
+      responses:
+        '200':
+          description: Balance in winstons returned as numeric string
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: '6450000000000'
+        '400':
+          description: Invalid wallet address
+  /wallet/{address}/last_tx:
+    get:
+      operationId: getWalletLastTransaction
+      summary: Get last transaction for wallet
+      description: >
+        Returns the transaction ID of the most recent outgoing transaction
+        from the given wallet address. Used to populate the last_tx field
+        when constructing new transactions.
+      tags:
+        - Wallets
+      parameters:
+        - $ref: '#/components/parameters/WalletAddress'
+      responses:
+        '200':
+          description: Last transaction ID returned
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: BNttzDav3jHVnNiV7noWn2KgamiO1m_yI4vI1JcmHco
+        '400':
+          description: Invalid wallet address
+  /block/hash/{id}:
+    get:
+      operationId: getBlockByHash
+      summary: Get block by hash
+      description: >
+        Retrieve a full block object by its independent hash (indep_hash).
+        Include the header X-Block-Format: 2 to request the v2 block format.
+      tags:
+        - Blocks
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Block independent hash (indep_hash, Base64URL encoded)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Block returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Block'
+        '404':
+          description: Block not found
+  /block/height/{height}:
+    get:
+      operationId: getBlockByHeight
+      summary: Get block by height
+      description: >
+        Retrieve a full block object by its block height (block number).
+        Include the header X-Block-Format: 2 to request the v2 block format.
+      tags:
+        - Blocks
+      parameters:
+        - name: height
+          in: path
+          required: true
+          description: Block height (block number, 0-indexed)
+          schema:
+            type: integer
+            minimum: 0
+      responses:
+        '200':
+          description: Block returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Block'
+        '404':
+          description: Block not found
+  /chunk:
+    post:
+      operationId: uploadChunk
+      summary: Upload a data chunk
+      description: >
+        Upload a single data chunk for a v2 transaction. Chunks must be
+        uploaded after the transaction header is submitted via POST /tx.
+        Maximum chunk size is 256 KiB. The data_root from the transaction
+        must be registered (transaction submitted) before chunks can be
+        uploaded.
+      tags:
+        - Chunks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChunkUpload'
+            example:
+              data_root: s5-IknhMNY-6SPJRCvzOoWYSjHVQkB1nVlKRKcPgbKM
+              data_size: '10485760'
+              data_path: Abc123...
+              chunk: SGVsbG8gV29ybGQ...
+              offset: '0'
+      responses:
+        '200':
+          description: Chunk accepted
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: OK
+        '400':
+          description: Invalid chunk submission
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    enum:
+                      - chunk_too_big
+                      - data_path_too_big
+                      - offset_too_big
+                      - data_size_too_big
+                      - chunk_proof_ratio_not_attractive
+                      - data_root_not_found
+                      - exceeds_disk_pool_size_limit
+                      - invalid_proof
+  /chunk/{offset}:
+    get:
+      operationId: getChunk
+      summary: Download a data chunk
+      description: >
+        Download a data chunk at the specified weave byte offset. Returns the
+        chunk data along with its offset and size metadata.
+      tags:
+        - Chunks
+      parameters:
+        - name: offset
+          in: path
+          required: true
+          description: Byte offset of the chunk within the weave
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Chunk data returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  chunk:
+                    type: string
+                    description: Base64URL encoded chunk data
+                  data_path:
+                    type: string
+                    description: Base64URL encoded Merkle inclusion proof
+                  tx_path:
+                    type: string
+                    description: Base64URL encoded transaction path
+        '400':
+          description: Invalid offset
+        '503':
+          description: Chunk not available
+components:
+  parameters:
+    TransactionId:
+      name: id
+      in: path
+      required: true
+      description: Transaction ID (Base64URL encoded SHA-256 of signature)
+      schema:
+        type: string
+    WalletAddress:
+      name: address
+      in: path
+      required: true
+      description: Wallet address (Base64URL encoded SHA-256 of RSA public key modulus)
+      schema:
+        type: string
+  schemas:
+    NetworkInfo:
+      type: object
+      description: Current network state and node information
+      properties:
+        network:
+          type: string
+          description: Network identifier string
+          example: arweave.N.1
+        version:
+          type: integer
+          description: Node protocol version
+          example: 5
+        release:
+          type: integer
+          description: Node release number
+          example: 53
+        height:
+          type: integer
+          description: Current block height
+          example: 551511
+        current:
+          type: string
+          description: Current block hash (indep_hash)
+        blocks:
+          type: integer
+          description: Total number of blocks in the weave
+        peers:
+          type: integer
+          description: Number of known peers
+        queue_length:
+          type: integer
+          description: Number of items in the mining queue
+        node_state_latency:
+          type: integer
+          description: Node state latency in milliseconds
+    TransactionTag:
+      type: object
+      description: A name-value tag pair attached to a transaction (Base64URL encoded)
+      required:
+        - name
+        - value
+      properties:
+        name:
+          type: string
+          description: Tag name (Base64URL encoded)
+        value:
+          type: string
+          description: Tag value (Base64URL encoded)
+    Transaction:
+      type: object
+      description: >
+        An Arweave transaction object. Use format=2 for v2 transactions which
+        support large data uploads via chunking. All amounts are in winstons.
+      required:
+        - format
+        - id
+        - last_tx
+        - owner
+        - reward
+        - signature
+      properties:
+        format:
+          type: integer
+          description: Transaction format version (1 or 2; use 2 for new transactions)
+          enum:
+            - 1
+            - 2
+        id:
+          type: string
+          description: Transaction ID — SHA-256 hash of the signature (Base64URL encoded)
+        last_tx:
+          type: string
+          description: >
+            Block hash or the ID of the prior transaction from this wallet.
+            Use an empty string for the first transaction from a wallet.
+        owner:
+          type: string
+          description: >
+            RSA public key modulus (Base64URL encoded). Empty string for
+            ECDSA accounts.
+        tags:
+          type: array
+          description: >
+            Array of name-value tag pairs. Maximum combined size is 2048 bytes.
+            Names and values are Base64URL encoded strings.
+          items:
+            $ref: '#/components/schemas/TransactionTag'
+        target:
+          type: string
+          description: >
+            Recipient wallet address for AR token transfers (Base64URL encoded).
+            Empty string if not transferring tokens.
+        quantity:
+          type: string
+          description: Amount of AR to transfer in winstons. Use '0' for data-only transactions.
+        data_root:
+          type: string
+          description: Merkle root of the data chunks (Base64URL encoded). Format=2 only.
+        data_size:
+          type: string
+          description: Total size of the data payload in bytes. Format=2 only.
+        data:
+          type: string
+          description: >
+            Base64URL encoded data payload. Max 10 MiB for v1, ~12 MiB for v2
+            inline. For larger data use chunked uploads with data_root.
+        reward:
+          type: string
+          description: Transaction fee in winstons. Obtain from GET /price/{bytes}/{target}.
+        signature:
+          type: string
+          description: >
+            RSA-PSS signature with SHA-256 (Base64URL encoded). For ECDSA
+            accounts: 65-byte compact signature.
+    TransactionStatus:
+      type: object
+      description: Confirmation status of a mined transaction
+      properties:
+        block_height:
+          type: integer
+          description: Block height in which the transaction was mined
+        block_indep_hash:
+          type: string
+          description: Independent hash of the block containing the transaction
+        number_of_confirmations:
+          type: integer
+          description: Number of blocks mined after the block containing the transaction
+    Block:
+      type: object
+      description: An Arweave block
+      properties:
+        nonce:
+          type: string
+          description: Block nonce used in proof of work
+        previous_block:
+          type: string
+          description: Hash of the previous block (indep_hash)
+        timestamp:
+          type: integer
+          description: Unix timestamp of the block
+        diff:
+          type: string
+          description: Mining difficulty at the time of the block
+        height:
+          type: integer
+          description: Block height
+        hash:
+          type: string
+          description: Mining hash of the block
+        indep_hash:
+          type: string
+          description: Independent hash uniquely identifying the block
+        txs:
+          type: array
+          description: List of transaction IDs in the block
+          items:
+            type: string
+        wallet_list:
+          type: string
+          description: Hash of the wallet list merkle tree
+        reward_addr:
+          type: string
+          description: Wallet address of the miner who found this block
+        reward_pool:
+          type: string
+          description: Current mining reward pool size in winstons
+        weave_size:
+          type: string
+          description: Total size of the weave in bytes at this block
+        block_size:
+          type: string
+          description: Size of all transaction data in this block in bytes
+        cumulative_diff:
+          type: string
+          description: Cumulative mining difficulty up to this block
+        hash_list_merkle:
+          type: string
+          description: Merkle root of the block hash list
+        poa:
+          type: object
+          description: Proof of access data
+          properties:
+            option:
+              type: string
+            tx_path:
+              type: string
+            data_path:
+              type: string
+            chunk:
+              type: string
+    ChunkUpload:
+      type: object
+      description: Payload for uploading a data chunk
+      required:
+        - data_root
+        - data_size
+        - data_path
+        - chunk
+        - offset
+      properties:
+        data_root:
+          type: string
+          description: Base64URL encoded Merkle root of the transaction data
+        data_size:
+          type: string
+          description: Total size of the transaction data in bytes
+        data_path:
+          type: string
+          description: Base64URL encoded Merkle inclusion proof for this chunk (max 256 KiB)
+        chunk:
+          type: string
+          description: Base64URL encoded chunk data (max 256 KiB)
+        offset:
+          type: string
+          description: Byte offset of this chunk relative to the start of the transaction data

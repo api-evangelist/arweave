@@ -1,0 +1,16 @@
+{
+  "summary": "Get wallet AR balance",
+  "description": "Example of querying a wallet balance. The response is in winstons — divide by 10^12 to get the AR amount. This wallet holds 6.45 AR.",
+  "request": {
+    "method": "GET",
+    "url": "https://arweave.net/wallet/pEbU_SLfRzEseum0_hMB1Ie-hqvpeHWypRhZiPoioDI/balance"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "text/plain"
+    },
+    "body": "6450000000000"
+  },
+  "notes": "Divide by 1000000000000 (10^12) to convert winstons to AR. This balance equals 6.45 AR."
+}

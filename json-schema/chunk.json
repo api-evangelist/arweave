@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/json-schema/chunk.json",
+  "title": "Arweave Data Chunk",
+  "description": "Payload schema for uploading a single data chunk via POST /chunk. Chunks are used to upload large data payloads for v2 Arweave transactions. Maximum chunk size is 256 KiB.",
+  "type": "object",
+  "required": ["data_root", "data_size", "data_path", "chunk", "offset"],
+  "properties": {
+    "data_root": {
+      "type": "string",
+      "description": "Base64URL encoded Merkle root of the full transaction data. Must match the data_root field in the submitted transaction header."
+    },
+    "data_size": {
+      "type": "string",
+      "description": "Total size of the complete transaction data payload in bytes (numeric string).",
+      "pattern": "^[0-9]+$"
+    },
+    "data_path": {
+      "type": "string",
+      "description": "Base64URL encoded Merkle inclusion proof path for this specific chunk. Maximum size 256 KiB."
+    },
+    "chunk": {
+      "type": "string",
+      "description": "Base64URL encoded chunk data. Maximum size 256 KiB per chunk."
+    },
+    "offset": {
+      "type": "string",
+      "description": "Byte offset of this chunk relative to the start of the transaction data (numeric string). Maximum value 2^256.",
+      "pattern": "^[0-9]+$"
+    }
+  },
+  "additionalProperties": false
+}

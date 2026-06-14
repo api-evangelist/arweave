@@ -1,0 +1,25 @@
+{
+  "summary": "Get current Arweave network state",
+  "description": "Example response from GET /info showing current network height, peer count, and block information.",
+  "request": {
+    "method": "GET",
+    "url": "https://arweave.net/info"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "network": "arweave.N.1",
+      "version": 5,
+      "release": 53,
+      "height": 1456320,
+      "current": "XIDpYbc3b5iuiqclQ9Y3Hw7Qkp0wfUxHHhJzPmSPRNIxQrMcQ-DqlHkM7Krd7g",
+      "blocks": 1456321,
+      "peers": 127,
+      "queue_length": 3,
+      "node_state_latency": 18
+    }
+  }
+}

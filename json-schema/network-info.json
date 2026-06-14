@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/json-schema/network-info.json",
+  "title": "Arweave Network Info",
+  "description": "Current network state and node information returned by GET /info.",
+  "type": "object",
+  "properties": {
+    "network": {
+      "type": "string",
+      "description": "Network identifier string (e.g. arweave.N.1)",
+      "example": "arweave.N.1"
+    },
+    "version": {
+      "type": "integer",
+      "description": "Node protocol version number",
+      "example": 5
+    },
+    "release": {
+      "type": "integer",
+      "description": "Node software release number",
+      "example": 53
+    },
+    "height": {
+      "type": "integer",
+      "description": "Current block height of the weave",
+      "example": 551511
+    },
+    "current": {
+      "type": "string",
+      "description": "Independent hash (indep_hash) of the current tip block"
+    },
+    "blocks": {
+      "type": "integer",
+      "description": "Total number of blocks in the weave"
+    },
+    "peers": {
+      "type": "integer",
+      "description": "Number of known peer nodes"
+    },
+    "queue_length": {
+      "type": "integer",
+      "description": "Number of transactions queued for processing"
+    },
+    "node_state_latency": {
+      "type": "integer",
+      "description": "Node state processing latency in milliseconds"
+    }
+  }
+}
