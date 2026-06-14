@@ -1,122 +1,138 @@
 name: Arweave
-description: Arweave is a permanent decentralized data storage network that enables developers to store data forever with a single upfront payment. It provides REST and GraphQL APIs for uploading data, querying blocks and transactions by tags and metadata, retrieving wallet balances, and accessing the permaweb data ecosystem. The network uses the AR token for storage fees and supports bundled uploads via the Turbo service with fiat and multi-chain crypto payment options.
+description: Arweave is a permanent decentralized data storage network that enables
+  developers to store data forever with a single upfront payment. It provides REST
+  and GraphQL APIs for uploading data, querying blocks and transactions by tags and
+  metadata, retrieving wallet balances, and accessing the permaweb data ecosystem.
+  The network uses the AR token for storage fees and supports bundled uploads via
+  the Turbo service with fiat and multi-chain crypto payment options.
 image: https://kinlane-productions2.s3.amazonaws.com/apis-json/apis-json-logo.jpg
 tags:
-  - Decentralized Storage
-  - Blockchain
-  - Permaweb
-  - Web3
-  - Data Storage
-  - GraphQL
+- Decentralized Storage
+- Blockchain
+- Permaweb
+- Web3
+- Data Storage
+- GraphQL
 url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/apis.yml
 specificationVersion: '0.19'
 modified: '2026-06-13'
 apis:
-  - name: Arweave HTTP Node API
-    description: The core Arweave node REST API for submitting and retrieving transactions, uploading data chunks, querying wallet balances, fetching blocks, and inspecting network state. Requests target any Arweave node on port 1984 (default gateway arweave.net). Amounts are denominated in winstons (1 AR = 10^12 winstons).
-    image: https://kinlane-productions2.s3.amazonaws.com/apis-json/apis-json-logo.jpg
-    humanURL: https://docs.arweave.org/developers/arweave-node-server/http-api
-    baseURL: https://arweave.net
-    tags:
-      - Transactions
-      - Blocks
-      - Wallets
-      - Chunks
-      - Network
-    properties:
-      - type: Documentation
-        url: https://docs.arweave.org/developers/arweave-node-server/http-api
-      - type: OpenAPI
-        url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/openapi.yml
-      - type: JSONSchema
-        url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/json-schema/transaction.json
-      - type: JSONSchema
-        url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/json-schema/network-info.json
-      - type: JSONSchema
-        url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/json-schema/chunk.json
-      - type: Example
-        url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/examples/get-network-info.json
-      - type: Example
-        url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/examples/submit-transaction.json
-      - type: Example
-        url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/examples/get-wallet-balance.json
-      - type: Example
-        url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/examples/get-transaction-price.json
-    contact:
-      - FN: Arweave Team
-        url: https://www.arweave.org/
-        email: team@arweave.org
-
-  - name: Arweave GraphQL API
-    description: GraphQL API for querying Arweave transaction and block metadata by tags, owner addresses, recipients, block height ranges, and transaction IDs. Supports cursor-based pagination and sorting. Primary endpoints are hosted at arweave.net/graphql and high-performance alternatives at arweave-search.goldsky.com/graphql. Use GraphQL to find transaction IDs, then use the REST API to fetch the actual data.
-    image: https://kinlane-productions2.s3.amazonaws.com/apis-json/apis-json-logo.jpg
-    humanURL: https://gql-guide.vercel.app/
-    baseURL: https://arweave.net/graphql
-    tags:
-      - GraphQL
-      - Transactions
-      - Blocks
-      - Tags
-      - Search
-    properties:
-      - type: Documentation
-        url: https://gql-guide.vercel.app/
-      - type: GraphQL
-        url: https://arweave.net/graphql
-
-  - name: Arweave Turbo Upload API
-    description: Managed bundling upload service (ar.io Turbo) that implements ANS-104 bundling for high-throughput data uploads to Arweave. Handles millions of uploads daily with automatic retry, sub-100 KiB free tier, and payment via credit card, AR, ETH, SOL, MATIC, USDC, and KYVE. Uploads are priced per byte with dynamic rates tracking the AR token and Arweave network storage cost.
-    image: https://kinlane-productions2.s3.amazonaws.com/apis-json/apis-json-logo.jpg
-    humanURL: https://docs.ar.io/build/upload/bundling-services
-    baseURL: https://turbo.ardrive.io
-    tags:
-      - Upload
-      - Bundling
-      - ANS-104
-      - Storage
-    properties:
-      - type: Documentation
-        url: https://docs.ar.io/build/upload/bundling-services
-      - type: PricingPage
-        url: https://docs.ar.io/build/upload/turbo-credits
-
-common:
-  - type: Website
-    url: https://www.arweave.org/
+- name: Arweave HTTP Node API
+  description: The core Arweave node REST API for submitting and retrieving transactions,
+    uploading data chunks, querying wallet balances, fetching blocks, and inspecting
+    network state. Requests target any Arweave node on port 1984 (default gateway
+    arweave.net). Amounts are denominated in winstons (1 AR = 10^12 winstons).
+  image: https://kinlane-productions2.s3.amazonaws.com/apis-json/apis-json-logo.jpg
+  humanURL: https://docs.arweave.org/developers/arweave-node-server/http-api
+  baseURL: https://arweave.net
+  tags:
+  - Transactions
+  - Blocks
+  - Wallets
+  - Chunks
+  - Network
+  properties:
   - type: Documentation
-    url: https://docs.arweave.org/developers
-  - type: Cookbook
-    url: https://cookbook.arweave.net/
-  - type: GettingStarted
-    url: https://docs.ar.io/build/
-  - type: GitHubOrganization
-    url: https://github.com/ArweaveTeam
-  - type: Plans
-    url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/plans/plans.yml
-  - type: RateLimits
-    url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/rate-limits/rate-limits.yml
-  - type: FinOps
-    url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/finops/finops.yml
+    url: https://docs.arweave.org/developers/arweave-node-server/http-api
+  - type: OpenAPI
+    url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/openapi.yml
+  - type: JSONSchema
+    url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/json-schema/transaction.json
+  - type: JSONSchema
+    url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/json-schema/network-info.json
+  - type: JSONSchema
+    url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/json-schema/chunk.json
+  - type: Example
+    url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/examples/get-network-info.json
+  - type: Example
+    url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/examples/submit-transaction.json
+  - type: Example
+    url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/examples/get-wallet-balance.json
+  - type: Example
+    url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/examples/get-transaction-price.json
+  contact:
+  - FN: Arweave Team
+    url: https://www.arweave.org/
+    email: team@arweave.org
+- name: Arweave GraphQL API
+  description: GraphQL API for querying Arweave transaction and block metadata by
+    tags, owner addresses, recipients, block height ranges, and transaction IDs. Supports
+    cursor-based pagination and sorting. Primary endpoints are hosted at arweave.net/graphql
+    and high-performance alternatives at arweave-search.goldsky.com/graphql. Use GraphQL
+    to find transaction IDs, then use the REST API to fetch the actual data.
+  image: https://kinlane-productions2.s3.amazonaws.com/apis-json/apis-json-logo.jpg
+  humanURL: https://gql-guide.vercel.app/
+  baseURL: https://arweave.net/graphql
+  tags:
+  - GraphQL
+  - Transactions
+  - Blocks
+  - Tags
+  - Search
+  properties:
+  - type: Documentation
+    url: https://gql-guide.vercel.app/
+  - type: GraphQL
+    url: https://arweave.net/graphql
+  - url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/graphql/arweave-schema.graphql
+    type: GraphQLSchema
+  - url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/graphql/arweave-graphql.md
+    type: GraphQLDocumentation
+- name: Arweave Turbo Upload API
+  description: Managed bundling upload service (ar.io Turbo) that implements ANS-104
+    bundling for high-throughput data uploads to Arweave. Handles millions of uploads
+    daily with automatic retry, sub-100 KiB free tier, and payment via credit card,
+    AR, ETH, SOL, MATIC, USDC, and KYVE. Uploads are priced per byte with dynamic
+    rates tracking the AR token and Arweave network storage cost.
+  image: https://kinlane-productions2.s3.amazonaws.com/apis-json/apis-json-logo.jpg
+  humanURL: https://docs.ar.io/build/upload/bundling-services
+  baseURL: https://turbo.ardrive.io
+  tags:
+  - Upload
+  - Bundling
+  - ANS-104
+  - Storage
+  properties:
+  - type: Documentation
+    url: https://docs.ar.io/build/upload/bundling-services
   - type: PricingPage
     url: https://docs.ar.io/build/upload/turbo-credits
-  - type: StatusPage
-    url: https://status.ar.io/
-  - type: Discord
-    url: https://discord.gg/arweave
-  - type: Twitter
-    url: https://twitter.com/ArweaveTeam
-  - type: TermsOfService
-    url: https://www.arweave.org/legal/terms-of-use
-  - type: PrivacyPolicy
-    url: https://www.arweave.org/legal/privacy-policy
-  - type: Blog
-    url: https://arweave.medium.com/
-  - type: Vocabulary
-    url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/vocabulary/arweave-vocabulary.json
-  - type: JSONLDContext
-    url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/json-ld/arweave-context.jsonld
-
+common:
+- type: Website
+  url: https://www.arweave.org/
+- type: Documentation
+  url: https://docs.arweave.org/developers
+- type: Cookbook
+  url: https://cookbook.arweave.net/
+- type: GettingStarted
+  url: https://docs.ar.io/build/
+- type: GitHubOrganization
+  url: https://github.com/ArweaveTeam
+- type: Plans
+  url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/plans/plans.yml
+- type: RateLimits
+  url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/rate-limits/rate-limits.yml
+- type: FinOps
+  url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/finops/finops.yml
+- type: PricingPage
+  url: https://docs.ar.io/build/upload/turbo-credits
+- type: StatusPage
+  url: https://status.ar.io/
+- type: Discord
+  url: https://discord.gg/arweave
+- type: Twitter
+  url: https://twitter.com/ArweaveTeam
+- type: TermsOfService
+  url: https://www.arweave.org/legal/terms-of-use
+- type: PrivacyPolicy
+  url: https://www.arweave.org/legal/privacy-policy
+- type: Blog
+  url: https://arweave.medium.com/
+- type: Vocabulary
+  url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/vocabulary/arweave-vocabulary.json
+- type: JSONLDContext
+  url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/json-ld/arweave-context.jsonld
 maintainers:
-  - FN: Kin Lane
-    url: https://apievangelist.com
-    email: kin@apievangelist.com
+- FN: Kin Lane
+  url: https://apievangelist.com
+  email: kin@apievangelist.com

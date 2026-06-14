@@ -1,0 +1,246 @@
+# Arweave GraphQL Schema
+# Source: live introspection of https://arweave.net/graphql
+# Retrieved: 2026-06-14
+
+"""Representation of a transaction owner."""
+type Owner {
+  address: String!
+  key: String!
+}
+
+"""Representation of a value transfer between wallets, in both winston and ar."""
+type Amount {
+  winston: String!
+  ar: String!
+}
+
+"""Basic metadata about the transaction data payload."""
+type MetaData {
+  size: String!
+  type: String
+}
+
+"""Tag Schema"""
+type Tag {
+  name: String!
+  value: String!
+}
+
+"""Block Schema"""
+type Block {
+  id: ID
+  timestamp: Int
+  height: Int!
+  previous: ID
+}
+
+"""
+The parent transaction for bundled transactions.
+See: https://github.com/ArweaveTeam/arweave-standards/blob/master/ans/ANS-102.md
+"""
+type Parent {
+  id: ID!
+}
+
+"""
+The data bundle containing the current data item.
+See: https://github.com/ArweaveTeam/arweave-standards/blob/master/ans/ANS-104.md
+"""
+type Bundle {
+  id: ID!
+}
+
+"""Transaction Structure"""
+type Transaction {
+  id: ID!
+  anchor: String!
+  signature: String!
+  recipient: String!
+  owner: Owner!
+  fee: Amount!
+  quantity: Amount!
+  data: MetaData!
+  tags: [Tag!]!
+  ingested_at: Int
+  block: Block
+  bundledIn: Bundle
+}
+
+"""Paginated page info using the GraphQL cursor spec."""
+type PageInfo {
+  hasNextPage: Boolean!
+}
+
+"""Paginated result set using the GraphQL cursor spec."""
+type TransactionEdge {
+  cursor: String!
+  node: Transaction!
+}
+
+"""
+Paginated result set using the GraphQL cursor spec.
+See: https://relay.dev/graphql/connections.htm
+"""
+type TransactionConnection {
+  pageInfo: PageInfo!
+  count: String
+  edges: [TransactionEdge!]!
+}
+
+"""Paginated result set using the GraphQL cursor spec."""
+type BlockEdge {
+  cursor: String!
+  node: Block!
+}
+
+"""
+Paginated result set using the GraphQL cursor spec.
+See: https://relay.dev/graphql/connections.htm
+"""
+type BlockConnection {
+  pageInfo: PageInfo!
+  edges: [BlockEdge!]!
+}
+
+"""Find transactions with the following tag name and value"""
+input TagFilter {
+  """The tag name"""
+  name: String
+
+  """
+  An array of values to match against. If multiple values are passed then
+  transactions with _any_ matching tag value from the set will be returned.
+  """
+  values: [String!]
+
+  """The operator to apply to the tag filter. Defaults to EQ (equal)."""
+  op: TagOperator! = EQ
+
+  """How tag names and values are matched. Defaults to EXACT."""
+  match: TagMatch! = EXACT
+}
+
+"""Filter with a min and max"""
+input RangeFilter {
+  """Minimum integer to filter from"""
+  min: Int
+
+  """Maximum integer to filter to"""
+  max: Int
+}
+
+"""The operator to apply to a tag value."""
+enum TagOperator {
+  """Equal"""
+  EQ
+
+  """Not equal"""
+  NEQ
+}
+
+"""The method used to determine if tags match."""
+enum TagMatch {
+  """An exact match"""
+  EXACT
+
+  """A wildcard match"""
+  WILDCARD
+
+  """Fuzzy match containing all search terms"""
+  FUZZY_AND
+
+  """Fuzzy match containing at least one search term"""
+  FUZZY_OR
+}
+
+"""
+Optionally reverse the result sort order from HEIGHT_DESC (default) to HEIGHT_ASC.
+"""
+enum SortOrder {
+  """
+  Results are sorted by the transaction block height in ascending order,
+  with the oldest transactions appearing first, and the most recent and
+  pending/unconfirmed appearing last.
+  """
+  HEIGHT_ASC
+
+  """
+  Results are sorted by the transaction block height in descending order,
+  with the most recent and unconfirmed/pending transactions appearing first.
+  """
+  HEIGHT_DESC
+
+  """
+  Results are sorted by the transaction ingestion time in descending order,
+  with the most recently ingested transactions appearing first.
+  """
+  INGESTED_AT_DESC
+
+  """
+  Results are sorted by the transaction ingestion time in ascending order,
+  with the oldest ingested transactions appearing first.
+  """
+  INGESTED_AT_ASC
+}
+
+type Query {
+  """Get a transaction by its id"""
+  transaction(id: ID!): Transaction
+
+  """Get a paginated set of matching transactions using filters."""
+  transactions(
+    """Find transactions from a list of ids."""
+    ids: [ID!]
+
+    """Find transactions from a list of owner wallet addresses, or wallet owner public keys."""
+    owners: [String!]
+
+    """Find transactions from a list of recipient wallet addresses."""
+    recipients: [String!]
+
+    """Find transactions using tags."""
+    tags: [TagFilter!]
+
+    """
+    Find data items from the given data bundles.
+    See: https://github.com/ArweaveTeam/arweave-standards/blob/master/ans/ANS-104.md
+    """
+    bundledIn: [ID!]
+
+    """Find transactions within a given Search Indexing Service ingestion time range."""
+    ingested_at: RangeFilter
+
+    """Find transactions within a given block height range."""
+    block: RangeFilter
+
+    """Result page size (max: 100)"""
+    first: Int = 10
+
+    """A pagination cursor value, for fetching subsequent pages from a result set."""
+    after: String
+
+    """Optionally specify the result sort order."""
+    sort: SortOrder = HEIGHT_DESC
+  ): TransactionConnection!
+
+  """Get a block by its id"""
+  block(id: String): Block
+
+  """Get a paginated set of matching blocks using filters."""
+  blocks(
+    """Find blocks from a list of ids."""
+    ids: [ID!]
+
+    """Find blocks within a given block height range."""
+    height: RangeFilter
+
+    """Result page size (max: 100)"""
+    first: Int = 10
+
+    """A pagination cursor value, for fetching subsequent pages from a result set."""
+    after: String
+
+    """Optionally specify the result sort order."""
+    sort: SortOrder = HEIGHT_DESC
+  ): BlockConnection!
+}
