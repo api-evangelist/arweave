@@ -1,0 +1,50 @@
+name: Arweave FinOps
+description: Arweave storage is priced as a one-time permanent fee rather than a recurring subscription. The protocol stores an endowment that earns interest to fund storage indefinitely. Costs are denominated in AR (the native token) or via Turbo Credits purchasable with fiat or multi-chain cryptocurrencies. FinOps practices center on estimating upload costs ahead of time, choosing the right upload path, and managing token exposure.
+currency: AR (native token), USD via Turbo Credits
+billingModel: pay-once permanent storage + dynamic per-byte pricing
+url: https://docs.ar.io/build/upload/turbo-credits
+
+cost_drivers:
+  - name: Data Size
+    description: Primary cost driver. Fees scale with the number of bytes uploaded. The /price/{bytes} endpoint returns the minimum network fee for a given size. Dynamic pricing means the cost per byte fluctuates with AR/USD exchange rates and network storage economics.
+    unit: winston per byte
+    endpoint: GET /price/{bytes}
+
+  - name: New Wallet Surcharge
+    description: An additional fee is applied on the first transaction sent to a wallet address that has never received funds, to discourage wallet spam.
+    unit: variable winston surcharge
+    endpoint: GET /price/{bytes}/{target}
+
+  - name: Turbo Top-Up Surcharge
+    description: When purchasing Turbo Credits with crypto tokens (other than ARIO), a surcharge applies to cover infrastructure and token liquidity costs.
+    surcharges:
+      - token: ARIO (Solana or Base)
+        surcharge: 0%
+      - token: KYVE
+        surcharge: 50%
+      - token: all others (AR, ETH, SOL, MATIC, USDC, POL)
+        surcharge: 35%
+
+cost_optimization:
+  - name: Use Free Tier for Small Uploads
+    description: Uploads under 100 KiB via the Turbo service are free. Batch small assets into a single sub-100 KiB bundle when possible.
+
+  - name: Bundle Transactions
+    description: ANS-104 bundles pack multiple data items into a single Arweave transaction, reducing per-item overhead and improving throughput vs. individual transactions.
+
+  - name: Use ARIO Token for Zero-Surcharge Top-Ups
+    description: Funding Turbo Credits with ARIO tokens (on Solana or Base) incurs no additional surcharge (0%), versus 35% for most other tokens.
+
+  - name: Estimate Fees Before Upload
+    description: Use GET /price/{bytes} (or /price/{bytes}/{target}) before submitting large transactions to validate budget. The network fee is dynamic and should be re-fetched close to submission time.
+
+  - name: Monitor AR/USD Exchange Rate
+    description: Storage cost in USD depends on the AR token price. Purchasing Turbo Credits during favorable rates locks in more upload power per dollar.
+
+pricing_resources:
+  - name: Turbo Pricing & Credits Docs
+    url: https://docs.ar.io/build/upload/turbo-credits
+  - name: Arweave Storage Pricing Overview
+    url: https://www.arweave.org/technology#endowment
+  - name: Price Endpoint Reference
+    url: https://docs.arweave.org/developers/arweave-node-server/http-api

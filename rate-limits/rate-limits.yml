@@ -1,0 +1,26 @@
+name: Arweave Rate Limits
+description: Arweave does not publish explicit numeric rate limits for its public HTTP or GraphQL APIs. Individual node operators and gateway operators may enforce their own limits. The network protocol returns HTTP 429 Too Many Requests when a client exceeds a node's threshold. The Turbo upload service handles throughput internally and supports millions of uploads daily without published per-client caps.
+limits:
+  - name: Node HTTP API Rate Limit
+    scope: per client / per IP
+    requests: not published
+    window: not published
+    notes: HTTP 429 is returned when the limit is exceeded. Thresholds are set by individual node operators and may vary. The reference node implementation enforces a limit but does not document the exact value publicly.
+    httpStatusOnExceeded: 429
+    retryAfterHeader: true
+
+  - name: GraphQL API Rate Limit
+    scope: per client / per IP
+    requests: not published
+    window: not published
+    notes: Public GraphQL endpoints at arweave.net/graphql and arweave-search.goldsky.com/graphql do not publish rate limits. Pagination is strongly recommended (cursor-based, "first" parameter) to avoid large result sets that degrade performance. Fetching tag values increases response time significantly versus fetching IDs only.
+    httpStatusOnExceeded: 429
+    retryAfterHeader: unknown
+
+  - name: Turbo Upload Service
+    scope: global service / per account
+    requests: not published
+    window: not published
+    notes: Turbo is described as handling millions of uploads daily. No per-client rate limit is documented. Free-tier uploads (under 100 KiB) have no documented daily or hourly cap beyond available credits.
+    httpStatusOnExceeded: not published
+    retryAfterHeader: unknown

@@ -1,0 +1,48 @@
+name: Arweave Plans
+description: Arweave uses a pay-once permanent storage model rather than traditional subscription tiers. Storage fees are calculated dynamically by the network and paid in AR tokens or via the Turbo bundling service using fiat or multi-chain crypto. There is no recurring cost once data is stored.
+plans:
+  - name: Free (Turbo)
+    description: Uploads under 100 KiB via the Turbo bundling service are completely free and do not require a prior top-up or account creation.
+    url: https://docs.ar.io/build/upload/turbo-credits
+    price: 0.00
+    currency: USD
+    unit: per upload up to 100 KiB
+    rateLimit: none documented
+    features:
+      - Free uploads up to 100 KiB
+      - No account required
+      - ANS-104 bundling
+      - Automatic retry on failure
+      - No failed-upload charges
+
+  - name: Pay-Per-Byte (Turbo Credits)
+    description: Purchase Turbo Credits to fund uploads larger than 100 KiB. Credits provide a 1:1 representation of upload power on the Arweave network with dynamic pricing tied to the AR token exchange rate and network storage cost.
+    url: https://docs.ar.io/build/upload/turbo-credits
+    price: dynamic
+    currency: USD / AR / SOL / ETH / MATIC / USDC / KYVE
+    unit: per byte uploaded
+    rateLimit: none documented
+    features:
+      - Pay per byte, not empty chunks
+      - No failed-upload charges
+      - Automatic retry included
+      - Credit card (Stripe) accepted
+      - AR, SOL, ETH, MATIC, USDC, KYVE tokens accepted
+      - ARIO token top-ups carry no additional fee
+      - KYVE top-ups carry a 50% surcharge
+      - All other token top-ups carry a 35% surcharge
+      - Credits are non-refundable and non-withdrawable
+
+  - name: Direct Node (Protocol Level)
+    description: Post transactions directly to any Arweave node using the HTTP API. Fee is the network-calculated reward paid in AR (winstons). No third-party service involved; caller manages their own AR wallet and fee estimation via the /price endpoint.
+    url: https://docs.arweave.org/developers/arweave-node-server/http-api
+    price: dynamic
+    currency: AR (winstons)
+    unit: per transaction / per data size
+    rateLimit: 429 Too Many Requests returned when limit exceeded; no published threshold
+    features:
+      - Full protocol access
+      - No intermediary service
+      - /price endpoint for fee estimation
+      - Extra fee for first transaction to a new wallet address
+      - Supports chunked data uploads for large files
