@@ -42,13 +42,13 @@ apis:
     url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/json-schema/network-info.json
   - type: JSONSchema
     url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/json-schema/chunk.json
-  - type: Example
+  - type: Examples
     url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/examples/get-network-info.json
-  - type: Example
+  - type: Examples
     url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/examples/submit-transaction.json
-  - type: Example
+  - type: Examples
     url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/examples/get-wallet-balance.json
-  - type: Example
+  - type: Examples
     url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/examples/get-transaction-price.json
   contact:
   - FN: Arweave Team
