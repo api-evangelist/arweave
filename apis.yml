@@ -98,6 +98,8 @@ apis:
   - type: PricingPage
     url: https://docs.ar.io/build/upload/turbo-credits
 common:
+- type: DomainSecurity
+  url: security/arweave-domain-security.yml
 - type: Website
   url: https://www.arweave.org/
 - type: Documentation
