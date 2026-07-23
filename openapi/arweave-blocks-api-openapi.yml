@@ -1,0 +1,143 @@
+openapi: 3.1.0
+info:
+  title: Arweave HTTP Node Blocks API
+  description: 'The core Arweave node REST API for submitting and retrieving transactions, uploading data chunks, querying wallet balances, fetching blocks, and inspecting network state. Requests target any Arweave node on port 1984 (default gateway arweave.net). Amounts are denominated in winstons (1 AR = 10^12 winstons).
+
+    '
+  version: 1.0.0
+  contact:
+    name: Arweave Team
+    url: https://www.arweave.org/
+    email: team@arweave.org
+  termsOfService: https://www.arweave.org/legal/terms-of-use
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+- url: https://arweave.net
+  description: Arweave public gateway
+- url: http://localhost:1984
+  description: Local Arweave node (default port 1984)
+tags:
+- name: Blocks
+  description: Endpoints for retrieving block data
+paths:
+  /block/hash/{id}:
+    get:
+      operationId: getBlockByHash
+      summary: Get block by hash
+      description: 'Retrieve a full block object by its independent hash (indep_hash). Include the header X-Block-Format: 2 to request the v2 block format.
+
+        '
+      tags:
+      - Blocks
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Block independent hash (indep_hash, Base64URL encoded)
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Block returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Block'
+        '404':
+          description: Block not found
+  /block/height/{height}:
+    get:
+      operationId: getBlockByHeight
+      summary: Get block by height
+      description: 'Retrieve a full block object by its block height (block number). Include the header X-Block-Format: 2 to request the v2 block format.
+
+        '
+      tags:
+      - Blocks
+      parameters:
+      - name: height
+        in: path
+        required: true
+        description: Block height (block number, 0-indexed)
+        schema:
+          type: integer
+          minimum: 0
+      responses:
+        '200':
+          description: Block returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Block'
+        '404':
+          description: Block not found
+components:
+  schemas:
+    Block:
+      type: object
+      description: An Arweave block
+      properties:
+        nonce:
+          type: string
+          description: Block nonce used in proof of work
+        previous_block:
+          type: string
+          description: Hash of the previous block (indep_hash)
+        timestamp:
+          type: integer
+          description: Unix timestamp of the block
+        diff:
+          type: string
+          description: Mining difficulty at the time of the block
+        height:
+          type: integer
+          description: Block height
+        hash:
+          type: string
+          description: Mining hash of the block
+        indep_hash:
+          type: string
+          description: Independent hash uniquely identifying the block
+        txs:
+          type: array
+          description: List of transaction IDs in the block
+          items:
+            type: string
+        wallet_list:
+          type: string
+          description: Hash of the wallet list merkle tree
+        reward_addr:
+          type: string
+          description: Wallet address of the miner who found this block
+        reward_pool:
+          type: string
+          description: Current mining reward pool size in winstons
+        weave_size:
+          type: string
+          description: Total size of the weave in bytes at this block
+        block_size:
+          type: string
+          description: Size of all transaction data in this block in bytes
+        cumulative_diff:
+          type: string
+          description: Cumulative mining difficulty up to this block
+        hash_list_merkle:
+          type: string
+          description: Merkle root of the block hash list
+        poa:
+          type: object
+          description: Proof of access data
+          properties:
+            option:
+              type: string
+            tx_path:
+              type: string
+            data_path:
+              type: string
+            chunk:
+              type: string
+externalDocs:
+  description: Arweave HTTP API Documentation
+  url: https://docs.arweave.org/developers/arweave-node-server/http-api

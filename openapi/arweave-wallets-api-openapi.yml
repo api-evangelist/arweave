@@ -1,0 +1,78 @@
+openapi: 3.1.0
+info:
+  title: Arweave HTTP Node Wallets API
+  description: 'The core Arweave node REST API for submitting and retrieving transactions, uploading data chunks, querying wallet balances, fetching blocks, and inspecting network state. Requests target any Arweave node on port 1984 (default gateway arweave.net). Amounts are denominated in winstons (1 AR = 10^12 winstons).
+
+    '
+  version: 1.0.0
+  contact:
+    name: Arweave Team
+    url: https://www.arweave.org/
+    email: team@arweave.org
+  termsOfService: https://www.arweave.org/legal/terms-of-use
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+- url: https://arweave.net
+  description: Arweave public gateway
+- url: http://localhost:1984
+  description: Local Arweave node (default port 1984)
+tags:
+- name: Wallets
+  description: Endpoints for querying wallet balances and transaction history
+paths:
+  /wallet/{address}/balance:
+    get:
+      operationId: getWalletBalance
+      summary: Get wallet balance
+      description: 'Retrieve the AR balance of a wallet address in winstons. Unknown addresses return 0. Convert to AR by dividing by 10^12.
+
+        '
+      tags:
+      - Wallets
+      parameters:
+      - $ref: '#/components/parameters/WalletAddress'
+      responses:
+        '200':
+          description: Balance in winstons returned as numeric string
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: '6450000000000'
+        '400':
+          description: Invalid wallet address
+  /wallet/{address}/last_tx:
+    get:
+      operationId: getWalletLastTransaction
+      summary: Get last transaction for wallet
+      description: 'Returns the transaction ID of the most recent outgoing transaction from the given wallet address. Used to populate the last_tx field when constructing new transactions.
+
+        '
+      tags:
+      - Wallets
+      parameters:
+      - $ref: '#/components/parameters/WalletAddress'
+      responses:
+        '200':
+          description: Last transaction ID returned
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: BNttzDav3jHVnNiV7noWn2KgamiO1m_yI4vI1JcmHco
+        '400':
+          description: Invalid wallet address
+components:
+  parameters:
+    WalletAddress:
+      name: address
+      in: path
+      required: true
+      description: Wallet address (Base64URL encoded SHA-256 of RSA public key modulus)
+      schema:
+        type: string
+externalDocs:
+  description: Arweave HTTP API Documentation
+  url: https://docs.arweave.org/developers/arweave-node-server/http-api

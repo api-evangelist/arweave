@@ -1,0 +1,110 @@
+openapi: 3.1.0
+info:
+  title: Arweave HTTP Node Network API
+  description: 'The core Arweave node REST API for submitting and retrieving transactions, uploading data chunks, querying wallet balances, fetching blocks, and inspecting network state. Requests target any Arweave node on port 1984 (default gateway arweave.net). Amounts are denominated in winstons (1 AR = 10^12 winstons).
+
+    '
+  version: 1.0.0
+  contact:
+    name: Arweave Team
+    url: https://www.arweave.org/
+    email: team@arweave.org
+  termsOfService: https://www.arweave.org/legal/terms-of-use
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+- url: https://arweave.net
+  description: Arweave public gateway
+- url: http://localhost:1984
+  description: Local Arweave node (default port 1984)
+tags:
+- name: Network
+  description: Endpoints for querying network state and peer information
+paths:
+  /info:
+    get:
+      operationId: getNetworkInfo
+      summary: Get network information
+      description: 'Returns the current network state and node information including block height, current block hash, peer count, and queue status.
+
+        '
+      tags:
+      - Network
+      responses:
+        '200':
+          description: Network info returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetworkInfo'
+              example:
+                network: arweave.N.1
+                version: 5
+                release: 53
+                height: 551511
+                current: XIDpYbc3b5iuiqclQ9Y3Hw7Qkp0wfUxHHhJzPmSPRNIxQrMcQ-DqlHkM7Krd7g
+                blocks: 551512
+                peers: 64
+                queue_length: 0
+                node_state_latency: 18
+  /peers:
+    get:
+      operationId: getPeers
+      summary: Get peer list
+      description: Returns a list of known peer node addresses.
+      tags:
+      - Network
+      responses:
+        '200':
+          description: Peer list returned successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  description: Peer address in host:port format
+              example:
+              - 127.0.0.1:1984
+              - 0.0.0.0:1984
+components:
+  schemas:
+    NetworkInfo:
+      type: object
+      description: Current network state and node information
+      properties:
+        network:
+          type: string
+          description: Network identifier string
+          example: arweave.N.1
+        version:
+          type: integer
+          description: Node protocol version
+          example: 5
+        release:
+          type: integer
+          description: Node release number
+          example: 53
+        height:
+          type: integer
+          description: Current block height
+          example: 551511
+        current:
+          type: string
+          description: Current block hash (indep_hash)
+        blocks:
+          type: integer
+          description: Total number of blocks in the weave
+        peers:
+          type: integer
+          description: Number of known peers
+        queue_length:
+          type: integer
+          description: Number of items in the mining queue
+        node_state_latency:
+          type: integer
+          description: Node state latency in milliseconds
+externalDocs:
+  description: Arweave HTTP API Documentation
+  url: https://docs.arweave.org/developers/arweave-node-server/http-api

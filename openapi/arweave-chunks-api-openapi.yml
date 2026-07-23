@@ -1,0 +1,138 @@
+openapi: 3.1.0
+info:
+  title: Arweave HTTP Node Chunks API
+  description: 'The core Arweave node REST API for submitting and retrieving transactions, uploading data chunks, querying wallet balances, fetching blocks, and inspecting network state. Requests target any Arweave node on port 1984 (default gateway arweave.net). Amounts are denominated in winstons (1 AR = 10^12 winstons).
+
+    '
+  version: 1.0.0
+  contact:
+    name: Arweave Team
+    url: https://www.arweave.org/
+    email: team@arweave.org
+  termsOfService: https://www.arweave.org/legal/terms-of-use
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+- url: https://arweave.net
+  description: Arweave public gateway
+- url: http://localhost:1984
+  description: Local Arweave node (default port 1984)
+tags:
+- name: Chunks
+  description: Endpoints for uploading and downloading data chunks
+paths:
+  /chunk:
+    post:
+      operationId: uploadChunk
+      summary: Upload a data chunk
+      description: 'Upload a single data chunk for a v2 transaction. Chunks must be uploaded after the transaction header is submitted via POST /tx. Maximum chunk size is 256 KiB. The data_root from the transaction must be registered (transaction submitted) before chunks can be uploaded.
+
+        '
+      tags:
+      - Chunks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChunkUpload'
+            example:
+              data_root: s5-IknhMNY-6SPJRCvzOoWYSjHVQkB1nVlKRKcPgbKM
+              data_size: '10485760'
+              data_path: Abc123...
+              chunk: SGVsbG8gV29ybGQ...
+              offset: '0'
+      responses:
+        '200':
+          description: Chunk accepted
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: OK
+        '400':
+          description: Invalid chunk submission
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    enum:
+                    - chunk_too_big
+                    - data_path_too_big
+                    - offset_too_big
+                    - data_size_too_big
+                    - chunk_proof_ratio_not_attractive
+                    - data_root_not_found
+                    - exceeds_disk_pool_size_limit
+                    - invalid_proof
+  /chunk/{offset}:
+    get:
+      operationId: getChunk
+      summary: Download a data chunk
+      description: 'Download a data chunk at the specified weave byte offset. Returns the chunk data along with its offset and size metadata.
+
+        '
+      tags:
+      - Chunks
+      parameters:
+      - name: offset
+        in: path
+        required: true
+        description: Byte offset of the chunk within the weave
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Chunk data returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  chunk:
+                    type: string
+                    description: Base64URL encoded chunk data
+                  data_path:
+                    type: string
+                    description: Base64URL encoded Merkle inclusion proof
+                  tx_path:
+                    type: string
+                    description: Base64URL encoded transaction path
+        '400':
+          description: Invalid offset
+        '503':
+          description: Chunk not available
+components:
+  schemas:
+    ChunkUpload:
+      type: object
+      description: Payload for uploading a data chunk
+      required:
+      - data_root
+      - data_size
+      - data_path
+      - chunk
+      - offset
+      properties:
+        data_root:
+          type: string
+          description: Base64URL encoded Merkle root of the transaction data
+        data_size:
+          type: string
+          description: Total size of the transaction data in bytes
+        data_path:
+          type: string
+          description: Base64URL encoded Merkle inclusion proof for this chunk (max 256 KiB)
+        chunk:
+          type: string
+          description: Base64URL encoded chunk data (max 256 KiB)
+        offset:
+          type: string
+          description: Byte offset of this chunk relative to the start of the transaction data
+externalDocs:
+  description: Arweave HTTP API Documentation
+  url: https://docs.arweave.org/developers/arweave-node-server/http-api
