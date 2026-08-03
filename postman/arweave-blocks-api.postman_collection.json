@@ -1,0 +1,303 @@
+{
+  "info": {
+    "_postman_id": "6d8b3700-f7a0-4413-9494-885be3dec1e8",
+    "name": "Arweave HTTP Node Blocks API",
+    "description": "The core Arweave node REST API for submitting and retrieving transactions, uploading data chunks, querying wallet balances, fetching blocks, and inspecting network state. Requests target any Arweave node on port 1984 (default gateway arweave.net). Amounts are denominated in winstons (1 AR = 10^12 winstons).\n\n\nContact Support:\n Name: Arweave Team\n Email: team@arweave.org",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "createdAt": "2026-07-28T01:04:58.000Z",
+    "updatedAt": "2026-07-28T01:04:58.000Z",
+    "lastUpdatedBy": "35240",
+    "uid": "35240-6d8b3700-f7a0-4413-9494-885be3dec1e8"
+  },
+  "item": [
+    {
+      "name": "block",
+      "item": [
+        {
+          "name": "hash",
+          "item": [
+            {
+              "name": "{id}",
+              "item": [
+                {
+                  "name": "Get block by hash",
+                  "id": "dd037e3b-36fd-4d7c-a0ac-beb89b36bb36",
+                  "protocolProfileBehavior": {
+                    "disableBodyPruning": true
+                  },
+                  "request": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/block/hash/:id",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "block",
+                        "hash",
+                        ":id"
+                      ],
+                      "variable": [
+                        {
+                          "id": "2214d484-d242-46a7-9850-07bd4e468b79",
+                          "key": "id",
+                          "value": "<string>",
+                          "description": "(Required) Block independent hash (indep_hash, Base64URL encoded)"
+                        }
+                      ]
+                    },
+                    "description": "Retrieve a full block object by its independent hash (indep_hash). Include the header X-Block-Format: 2 to request the v2 block format.\n"
+                  },
+                  "response": [
+                    {
+                      "id": "8cc77c83-70b0-49dd-9bd8-9d44cd3ec18c",
+                      "name": "Block returned",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "application/json"
+                          }
+                        ],
+                        "url": {
+                          "raw": "{{baseUrl}}/block/hash/:id",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "block",
+                            "hash",
+                            ":id"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "_postman_previewlanguage": "json",
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "application/json"
+                        }
+                      ],
+                      "cookie": [],
+                      "responseTime": null,
+                      "body": "{\n  \"nonce\": \"<string>\",\n  \"previous_block\": \"<string>\",\n  \"timestamp\": \"<integer>\",\n  \"diff\": \"<string>\",\n  \"height\": \"<integer>\",\n  \"hash\": \"<string>\",\n  \"indep_hash\": \"<string>\",\n  \"txs\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"wallet_list\": \"<string>\",\n  \"reward_addr\": \"<string>\",\n  \"reward_pool\": \"<string>\",\n  \"weave_size\": \"<string>\",\n  \"block_size\": \"<string>\",\n  \"cumulative_diff\": \"<string>\",\n  \"hash_list_merkle\": \"<string>\",\n  \"poa\": {\n    \"option\": \"<string>\",\n    \"tx_path\": \"<string>\",\n    \"data_path\": \"<string>\",\n    \"chunk\": \"<string>\"\n  }\n}",
+                      "createdAt": "2026-07-28T01:04:59.000Z",
+                      "updatedAt": "2026-07-28T01:04:59.000Z",
+                      "uid": "35240-8cc77c83-70b0-49dd-9bd8-9d44cd3ec18c"
+                    },
+                    {
+                      "id": "a2ae7136-5ddf-433e-8913-c9983210e8ea",
+                      "name": "Block not found",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                          "raw": "{{baseUrl}}/block/hash/:id",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "block",
+                            "hash",
+                            ":id"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "Not Found",
+                      "code": 404,
+                      "_postman_previewlanguage": "text",
+                      "header": [],
+                      "cookie": [],
+                      "responseTime": null,
+                      "body": null,
+                      "createdAt": "2026-07-28T01:04:59.000Z",
+                      "updatedAt": "2026-07-28T01:04:59.000Z",
+                      "uid": "35240-a2ae7136-5ddf-433e-8913-c9983210e8ea"
+                    }
+                  ],
+                  "createdAt": "2026-07-28T01:04:59.000Z",
+                  "updatedAt": "2026-07-28T01:04:59.000Z",
+                  "uid": "35240-dd037e3b-36fd-4d7c-a0ac-beb89b36bb36"
+                }
+              ],
+              "id": "d870bf54-9bcc-4197-9300-b8452d9d7f6b",
+              "createdAt": "2026-07-28T01:04:59.000Z",
+              "updatedAt": "2026-07-28T01:04:59.000Z",
+              "uid": "35240-d870bf54-9bcc-4197-9300-b8452d9d7f6b"
+            }
+          ],
+          "id": "34350221-a8c3-43fd-b041-27d6a29bf2a2",
+          "createdAt": "2026-07-28T01:04:59.000Z",
+          "updatedAt": "2026-07-28T01:04:59.000Z",
+          "uid": "35240-34350221-a8c3-43fd-b041-27d6a29bf2a2"
+        },
+        {
+          "name": "height",
+          "item": [
+            {
+              "name": "{height}",
+              "item": [
+                {
+                  "name": "Get block by height",
+                  "id": "fea7daeb-89bd-4df1-b3b9-626024b5389f",
+                  "protocolProfileBehavior": {
+                    "disableBodyPruning": true
+                  },
+                  "request": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/block/height/:height",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "block",
+                        "height",
+                        ":height"
+                      ],
+                      "variable": [
+                        {
+                          "id": "09fc84d3-1b19-4c28-8209-c6b924d91d63",
+                          "key": "height",
+                          "value": "<integer>",
+                          "description": "(Required) Block height (block number, 0-indexed)"
+                        }
+                      ]
+                    },
+                    "description": "Retrieve a full block object by its block height (block number). Include the header X-Block-Format: 2 to request the v2 block format.\n"
+                  },
+                  "response": [
+                    {
+                      "id": "c0e4df69-4aa0-4fa5-ad44-0a2d9cb50a48",
+                      "name": "Block returned",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "application/json"
+                          }
+                        ],
+                        "url": {
+                          "raw": "{{baseUrl}}/block/height/:height",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "block",
+                            "height",
+                            ":height"
+                          ],
+                          "variable": [
+                            {
+                              "key": "height"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "_postman_previewlanguage": "json",
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "application/json"
+                        }
+                      ],
+                      "cookie": [],
+                      "responseTime": null,
+                      "body": "{\n  \"nonce\": \"<string>\",\n  \"previous_block\": \"<string>\",\n  \"timestamp\": \"<integer>\",\n  \"diff\": \"<string>\",\n  \"height\": \"<integer>\",\n  \"hash\": \"<string>\",\n  \"indep_hash\": \"<string>\",\n  \"txs\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"wallet_list\": \"<string>\",\n  \"reward_addr\": \"<string>\",\n  \"reward_pool\": \"<string>\",\n  \"weave_size\": \"<string>\",\n  \"block_size\": \"<string>\",\n  \"cumulative_diff\": \"<string>\",\n  \"hash_list_merkle\": \"<string>\",\n  \"poa\": {\n    \"option\": \"<string>\",\n    \"tx_path\": \"<string>\",\n    \"data_path\": \"<string>\",\n    \"chunk\": \"<string>\"\n  }\n}",
+                      "createdAt": "2026-07-28T01:04:59.000Z",
+                      "updatedAt": "2026-07-28T01:04:59.000Z",
+                      "uid": "35240-c0e4df69-4aa0-4fa5-ad44-0a2d9cb50a48"
+                    },
+                    {
+                      "id": "225d5515-d807-4705-b707-93dd25969978",
+                      "name": "Block not found",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                          "raw": "{{baseUrl}}/block/height/:height",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "block",
+                            "height",
+                            ":height"
+                          ],
+                          "variable": [
+                            {
+                              "key": "height"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "Not Found",
+                      "code": 404,
+                      "_postman_previewlanguage": "text",
+                      "header": [],
+                      "cookie": [],
+                      "responseTime": null,
+                      "body": null,
+                      "createdAt": "2026-07-28T01:04:59.000Z",
+                      "updatedAt": "2026-07-28T01:04:59.000Z",
+                      "uid": "35240-225d5515-d807-4705-b707-93dd25969978"
+                    }
+                  ],
+                  "createdAt": "2026-07-28T01:04:59.000Z",
+                  "updatedAt": "2026-07-28T01:04:59.000Z",
+                  "uid": "35240-fea7daeb-89bd-4df1-b3b9-626024b5389f"
+                }
+              ],
+              "id": "b136e989-298e-487b-8ec2-f7c94984b6aa",
+              "createdAt": "2026-07-28T01:04:59.000Z",
+              "updatedAt": "2026-07-28T01:04:59.000Z",
+              "uid": "35240-b136e989-298e-487b-8ec2-f7c94984b6aa"
+            }
+          ],
+          "id": "6a44cc3b-2979-4ff9-8abc-a580fb155151",
+          "createdAt": "2026-07-28T01:04:59.000Z",
+          "updatedAt": "2026-07-28T01:04:59.000Z",
+          "uid": "35240-6a44cc3b-2979-4ff9-8abc-a580fb155151"
+        }
+      ],
+      "id": "709a79af-9e42-4728-b640-92b8881c0f4a",
+      "createdAt": "2026-07-28T01:04:59.000Z",
+      "updatedAt": "2026-07-28T01:04:59.000Z",
+      "uid": "35240-709a79af-9e42-4728-b640-92b8881c0f4a"
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://arweave.net"
+    }
+  ]
+}

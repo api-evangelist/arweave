@@ -1,0 +1,1675 @@
+{
+  "info": {
+    "_postman_id": "6a423da3-f6cc-4b54-8fbe-8652e4c54ada",
+    "name": "Arweave HTTP Node Transactions API",
+    "description": "The core Arweave node REST API for submitting and retrieving transactions, uploading data chunks, querying wallet balances, fetching blocks, and inspecting network state. Requests target any Arweave node on port 1984 (default gateway arweave.net). Amounts are denominated in winstons (1 AR = 10^12 winstons).\n\n\nContact Support:\n Name: Arweave Team\n Email: team@arweave.org",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "createdAt": "2026-07-28T01:05:01.000Z",
+    "updatedAt": "2026-07-28T01:05:01.000Z",
+    "lastUpdatedBy": "35240",
+    "uid": "35240-6a423da3-f6cc-4b54-8fbe-8652e4c54ada"
+  },
+  "item": [
+    {
+      "name": "tx",
+      "item": [
+        {
+          "name": "{id}",
+          "item": [
+            {
+              "name": "status",
+              "item": [
+                {
+                  "name": "Get transaction confirmation status",
+                  "id": "577e8b78-609c-4e09-9b0b-589fbc175cbf",
+                  "protocolProfileBehavior": {
+                    "disableBodyPruning": true
+                  },
+                  "request": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/tx/:id/status",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "tx",
+                        ":id",
+                        "status"
+                      ],
+                      "variable": [
+                        {
+                          "id": "86554fb3-2815-40d4-8d5f-8f6b7efe4e0b",
+                          "key": "id",
+                          "value": "<string>",
+                          "description": "(Required) Transaction ID (Base64URL encoded SHA-256 of signature)"
+                        }
+                      ]
+                    },
+                    "description": "Returns the confirmation status of a transaction including the block height it was mined into, the block hash, and the number of confirmations.\n"
+                  },
+                  "response": [
+                    {
+                      "id": "5ae7d4b3-fa81-4cf7-9dcb-60d8ae80de5a",
+                      "name": "Transaction status returned",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "application/json"
+                          }
+                        ],
+                        "url": {
+                          "raw": "{{baseUrl}}/tx/:id/status",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "tx",
+                            ":id",
+                            "status"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "_postman_previewlanguage": "json",
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "application/json"
+                        }
+                      ],
+                      "cookie": [],
+                      "responseTime": null,
+                      "body": "{\n  \"block_height\": \"<integer>\",\n  \"block_indep_hash\": \"<string>\",\n  \"number_of_confirmations\": \"<integer>\"\n}",
+                      "createdAt": "2026-07-28T01:05:02.000Z",
+                      "updatedAt": "2026-07-28T01:05:02.000Z",
+                      "uid": "35240-5ae7d4b3-fa81-4cf7-9dcb-60d8ae80de5a"
+                    },
+                    {
+                      "id": "1cfa4d01-ba56-483f-a75e-0806c3ddc45a",
+                      "name": "Transaction not found",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                          "raw": "{{baseUrl}}/tx/:id/status",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "tx",
+                            ":id",
+                            "status"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "Not Found",
+                      "code": 404,
+                      "_postman_previewlanguage": "text",
+                      "header": [],
+                      "cookie": [],
+                      "responseTime": null,
+                      "body": null,
+                      "createdAt": "2026-07-28T01:05:02.000Z",
+                      "updatedAt": "2026-07-28T01:05:02.000Z",
+                      "uid": "35240-1cfa4d01-ba56-483f-a75e-0806c3ddc45a"
+                    }
+                  ],
+                  "createdAt": "2026-07-28T01:05:02.000Z",
+                  "updatedAt": "2026-07-28T01:05:02.000Z",
+                  "uid": "35240-577e8b78-609c-4e09-9b0b-589fbc175cbf"
+                }
+              ],
+              "id": "3bd1cbcd-8aed-4d46-adb1-43a3dc9732b3",
+              "createdAt": "2026-07-28T01:05:01.000Z",
+              "updatedAt": "2026-07-28T01:05:01.000Z",
+              "uid": "35240-3bd1cbcd-8aed-4d46-adb1-43a3dc9732b3"
+            },
+            {
+              "name": "{field}",
+              "item": [
+                {
+                  "name": "Get a specific transaction field",
+                  "id": "21ef640b-df30-4c53-8ede-302fadaba936",
+                  "protocolProfileBehavior": {
+                    "disableBodyPruning": true
+                  },
+                  "request": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "text/plain"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/tx/:id/:field",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "tx",
+                        ":id",
+                        ":field"
+                      ],
+                      "variable": [
+                        {
+                          "id": "63b0036c-486d-4646-a5c2-c716c5665c99",
+                          "key": "id",
+                          "value": "<string>",
+                          "description": "(Required) Transaction ID (Base64URL encoded SHA-256 of signature)"
+                        },
+                        {
+                          "id": "687933e9-cf64-4b62-a69a-90133c2ccb6c",
+                          "key": "field",
+                          "value": "quantity",
+                          "description": "(Required) The transaction field to retrieve"
+                        }
+                      ]
+                    },
+                    "description": "Fetch a single field from a transaction. Valid fields are: id, last_tx, owner, tags, target, quantity, data, data_root, data_size, reward, signature.\n"
+                  },
+                  "response": [
+                    {
+                      "id": "f79c0de2-b1e4-4175-b034-30263cc3e866",
+                      "name": "Field value returned",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "text/plain"
+                          }
+                        ],
+                        "url": {
+                          "raw": "{{baseUrl}}/tx/:id/:field",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "tx",
+                            ":id",
+                            ":field"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id"
+                            },
+                            {
+                              "key": "field"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "_postman_previewlanguage": "text",
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "text/plain"
+                        }
+                      ],
+                      "cookie": [],
+                      "responseTime": null,
+                      "body": "<string>",
+                      "createdAt": "2026-07-28T01:05:02.000Z",
+                      "updatedAt": "2026-07-28T01:05:02.000Z",
+                      "uid": "35240-f79c0de2-b1e4-4175-b034-30263cc3e866"
+                    },
+                    {
+                      "id": "706ca511-5b87-4989-b6b2-5d0f5abaec71",
+                      "name": "Transaction is pending",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                          "raw": "{{baseUrl}}/tx/:id/:field",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "tx",
+                            ":id",
+                            ":field"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id"
+                            },
+                            {
+                              "key": "field"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "Accepted",
+                      "code": 202,
+                      "_postman_previewlanguage": "text",
+                      "header": [],
+                      "cookie": [],
+                      "responseTime": null,
+                      "body": null,
+                      "createdAt": "2026-07-28T01:05:02.000Z",
+                      "updatedAt": "2026-07-28T01:05:02.000Z",
+                      "uid": "35240-706ca511-5b87-4989-b6b2-5d0f5abaec71"
+                    },
+                    {
+                      "id": "2d6092f4-2363-4869-a9b8-1825d8533e8b",
+                      "name": "Invalid field name or request",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                          "raw": "{{baseUrl}}/tx/:id/:field",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "tx",
+                            ":id",
+                            ":field"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id"
+                            },
+                            {
+                              "key": "field"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "Bad Request",
+                      "code": 400,
+                      "_postman_previewlanguage": "text",
+                      "header": [],
+                      "cookie": [],
+                      "responseTime": null,
+                      "body": null,
+                      "createdAt": "2026-07-28T01:05:02.000Z",
+                      "updatedAt": "2026-07-28T01:05:02.000Z",
+                      "uid": "35240-2d6092f4-2363-4869-a9b8-1825d8533e8b"
+                    },
+                    {
+                      "id": "eb7094cf-6d93-412c-8d8c-1c1162c45228",
+                      "name": "Transaction not found",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                          "raw": "{{baseUrl}}/tx/:id/:field",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "tx",
+                            ":id",
+                            ":field"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id"
+                            },
+                            {
+                              "key": "field"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "Not Found",
+                      "code": 404,
+                      "_postman_previewlanguage": "text",
+                      "header": [],
+                      "cookie": [],
+                      "responseTime": null,
+                      "body": null,
+                      "createdAt": "2026-07-28T01:05:02.000Z",
+                      "updatedAt": "2026-07-28T01:05:02.000Z",
+                      "uid": "35240-eb7094cf-6d93-412c-8d8c-1c1162c45228"
+                    }
+                  ],
+                  "createdAt": "2026-07-28T01:05:02.000Z",
+                  "updatedAt": "2026-07-28T01:05:02.000Z",
+                  "uid": "35240-21ef640b-df30-4c53-8ede-302fadaba936"
+                }
+              ],
+              "id": "4aa1a5a3-b414-4ae6-8acb-0f3821ddc90b",
+              "createdAt": "2026-07-28T01:05:01.000Z",
+              "updatedAt": "2026-07-28T01:05:01.000Z",
+              "uid": "35240-4aa1a5a3-b414-4ae6-8acb-0f3821ddc90b"
+            },
+            {
+              "name": "data",
+              "item": [
+                {
+                  "name": "Get transaction data",
+                  "id": "ad2976b3-60bb-4e58-92f3-1a4c622353bf",
+                  "protocolProfileBehavior": {
+                    "disableBodyPruning": true
+                  },
+                  "request": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/octet-stream"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/tx/:id/data",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "tx",
+                        ":id",
+                        "data"
+                      ],
+                      "variable": [
+                        {
+                          "id": "1dcdb031-6f15-4fea-ace7-569585647bf6",
+                          "key": "id",
+                          "value": "<string>",
+                          "description": "(Required) Transaction ID (Base64URL encoded SHA-256 of signature)"
+                        }
+                      ]
+                    },
+                    "description": "Download the data payload associated with a transaction. Returns the Base64URL decoded data with the appropriate Content-Type header based on the transaction's Content-Type tag.\n"
+                  },
+                  "response": [
+                    {
+                      "id": "56f10af4-caf7-4cb9-adec-96b1911f9d44",
+                      "name": "Transaction data returned",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "application/octet-stream"
+                          }
+                        ],
+                        "url": {
+                          "raw": "{{baseUrl}}/tx/:id/data",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "tx",
+                            ":id",
+                            "data"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "_postman_previewlanguage": "text",
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "application/octet-stream"
+                        }
+                      ],
+                      "cookie": [],
+                      "responseTime": null,
+                      "body": "<binary>",
+                      "createdAt": "2026-07-28T01:05:02.000Z",
+                      "updatedAt": "2026-07-28T01:05:02.000Z",
+                      "uid": "35240-56f10af4-caf7-4cb9-adec-96b1911f9d44"
+                    },
+                    {
+                      "id": "ee735e61-a53e-4fcb-8d2c-86db134745ef",
+                      "name": "Transaction is pending",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                          "raw": "{{baseUrl}}/tx/:id/data",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "tx",
+                            ":id",
+                            "data"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "Accepted",
+                      "code": 202,
+                      "_postman_previewlanguage": "text",
+                      "header": [],
+                      "cookie": [],
+                      "responseTime": null,
+                      "body": null,
+                      "createdAt": "2026-07-28T01:05:02.000Z",
+                      "updatedAt": "2026-07-28T01:05:02.000Z",
+                      "uid": "35240-ee735e61-a53e-4fcb-8d2c-86db134745ef"
+                    },
+                    {
+                      "id": "c700f6a8-4517-4898-a4c1-35d75163f2fc",
+                      "name": "Invalid request",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                          "raw": "{{baseUrl}}/tx/:id/data",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "tx",
+                            ":id",
+                            "data"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "Bad Request",
+                      "code": 400,
+                      "_postman_previewlanguage": "text",
+                      "header": [],
+                      "cookie": [],
+                      "responseTime": null,
+                      "body": null,
+                      "createdAt": "2026-07-28T01:05:02.000Z",
+                      "updatedAt": "2026-07-28T01:05:02.000Z",
+                      "uid": "35240-c700f6a8-4517-4898-a4c1-35d75163f2fc"
+                    },
+                    {
+                      "id": "994759d8-64e4-4b22-b11e-e266358b99de",
+                      "name": "Transaction not found",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                          "raw": "{{baseUrl}}/tx/:id/data",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "tx",
+                            ":id",
+                            "data"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "Not Found",
+                      "code": 404,
+                      "_postman_previewlanguage": "text",
+                      "header": [],
+                      "cookie": [],
+                      "responseTime": null,
+                      "body": null,
+                      "createdAt": "2026-07-28T01:05:02.000Z",
+                      "updatedAt": "2026-07-28T01:05:02.000Z",
+                      "uid": "35240-994759d8-64e4-4b22-b11e-e266358b99de"
+                    },
+                    {
+                      "id": "d715c0e6-7092-4d7d-881f-7447e8e95b07",
+                      "name": "Data not available",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                          "raw": "{{baseUrl}}/tx/:id/data",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "tx",
+                            ":id",
+                            "data"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "Service Unavailable",
+                      "code": 503,
+                      "_postman_previewlanguage": "text",
+                      "header": [],
+                      "cookie": [],
+                      "responseTime": null,
+                      "body": null,
+                      "createdAt": "2026-07-28T01:05:02.000Z",
+                      "updatedAt": "2026-07-28T01:05:02.000Z",
+                      "uid": "35240-d715c0e6-7092-4d7d-881f-7447e8e95b07"
+                    }
+                  ],
+                  "createdAt": "2026-07-28T01:05:02.000Z",
+                  "updatedAt": "2026-07-28T01:05:02.000Z",
+                  "uid": "35240-ad2976b3-60bb-4e58-92f3-1a4c622353bf"
+                }
+              ],
+              "id": "a49a7693-a8df-4a9b-99c6-450be26c921e",
+              "createdAt": "2026-07-28T01:05:01.000Z",
+              "updatedAt": "2026-07-28T01:05:01.000Z",
+              "uid": "35240-a49a7693-a8df-4a9b-99c6-450be26c921e"
+            },
+            {
+              "name": "offset",
+              "item": [
+                {
+                  "name": "Get transaction offset and size",
+                  "id": "4c68e59c-ca15-446d-9ff0-100a68e9936c",
+                  "protocolProfileBehavior": {
+                    "disableBodyPruning": true
+                  },
+                  "request": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/tx/:id/offset",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "tx",
+                        ":id",
+                        "offset"
+                      ],
+                      "variable": [
+                        {
+                          "id": "81824172-7155-4588-83cb-d58bd829cc9f",
+                          "key": "id",
+                          "value": "<string>",
+                          "description": "(Required) Transaction ID (Base64URL encoded SHA-256 of signature)"
+                        }
+                      ]
+                    },
+                    "description": "Returns the byte offset of a transaction's data within the Arweave weave along with the data size. Used to retrieve specific chunks.\n"
+                  },
+                  "response": [
+                    {
+                      "id": "1b04263d-7514-49dc-bb63-688729a0a79e",
+                      "name": "Offset and size returned",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "application/json"
+                          }
+                        ],
+                        "url": {
+                          "raw": "{{baseUrl}}/tx/:id/offset",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "tx",
+                            ":id",
+                            "offset"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "_postman_previewlanguage": "json",
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "application/json"
+                        }
+                      ],
+                      "cookie": [],
+                      "responseTime": null,
+                      "body": "{\n  \"offset\": \"<string>\",\n  \"size\": \"<string>\"\n}",
+                      "createdAt": "2026-07-28T01:05:02.000Z",
+                      "updatedAt": "2026-07-28T01:05:02.000Z",
+                      "uid": "35240-1b04263d-7514-49dc-bb63-688729a0a79e"
+                    },
+                    {
+                      "id": "629defac-2636-436f-a8bb-2b02ff1eac53",
+                      "name": "Invalid request",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                          "raw": "{{baseUrl}}/tx/:id/offset",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "tx",
+                            ":id",
+                            "offset"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "Bad Request",
+                      "code": 400,
+                      "_postman_previewlanguage": "text",
+                      "header": [],
+                      "cookie": [],
+                      "responseTime": null,
+                      "body": null,
+                      "createdAt": "2026-07-28T01:05:02.000Z",
+                      "updatedAt": "2026-07-28T01:05:02.000Z",
+                      "uid": "35240-629defac-2636-436f-a8bb-2b02ff1eac53"
+                    },
+                    {
+                      "id": "5514d1e3-1b60-4899-af34-88b9e4f181a1",
+                      "name": "Service unavailable",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                          "raw": "{{baseUrl}}/tx/:id/offset",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "tx",
+                            ":id",
+                            "offset"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "Service Unavailable",
+                      "code": 503,
+                      "_postman_previewlanguage": "text",
+                      "header": [],
+                      "cookie": [],
+                      "responseTime": null,
+                      "body": null,
+                      "createdAt": "2026-07-28T01:05:02.000Z",
+                      "updatedAt": "2026-07-28T01:05:02.000Z",
+                      "uid": "35240-5514d1e3-1b60-4899-af34-88b9e4f181a1"
+                    }
+                  ],
+                  "createdAt": "2026-07-28T01:05:02.000Z",
+                  "updatedAt": "2026-07-28T01:05:02.000Z",
+                  "uid": "35240-4c68e59c-ca15-446d-9ff0-100a68e9936c"
+                }
+              ],
+              "id": "9c162bbf-5e65-419e-a577-9653a4756bbd",
+              "createdAt": "2026-07-28T01:05:01.000Z",
+              "updatedAt": "2026-07-28T01:05:01.000Z",
+              "uid": "35240-9c162bbf-5e65-419e-a577-9653a4756bbd"
+            },
+            {
+              "name": "data.{extension}",
+              "item": [
+                {
+                  "name": "Get transaction data with MIME type hint",
+                  "id": "0b6d3321-d6cf-4fc1-8db1-8a178400a500",
+                  "protocolProfileBehavior": {
+                    "disableBodyPruning": true
+                  },
+                  "request": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/octet-stream"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/tx/:id/data.{{extension}}",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "tx",
+                        ":id",
+                        "data.{{extension}}"
+                      ],
+                      "variable": [
+                        {
+                          "id": "bbedafc4-c3bf-4b79-b26e-4eac22be310d",
+                          "key": "id",
+                          "value": "<string>",
+                          "description": "(Required) Transaction ID (Base64URL encoded SHA-256 of signature)"
+                        }
+                      ]
+                    },
+                    "description": "Download transaction data with the response Content-Type determined by the file extension. For example, /tx/{id}/data.html returns the data with Content-Type text/html.\n"
+                  },
+                  "response": [
+                    {
+                      "id": "9aa28109-9366-4d99-ba8b-64b48fd99bd0",
+                      "name": "Transaction data returned with inferred Content-Type",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "application/octet-stream"
+                          }
+                        ],
+                        "url": {
+                          "raw": "{{baseUrl}}/tx/:id/data.{{extension}}",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "tx",
+                            ":id",
+                            "data.{{extension}}"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "_postman_previewlanguage": "text",
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "application/octet-stream"
+                        }
+                      ],
+                      "cookie": [],
+                      "responseTime": null,
+                      "body": "<binary>",
+                      "createdAt": "2026-07-28T01:05:02.000Z",
+                      "updatedAt": "2026-07-28T01:05:02.000Z",
+                      "uid": "35240-9aa28109-9366-4d99-ba8b-64b48fd99bd0"
+                    },
+                    {
+                      "id": "a505d194-ee7f-4cf5-9739-547a4127c56b",
+                      "name": "Transaction not found",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                          "raw": "{{baseUrl}}/tx/:id/data.{{extension}}",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "tx",
+                            ":id",
+                            "data.{{extension}}"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "Not Found",
+                      "code": 404,
+                      "_postman_previewlanguage": "text",
+                      "header": [],
+                      "cookie": [],
+                      "responseTime": null,
+                      "body": null,
+                      "createdAt": "2026-07-28T01:05:02.000Z",
+                      "updatedAt": "2026-07-28T01:05:02.000Z",
+                      "uid": "35240-a505d194-ee7f-4cf5-9739-547a4127c56b"
+                    }
+                  ],
+                  "createdAt": "2026-07-28T01:05:02.000Z",
+                  "updatedAt": "2026-07-28T01:05:02.000Z",
+                  "uid": "35240-0b6d3321-d6cf-4fc1-8db1-8a178400a500"
+                }
+              ],
+              "id": "a210ba64-f03e-43a2-844d-fa215a763153",
+              "createdAt": "2026-07-28T01:05:01.000Z",
+              "updatedAt": "2026-07-28T01:05:01.000Z",
+              "uid": "35240-a210ba64-f03e-43a2-844d-fa215a763153"
+            },
+            {
+              "name": "Get transaction by ID",
+              "id": "61218204-5572-422f-81d5-7c86e23ab79e",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/tx/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tx",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "id": "ebf066a2-992e-4db2-91c5-ad0f3ac9a023",
+                      "key": "id",
+                      "value": "<string>",
+                      "description": "(Required) Transaction ID (Base64URL encoded SHA-256 of signature)"
+                    }
+                  ]
+                },
+                "description": "Retrieve a full transaction object by its transaction ID. Returns 202 if the transaction is pending (not yet mined into a block).\n"
+              },
+              "response": [
+                {
+                  "id": "09ece229-849f-4945-bc79-baa21d9c31f1",
+                  "name": "Transaction found",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/tx/:id",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "tx",
+                        ":id"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "cookie": [],
+                  "responseTime": null,
+                  "body": "{\n  \"format\": 2,\n  \"id\": \"<string>\",\n  \"last_tx\": \"<string>\",\n  \"owner\": \"<string>\",\n  \"reward\": \"<string>\",\n  \"signature\": \"<string>\",\n  \"tags\": [\n    {\n      \"name\": \"<string>\",\n      \"value\": \"<string>\"\n    },\n    {\n      \"name\": \"<string>\",\n      \"value\": \"<string>\"\n    }\n  ],\n  \"target\": \"<string>\",\n  \"quantity\": \"<string>\",\n  \"data_root\": \"<string>\",\n  \"data_size\": \"<string>\",\n  \"data\": \"<string>\"\n}",
+                  "createdAt": "2026-07-28T01:05:02.000Z",
+                  "updatedAt": "2026-07-28T01:05:02.000Z",
+                  "uid": "35240-09ece229-849f-4945-bc79-baa21d9c31f1"
+                },
+                {
+                  "id": "4c371ce5-3ae8-4d3e-ad44-65d2b127ee3d",
+                  "name": "Transaction is pending (not yet mined)",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "{{baseUrl}}/tx/:id",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "tx",
+                        ":id"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "Accepted",
+                  "code": 202,
+                  "_postman_previewlanguage": "text",
+                  "header": [],
+                  "cookie": [],
+                  "responseTime": null,
+                  "body": null,
+                  "createdAt": "2026-07-28T01:05:02.000Z",
+                  "updatedAt": "2026-07-28T01:05:02.000Z",
+                  "uid": "35240-4c371ce5-3ae8-4d3e-ad44-65d2b127ee3d"
+                },
+                {
+                  "id": "b9214a9a-4aa3-4718-bac3-7104921d334d",
+                  "name": "Transaction not found",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "{{baseUrl}}/tx/:id",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "tx",
+                        ":id"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "Not Found",
+                  "code": 404,
+                  "_postman_previewlanguage": "text",
+                  "header": [],
+                  "cookie": [],
+                  "responseTime": null,
+                  "body": null,
+                  "createdAt": "2026-07-28T01:05:02.000Z",
+                  "updatedAt": "2026-07-28T01:05:02.000Z",
+                  "uid": "35240-b9214a9a-4aa3-4718-bac3-7104921d334d"
+                }
+              ],
+              "createdAt": "2026-07-28T01:05:02.000Z",
+              "updatedAt": "2026-07-28T01:05:02.000Z",
+              "uid": "35240-61218204-5572-422f-81d5-7c86e23ab79e"
+            }
+          ],
+          "id": "55954d0f-25a2-4831-a157-62478e3986f7",
+          "createdAt": "2026-07-28T01:05:01.000Z",
+          "updatedAt": "2026-07-28T01:05:01.000Z",
+          "uid": "35240-55954d0f-25a2-4831-a157-62478e3986f7"
+        },
+        {
+          "name": "Submit a transaction",
+          "id": "20b454ab-ca0b-4599-8912-dd0a4bdb4110",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "text/plain"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"format\": 2,\n  \"id\": \"<string>\",\n  \"last_tx\": \"<string>\",\n  \"owner\": \"<string>\",\n  \"reward\": \"<string>\",\n  \"signature\": \"<string>\",\n  \"tags\": [\n    {\n      \"name\": \"<string>\",\n      \"value\": \"<string>\"\n    },\n    {\n      \"name\": \"<string>\",\n      \"value\": \"<string>\"\n    }\n  ],\n  \"target\": \"<string>\",\n  \"quantity\": \"<string>\",\n  \"data_root\": \"<string>\",\n  \"data_size\": \"<string>\",\n  \"data\": \"<string>\"\n}",
+              "options": {
+                "raw": {
+                  "headerFamily": "json",
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tx",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tx"
+              ]
+            },
+            "description": "Submit a new signed transaction to the Arweave network. Transactions can transfer AR tokens, store data, or both. Use format=2 for v2 transactions which support large data via chunked uploads. The reward field must be in winstons obtained from the /price endpoint.\n"
+          },
+          "response": [
+            {
+              "id": "617f506d-3221-4583-b2fb-5df5d291b386",
+              "name": "Transaction accepted",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "text/plain"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"format\": 2,\n  \"id\": \"<string>\",\n  \"last_tx\": \"<string>\",\n  \"owner\": \"<string>\",\n  \"reward\": \"<string>\",\n  \"signature\": \"<string>\",\n  \"tags\": [\n    {\n      \"name\": \"<string>\",\n      \"value\": \"<string>\"\n    },\n    {\n      \"name\": \"<string>\",\n      \"value\": \"<string>\"\n    }\n  ],\n  \"target\": \"<string>\",\n  \"quantity\": \"<string>\",\n  \"data_root\": \"<string>\",\n  \"data_size\": \"<string>\",\n  \"data\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/tx",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tx"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "text",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "cookie": [],
+              "responseTime": null,
+              "body": "<string>",
+              "createdAt": "2026-07-28T01:05:02.000Z",
+              "updatedAt": "2026-07-28T01:05:02.000Z",
+              "uid": "35240-617f506d-3221-4583-b2fb-5df5d291b386"
+            },
+            {
+              "id": "194e91aa-70d5-49f3-b71b-77dc7338c4a9",
+              "name": "Transaction already processed",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"format\": 2,\n  \"id\": \"<string>\",\n  \"last_tx\": \"<string>\",\n  \"owner\": \"<string>\",\n  \"reward\": \"<string>\",\n  \"signature\": \"<string>\",\n  \"tags\": [\n    {\n      \"name\": \"<string>\",\n      \"value\": \"<string>\"\n    },\n    {\n      \"name\": \"<string>\",\n      \"value\": \"<string>\"\n    }\n  ],\n  \"target\": \"<string>\",\n  \"quantity\": \"<string>\",\n  \"data_root\": \"<string>\",\n  \"data_size\": \"<string>\",\n  \"data\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/tx",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tx"
+                  ]
+                }
+              },
+              "status": "Already Reported (WebDAV) (RFC 5842)",
+              "code": 208,
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "cookie": [],
+              "responseTime": null,
+              "body": null,
+              "createdAt": "2026-07-28T01:05:02.000Z",
+              "updatedAt": "2026-07-28T01:05:02.000Z",
+              "uid": "35240-194e91aa-70d5-49f3-b71b-77dc7338c4a9"
+            },
+            {
+              "id": "722ec285-20dc-40a9-9dc4-a888e73d4622",
+              "name": "Verification failed or invalid transaction format",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"format\": 2,\n  \"id\": \"<string>\",\n  \"last_tx\": \"<string>\",\n  \"owner\": \"<string>\",\n  \"reward\": \"<string>\",\n  \"signature\": \"<string>\",\n  \"tags\": [\n    {\n      \"name\": \"<string>\",\n      \"value\": \"<string>\"\n    },\n    {\n      \"name\": \"<string>\",\n      \"value\": \"<string>\"\n    }\n  ],\n  \"target\": \"<string>\",\n  \"quantity\": \"<string>\",\n  \"data_root\": \"<string>\",\n  \"data_size\": \"<string>\",\n  \"data\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/tx",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tx"
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "cookie": [],
+              "responseTime": null,
+              "body": null,
+              "createdAt": "2026-07-28T01:05:02.000Z",
+              "updatedAt": "2026-07-28T01:05:02.000Z",
+              "uid": "35240-722ec285-20dc-40a9-9dc4-a888e73d4622"
+            },
+            {
+              "id": "54c60201-adfb-4009-8cc3-18d38262b24c",
+              "name": "Too many requests",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"format\": 2,\n  \"id\": \"<string>\",\n  \"last_tx\": \"<string>\",\n  \"owner\": \"<string>\",\n  \"reward\": \"<string>\",\n  \"signature\": \"<string>\",\n  \"tags\": [\n    {\n      \"name\": \"<string>\",\n      \"value\": \"<string>\"\n    },\n    {\n      \"name\": \"<string>\",\n      \"value\": \"<string>\"\n    }\n  ],\n  \"target\": \"<string>\",\n  \"quantity\": \"<string>\",\n  \"data_root\": \"<string>\",\n  \"data_size\": \"<string>\",\n  \"data\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/tx",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tx"
+                  ]
+                }
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "cookie": [],
+              "responseTime": null,
+              "body": null,
+              "createdAt": "2026-07-28T01:05:02.000Z",
+              "updatedAt": "2026-07-28T01:05:02.000Z",
+              "uid": "35240-54c60201-adfb-4009-8cc3-18d38262b24c"
+            },
+            {
+              "id": "7b2a3bc4-e516-42fe-b7a8-9f2d8cdd3973",
+              "name": "Service unavailable",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"format\": 2,\n  \"id\": \"<string>\",\n  \"last_tx\": \"<string>\",\n  \"owner\": \"<string>\",\n  \"reward\": \"<string>\",\n  \"signature\": \"<string>\",\n  \"tags\": [\n    {\n      \"name\": \"<string>\",\n      \"value\": \"<string>\"\n    },\n    {\n      \"name\": \"<string>\",\n      \"value\": \"<string>\"\n    }\n  ],\n  \"target\": \"<string>\",\n  \"quantity\": \"<string>\",\n  \"data_root\": \"<string>\",\n  \"data_size\": \"<string>\",\n  \"data\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/tx",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tx"
+                  ]
+                }
+              },
+              "status": "Service Unavailable",
+              "code": 503,
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "cookie": [],
+              "responseTime": null,
+              "body": null,
+              "createdAt": "2026-07-28T01:05:02.000Z",
+              "updatedAt": "2026-07-28T01:05:02.000Z",
+              "uid": "35240-7b2a3bc4-e516-42fe-b7a8-9f2d8cdd3973"
+            }
+          ],
+          "createdAt": "2026-07-28T01:05:02.000Z",
+          "updatedAt": "2026-07-28T01:05:02.000Z",
+          "uid": "35240-20b454ab-ca0b-4599-8912-dd0a4bdb4110"
+        }
+      ],
+      "id": "93b461eb-cdc6-43e6-b92e-4d1c1355a819",
+      "createdAt": "2026-07-28T01:05:01.000Z",
+      "updatedAt": "2026-07-28T01:05:01.000Z",
+      "uid": "35240-93b461eb-cdc6-43e6-b92e-4d1c1355a819"
+    },
+    {
+      "name": "{id}",
+      "item": [
+        {
+          "name": "Get decoded transaction data by ID",
+          "id": "5bb83580-51e9-4055-a603-225279b36109",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/octet-stream"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                ":id"
+              ],
+              "variable": [
+                {
+                  "id": "9e943f42-5291-4f34-a39d-762b796d568f",
+                  "key": "id",
+                  "value": "<string>",
+                  "description": "(Required) Transaction ID (Base64URL encoded)"
+                }
+              ]
+            },
+            "description": "Retrieve and return the decoded data payload for a transaction directly by its ID. This is a shorthand for /tx/{id}/data and sets the appropriate Content-Type header from the transaction's tags.\n"
+          },
+          "response": [
+            {
+              "id": "7337338d-bb70-477e-a762-1e3c31d18f6f",
+              "name": "Decoded transaction data",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/octet-stream"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "text",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/octet-stream"
+                }
+              ],
+              "cookie": [],
+              "responseTime": null,
+              "body": "<binary>",
+              "createdAt": "2026-07-28T01:05:02.000Z",
+              "updatedAt": "2026-07-28T01:05:02.000Z",
+              "uid": "35240-7337338d-bb70-477e-a762-1e3c31d18f6f"
+            },
+            {
+              "id": "c889a69b-7f99-4569-97ce-d4cf00e558f6",
+              "name": "Transaction is pending",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id"
+                    }
+                  ]
+                }
+              },
+              "status": "Accepted",
+              "code": 202,
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "cookie": [],
+              "responseTime": null,
+              "body": null,
+              "createdAt": "2026-07-28T01:05:02.000Z",
+              "updatedAt": "2026-07-28T01:05:02.000Z",
+              "uid": "35240-c889a69b-7f99-4569-97ce-d4cf00e558f6"
+            },
+            {
+              "id": "da0c6349-4e36-4dc9-85dc-c78049fb6be7",
+              "name": "Not found",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id"
+                    }
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "cookie": [],
+              "responseTime": null,
+              "body": null,
+              "createdAt": "2026-07-28T01:05:02.000Z",
+              "updatedAt": "2026-07-28T01:05:02.000Z",
+              "uid": "35240-da0c6349-4e36-4dc9-85dc-c78049fb6be7"
+            }
+          ],
+          "createdAt": "2026-07-28T01:05:02.000Z",
+          "updatedAt": "2026-07-28T01:05:02.000Z",
+          "uid": "35240-5bb83580-51e9-4055-a603-225279b36109"
+        }
+      ],
+      "id": "1ce32705-12d3-4eaa-925b-14019d90975e",
+      "createdAt": "2026-07-28T01:05:01.000Z",
+      "updatedAt": "2026-07-28T01:05:01.000Z",
+      "uid": "35240-1ce32705-12d3-4eaa-925b-14019d90975e"
+    },
+    {
+      "name": "price",
+      "item": [
+        {
+          "name": "{bytes}",
+          "item": [
+            {
+              "name": "{target}",
+              "item": [
+                {
+                  "name": "Get transaction price (data + target wallet)",
+                  "id": "a885e233-74b0-4790-803b-879d1bdb48b6",
+                  "protocolProfileBehavior": {
+                    "disableBodyPruning": true
+                  },
+                  "request": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "text/plain"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/price/:bytes/:target",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "price",
+                        ":bytes",
+                        ":target"
+                      ],
+                      "variable": [
+                        {
+                          "id": "6e341368-c560-4f65-8623-996af65b3220",
+                          "key": "bytes",
+                          "value": "<integer>",
+                          "description": "(Required) Size of data in bytes (use 0 for token-only transfers)"
+                        },
+                        {
+                          "id": "ea32e08d-325d-4858-9263-546b4b003ee0",
+                          "key": "target",
+                          "value": "<string>",
+                          "description": "(Required) Recipient wallet address (Base64URL encoded)"
+                        }
+                      ]
+                    },
+                    "description": "Calculate the minimum fee in winstons for storing the specified number of bytes and optionally sending to a target wallet address. An extra fee is included for the first transaction sent to a new wallet address.\n"
+                  },
+                  "response": [
+                    {
+                      "id": "1aa9fb52-5735-4651-95ed-85275b8ed10e",
+                      "name": "Fee in winstons returned as a numeric string",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "text/plain"
+                          }
+                        ],
+                        "url": {
+                          "raw": "{{baseUrl}}/price/:bytes/:target",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "price",
+                            ":bytes",
+                            ":target"
+                          ],
+                          "variable": [
+                            {
+                              "key": "bytes"
+                            },
+                            {
+                              "key": "target"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "_postman_previewlanguage": "text",
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "text/plain"
+                        }
+                      ],
+                      "cookie": [],
+                      "responseTime": null,
+                      "body": "<string>",
+                      "createdAt": "2026-07-28T01:05:02.000Z",
+                      "updatedAt": "2026-07-28T01:05:02.000Z",
+                      "uid": "35240-1aa9fb52-5735-4651-95ed-85275b8ed10e"
+                    }
+                  ],
+                  "createdAt": "2026-07-28T01:05:02.000Z",
+                  "updatedAt": "2026-07-28T01:05:02.000Z",
+                  "uid": "35240-a885e233-74b0-4790-803b-879d1bdb48b6"
+                }
+              ],
+              "id": "97383c66-50b6-4374-bb2a-d8ff57d089b6",
+              "createdAt": "2026-07-28T01:05:01.000Z",
+              "updatedAt": "2026-07-28T01:05:01.000Z",
+              "uid": "35240-97383c66-50b6-4374-bb2a-d8ff57d089b6"
+            },
+            {
+              "name": "Get transaction price (data only)",
+              "id": "54245627-91d8-4fc8-b153-8faf8b083b12",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "text/plain"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/price/:bytes",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "price",
+                    ":bytes"
+                  ],
+                  "variable": [
+                    {
+                      "id": "670bddc8-9d42-4915-afe5-1e5bbc168ae2",
+                      "key": "bytes",
+                      "value": "<integer>",
+                      "description": "(Required) Size of data in bytes (use 0 for token-only transfers)"
+                    }
+                  ]
+                },
+                "description": "Calculate the minimum fee in winstons required to store the specified number of bytes. Use bytes=0 to get the fee for a pure token transfer with no data.\n"
+              },
+              "response": [
+                {
+                  "id": "ef43330b-806a-4ef9-8644-4b221fc3b393",
+                  "name": "Fee in winstons returned as a numeric string",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "text/plain"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/price/:bytes",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "price",
+                        ":bytes"
+                      ],
+                      "variable": [
+                        {
+                          "key": "bytes"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "text/plain"
+                    }
+                  ],
+                  "cookie": [],
+                  "responseTime": null,
+                  "body": "<string>",
+                  "createdAt": "2026-07-28T01:05:02.000Z",
+                  "updatedAt": "2026-07-28T01:05:02.000Z",
+                  "uid": "35240-ef43330b-806a-4ef9-8644-4b221fc3b393"
+                }
+              ],
+              "createdAt": "2026-07-28T01:05:02.000Z",
+              "updatedAt": "2026-07-28T01:05:02.000Z",
+              "uid": "35240-54245627-91d8-4fc8-b153-8faf8b083b12"
+            }
+          ],
+          "id": "7a6eaa4b-0782-4c9d-bc42-5e3c5d66425d",
+          "createdAt": "2026-07-28T01:05:01.000Z",
+          "updatedAt": "2026-07-28T01:05:01.000Z",
+          "uid": "35240-7a6eaa4b-0782-4c9d-bc42-5e3c5d66425d"
+        }
+      ],
+      "id": "d47ec5bf-2169-463f-954f-0a6e7c490c94",
+      "createdAt": "2026-07-28T01:05:01.000Z",
+      "updatedAt": "2026-07-28T01:05:01.000Z",
+      "uid": "35240-d47ec5bf-2169-463f-954f-0a6e7c490c94"
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://arweave.net"
+    },
+    {
+      "key": "extension",
+      "value": "<string>"
+    }
+  ]
+}

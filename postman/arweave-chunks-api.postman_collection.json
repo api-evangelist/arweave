@@ -1,0 +1,334 @@
+{
+  "info": {
+    "_postman_id": "ff5e5dbb-7dae-4710-b3af-6564cb8ab7fe",
+    "name": "Arweave HTTP Node Chunks API",
+    "description": "The core Arweave node REST API for submitting and retrieving transactions, uploading data chunks, querying wallet balances, fetching blocks, and inspecting network state. Requests target any Arweave node on port 1984 (default gateway arweave.net). Amounts are denominated in winstons (1 AR = 10^12 winstons).\n\n\nContact Support:\n Name: Arweave Team\n Email: team@arweave.org",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "createdAt": "2026-07-28T01:04:59.000Z",
+    "updatedAt": "2026-07-28T01:04:59.000Z",
+    "lastUpdatedBy": "35240",
+    "uid": "35240-ff5e5dbb-7dae-4710-b3af-6564cb8ab7fe"
+  },
+  "item": [
+    {
+      "name": "chunk",
+      "item": [
+        {
+          "name": "{offset}",
+          "item": [
+            {
+              "name": "Download a data chunk",
+              "id": "2011f197-5128-46ab-81b3-3a0bd05ece93",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/chunk/:offset",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "chunk",
+                    ":offset"
+                  ],
+                  "variable": [
+                    {
+                      "id": "3ffabc86-a21f-4fdf-965b-b6d726e83ee9",
+                      "key": "offset",
+                      "value": "<string>",
+                      "description": "(Required) Byte offset of the chunk within the weave"
+                    }
+                  ]
+                },
+                "description": "Download a data chunk at the specified weave byte offset. Returns the chunk data along with its offset and size metadata.\n"
+              },
+              "response": [
+                {
+                  "id": "9e5787ab-3638-4919-9a84-9bc467fb8d18",
+                  "name": "Chunk data returned",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/chunk/:offset",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "chunk",
+                        ":offset"
+                      ],
+                      "variable": [
+                        {
+                          "key": "offset"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "cookie": [],
+                  "responseTime": null,
+                  "body": "{\n  \"chunk\": \"<string>\",\n  \"data_path\": \"<string>\",\n  \"tx_path\": \"<string>\"\n}",
+                  "createdAt": "2026-07-28T01:05:00.000Z",
+                  "updatedAt": "2026-07-28T01:05:00.000Z",
+                  "uid": "35240-9e5787ab-3638-4919-9a84-9bc467fb8d18"
+                },
+                {
+                  "id": "772f71e7-d2a8-40be-af35-3b4760529a04",
+                  "name": "Invalid offset",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "{{baseUrl}}/chunk/:offset",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "chunk",
+                        ":offset"
+                      ],
+                      "variable": [
+                        {
+                          "key": "offset"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "Bad Request",
+                  "code": 400,
+                  "_postman_previewlanguage": "text",
+                  "header": [],
+                  "cookie": [],
+                  "responseTime": null,
+                  "body": null,
+                  "createdAt": "2026-07-28T01:05:00.000Z",
+                  "updatedAt": "2026-07-28T01:05:00.000Z",
+                  "uid": "35240-772f71e7-d2a8-40be-af35-3b4760529a04"
+                },
+                {
+                  "id": "cf680db2-66e8-48ca-9402-28f9bd13e691",
+                  "name": "Chunk not available",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "{{baseUrl}}/chunk/:offset",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "chunk",
+                        ":offset"
+                      ],
+                      "variable": [
+                        {
+                          "key": "offset"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "Service Unavailable",
+                  "code": 503,
+                  "_postman_previewlanguage": "text",
+                  "header": [],
+                  "cookie": [],
+                  "responseTime": null,
+                  "body": null,
+                  "createdAt": "2026-07-28T01:05:00.000Z",
+                  "updatedAt": "2026-07-28T01:05:00.000Z",
+                  "uid": "35240-cf680db2-66e8-48ca-9402-28f9bd13e691"
+                }
+              ],
+              "createdAt": "2026-07-28T01:05:00.000Z",
+              "updatedAt": "2026-07-28T01:05:00.000Z",
+              "uid": "35240-2011f197-5128-46ab-81b3-3a0bd05ece93"
+            }
+          ],
+          "id": "47c1d175-8660-4911-87a8-044391082b8d",
+          "createdAt": "2026-07-28T01:05:00.000Z",
+          "updatedAt": "2026-07-28T01:05:00.000Z",
+          "uid": "35240-47c1d175-8660-4911-87a8-044391082b8d"
+        },
+        {
+          "name": "Upload a data chunk",
+          "id": "2aa7207b-9c7a-4f0b-b389-e3f661c3b9ab",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "text/plain"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data_root\": \"<string>\",\n  \"data_size\": \"<string>\",\n  \"data_path\": \"<string>\",\n  \"chunk\": \"<string>\",\n  \"offset\": \"<string>\"\n}",
+              "options": {
+                "raw": {
+                  "headerFamily": "json",
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/chunk",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "chunk"
+              ]
+            },
+            "description": "Upload a single data chunk for a v2 transaction. Chunks must be uploaded after the transaction header is submitted via POST /tx. Maximum chunk size is 256 KiB. The data_root from the transaction must be registered (transaction submitted) before chunks can be uploaded.\n"
+          },
+          "response": [
+            {
+              "id": "5511aa40-f42a-48ba-a95c-ed4725b618f3",
+              "name": "Chunk accepted",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "text/plain"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data_root\": \"<string>\",\n  \"data_size\": \"<string>\",\n  \"data_path\": \"<string>\",\n  \"chunk\": \"<string>\",\n  \"offset\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/chunk",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "chunk"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "text",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "cookie": [],
+              "responseTime": null,
+              "body": "<string>",
+              "createdAt": "2026-07-28T01:05:00.000Z",
+              "updatedAt": "2026-07-28T01:05:00.000Z",
+              "uid": "35240-5511aa40-f42a-48ba-a95c-ed4725b618f3"
+            },
+            {
+              "id": "8cd779e9-54a1-453c-b75b-a490ea2f0427",
+              "name": "Invalid chunk submission",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data_root\": \"<string>\",\n  \"data_size\": \"<string>\",\n  \"data_path\": \"<string>\",\n  \"chunk\": \"<string>\",\n  \"offset\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/chunk",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "chunk"
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "responseTime": null,
+              "body": "{\n  \"error\": \"exceeds_disk_pool_size_limit\"\n}",
+              "createdAt": "2026-07-28T01:05:00.000Z",
+              "updatedAt": "2026-07-28T01:05:00.000Z",
+              "uid": "35240-8cd779e9-54a1-453c-b75b-a490ea2f0427"
+            }
+          ],
+          "createdAt": "2026-07-28T01:05:00.000Z",
+          "updatedAt": "2026-07-28T01:05:00.000Z",
+          "uid": "35240-2aa7207b-9c7a-4f0b-b389-e3f661c3b9ab"
+        }
+      ],
+      "id": "71690e2e-b629-4ae9-8eca-2ec60f698059",
+      "createdAt": "2026-07-28T01:05:00.000Z",
+      "updatedAt": "2026-07-28T01:05:00.000Z",
+      "uid": "35240-71690e2e-b629-4ae9-8eca-2ec60f698059"
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://arweave.net"
+    }
+  ]
+}

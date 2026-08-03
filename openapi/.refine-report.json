@@ -1,0 +1,22 @@
+{
+  "provider": "arweave",
+  "sources": [
+    "openapi.yml"
+  ],
+  "outputs": [
+    "arweave-blocks-api-openapi.yml",
+    "arweave-chunks-api-openapi.yml",
+    "arweave-network-api-openapi.yml",
+    "arweave-transactions-api-openapi.yml",
+    "arweave-wallets-api-openapi.yml"
+  ],
+  "archived": [
+    "archived openapi.yml"
+  ],
+  "errors": [],
+  "warnings": [],
+  "notes": [
+    "discovered stray spec: openapi.yml"
+  ],
+  "skipped": []
+}

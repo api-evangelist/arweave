@@ -1,0 +1,294 @@
+{
+  "info": {
+    "_postman_id": "26dbe58f-fd32-4653-a16b-6f66185be3f5",
+    "name": "Arweave HTTP Node Wallets API",
+    "description": "The core Arweave node REST API for submitting and retrieving transactions, uploading data chunks, querying wallet balances, fetching blocks, and inspecting network state. Requests target any Arweave node on port 1984 (default gateway arweave.net). Amounts are denominated in winstons (1 AR = 10^12 winstons).\n\n\nContact Support:\n Name: Arweave Team\n Email: team@arweave.org",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "createdAt": "2026-07-28T01:05:02.000Z",
+    "updatedAt": "2026-07-28T01:05:02.000Z",
+    "lastUpdatedBy": "35240",
+    "uid": "35240-26dbe58f-fd32-4653-a16b-6f66185be3f5"
+  },
+  "item": [
+    {
+      "name": "wallet",
+      "item": [
+        {
+          "name": "{address}",
+          "item": [
+            {
+              "name": "balance",
+              "item": [
+                {
+                  "name": "Get wallet balance",
+                  "id": "1c023ab6-b065-43e9-b081-2febd325fbcc",
+                  "protocolProfileBehavior": {
+                    "disableBodyPruning": true
+                  },
+                  "request": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "text/plain"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/wallet/:address/balance",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "wallet",
+                        ":address",
+                        "balance"
+                      ],
+                      "variable": [
+                        {
+                          "id": "db19fbd7-090d-4203-b32d-e0d0e5fe4f7b",
+                          "key": "address",
+                          "value": "<string>",
+                          "description": "(Required) Wallet address (Base64URL encoded SHA-256 of RSA public key modulus)"
+                        }
+                      ]
+                    },
+                    "description": "Retrieve the AR balance of a wallet address in winstons. Unknown addresses return 0. Convert to AR by dividing by 10^12.\n"
+                  },
+                  "response": [
+                    {
+                      "id": "66630fb8-6f13-4b49-8b57-02e5b694b442",
+                      "name": "Balance in winstons returned as numeric string",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "text/plain"
+                          }
+                        ],
+                        "url": {
+                          "raw": "{{baseUrl}}/wallet/:address/balance",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "wallet",
+                            ":address",
+                            "balance"
+                          ],
+                          "variable": [
+                            {
+                              "key": "address"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "_postman_previewlanguage": "text",
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "text/plain"
+                        }
+                      ],
+                      "cookie": [],
+                      "responseTime": null,
+                      "body": "<string>",
+                      "createdAt": "2026-07-28T01:05:03.000Z",
+                      "updatedAt": "2026-07-28T01:05:03.000Z",
+                      "uid": "35240-66630fb8-6f13-4b49-8b57-02e5b694b442"
+                    },
+                    {
+                      "id": "1d35f3c1-43d0-4d8f-a554-01117ac05873",
+                      "name": "Invalid wallet address",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                          "raw": "{{baseUrl}}/wallet/:address/balance",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "wallet",
+                            ":address",
+                            "balance"
+                          ],
+                          "variable": [
+                            {
+                              "key": "address"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "Bad Request",
+                      "code": 400,
+                      "_postman_previewlanguage": "text",
+                      "header": [],
+                      "cookie": [],
+                      "responseTime": null,
+                      "body": null,
+                      "createdAt": "2026-07-28T01:05:03.000Z",
+                      "updatedAt": "2026-07-28T01:05:03.000Z",
+                      "uid": "35240-1d35f3c1-43d0-4d8f-a554-01117ac05873"
+                    }
+                  ],
+                  "createdAt": "2026-07-28T01:05:03.000Z",
+                  "updatedAt": "2026-07-28T01:05:03.000Z",
+                  "uid": "35240-1c023ab6-b065-43e9-b081-2febd325fbcc"
+                }
+              ],
+              "id": "e5f6ab9e-e6f5-4781-9603-61699b36ccf8",
+              "createdAt": "2026-07-28T01:05:03.000Z",
+              "updatedAt": "2026-07-28T01:05:03.000Z",
+              "uid": "35240-e5f6ab9e-e6f5-4781-9603-61699b36ccf8"
+            },
+            {
+              "name": "last_tx",
+              "item": [
+                {
+                  "name": "Get last transaction for wallet",
+                  "id": "e73f1ef0-06aa-4cb7-a87f-5d4fe4e0e479",
+                  "protocolProfileBehavior": {
+                    "disableBodyPruning": true
+                  },
+                  "request": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "text/plain"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/wallet/:address/last_tx",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "wallet",
+                        ":address",
+                        "last_tx"
+                      ],
+                      "variable": [
+                        {
+                          "id": "28a7c02d-9256-40de-a0ca-d1f2dc1e4881",
+                          "key": "address",
+                          "value": "<string>",
+                          "description": "(Required) Wallet address (Base64URL encoded SHA-256 of RSA public key modulus)"
+                        }
+                      ]
+                    },
+                    "description": "Returns the transaction ID of the most recent outgoing transaction from the given wallet address. Used to populate the last_tx field when constructing new transactions.\n"
+                  },
+                  "response": [
+                    {
+                      "id": "3144bfe2-da0b-4819-aa7c-d6d842e69be8",
+                      "name": "Last transaction ID returned",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "text/plain"
+                          }
+                        ],
+                        "url": {
+                          "raw": "{{baseUrl}}/wallet/:address/last_tx",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "wallet",
+                            ":address",
+                            "last_tx"
+                          ],
+                          "variable": [
+                            {
+                              "key": "address"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "_postman_previewlanguage": "text",
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "text/plain"
+                        }
+                      ],
+                      "cookie": [],
+                      "responseTime": null,
+                      "body": "<string>",
+                      "createdAt": "2026-07-28T01:05:03.000Z",
+                      "updatedAt": "2026-07-28T01:05:03.000Z",
+                      "uid": "35240-3144bfe2-da0b-4819-aa7c-d6d842e69be8"
+                    },
+                    {
+                      "id": "256fb3d3-d7ef-441c-8521-4bcde00f8d67",
+                      "name": "Invalid wallet address",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                          "raw": "{{baseUrl}}/wallet/:address/last_tx",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "wallet",
+                            ":address",
+                            "last_tx"
+                          ],
+                          "variable": [
+                            {
+                              "key": "address"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "Bad Request",
+                      "code": 400,
+                      "_postman_previewlanguage": "text",
+                      "header": [],
+                      "cookie": [],
+                      "responseTime": null,
+                      "body": null,
+                      "createdAt": "2026-07-28T01:05:03.000Z",
+                      "updatedAt": "2026-07-28T01:05:03.000Z",
+                      "uid": "35240-256fb3d3-d7ef-441c-8521-4bcde00f8d67"
+                    }
+                  ],
+                  "createdAt": "2026-07-28T01:05:03.000Z",
+                  "updatedAt": "2026-07-28T01:05:03.000Z",
+                  "uid": "35240-e73f1ef0-06aa-4cb7-a87f-5d4fe4e0e479"
+                }
+              ],
+              "id": "a3c7570c-46be-4e59-a8ce-1e21598d3b63",
+              "createdAt": "2026-07-28T01:05:03.000Z",
+              "updatedAt": "2026-07-28T01:05:03.000Z",
+              "uid": "35240-a3c7570c-46be-4e59-a8ce-1e21598d3b63"
+            }
+          ],
+          "id": "7460a1d8-3775-4703-b263-dc30d714f2e7",
+          "createdAt": "2026-07-28T01:05:03.000Z",
+          "updatedAt": "2026-07-28T01:05:03.000Z",
+          "uid": "35240-7460a1d8-3775-4703-b263-dc30d714f2e7"
+        }
+      ],
+      "id": "155019db-b361-4ecc-bd03-797a2b8a7d92",
+      "createdAt": "2026-07-28T01:05:03.000Z",
+      "updatedAt": "2026-07-28T01:05:03.000Z",
+      "uid": "35240-155019db-b361-4ecc-bd03-797a2b8a7d92"
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://arweave.net"
+    }
+  ]
+}

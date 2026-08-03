@@ -1,0 +1,174 @@
+{
+  "info": {
+    "_postman_id": "fe925b0d-3d3f-49e0-8be5-50de62bb5f72",
+    "name": "Arweave HTTP Node Network API",
+    "description": "The core Arweave node REST API for submitting and retrieving transactions, uploading data chunks, querying wallet balances, fetching blocks, and inspecting network state. Requests target any Arweave node on port 1984 (default gateway arweave.net). Amounts are denominated in winstons (1 AR = 10^12 winstons).\n\n\nContact Support:\n Name: Arweave Team\n Email: team@arweave.org",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "createdAt": "2026-07-28T01:05:00.000Z",
+    "updatedAt": "2026-07-28T01:05:00.000Z",
+    "lastUpdatedBy": "35240",
+    "uid": "35240-fe925b0d-3d3f-49e0-8be5-50de62bb5f72"
+  },
+  "item": [
+    {
+      "name": "info",
+      "item": [
+        {
+          "name": "Get network information",
+          "id": "9a3b1928-bc82-453a-b7a7-49c62e393e66",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/info",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "info"
+              ]
+            },
+            "description": "Returns the current network state and node information including block height, current block hash, peer count, and queue status.\n"
+          },
+          "response": [
+            {
+              "id": "10ef81dc-6815-42f5-81a1-b4bca9af57d8",
+              "name": "Network info returned successfully",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/info",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "info"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "responseTime": null,
+              "body": "{\n  \"network\": \"<string>\",\n  \"version\": \"<integer>\",\n  \"release\": \"<integer>\",\n  \"height\": \"<integer>\",\n  \"current\": \"<string>\",\n  \"blocks\": \"<integer>\",\n  \"peers\": \"<integer>\",\n  \"queue_length\": \"<integer>\",\n  \"node_state_latency\": \"<integer>\"\n}",
+              "createdAt": "2026-07-28T01:05:01.000Z",
+              "updatedAt": "2026-07-28T01:05:01.000Z",
+              "uid": "35240-10ef81dc-6815-42f5-81a1-b4bca9af57d8"
+            }
+          ],
+          "createdAt": "2026-07-28T01:05:01.000Z",
+          "updatedAt": "2026-07-28T01:05:01.000Z",
+          "uid": "35240-9a3b1928-bc82-453a-b7a7-49c62e393e66"
+        }
+      ],
+      "id": "2bd65af4-dfd8-4ede-b8c3-e3a7c5754fdc",
+      "createdAt": "2026-07-28T01:05:01.000Z",
+      "updatedAt": "2026-07-28T01:05:01.000Z",
+      "uid": "35240-2bd65af4-dfd8-4ede-b8c3-e3a7c5754fdc"
+    },
+    {
+      "name": "peers",
+      "item": [
+        {
+          "name": "Get peer list",
+          "id": "514c0a2f-1fb5-47f4-893c-7e6421220f8f",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/peers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "peers"
+              ]
+            },
+            "description": "Returns a list of known peer node addresses."
+          },
+          "response": [
+            {
+              "id": "bc31634b-a747-4c34-95cd-1fb675a53865",
+              "name": "Peer list returned successfully",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/peers",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "peers"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "responseTime": null,
+              "body": "[\n  \"<string>\",\n  \"<string>\"\n]",
+              "createdAt": "2026-07-28T01:05:01.000Z",
+              "updatedAt": "2026-07-28T01:05:01.000Z",
+              "uid": "35240-bc31634b-a747-4c34-95cd-1fb675a53865"
+            }
+          ],
+          "createdAt": "2026-07-28T01:05:01.000Z",
+          "updatedAt": "2026-07-28T01:05:01.000Z",
+          "uid": "35240-514c0a2f-1fb5-47f4-893c-7e6421220f8f"
+        }
+      ],
+      "id": "b909c7f3-0be7-4587-8b38-3b9fc78a4193",
+      "createdAt": "2026-07-28T01:05:01.000Z",
+      "updatedAt": "2026-07-28T01:05:01.000Z",
+      "uid": "35240-b909c7f3-0be7-4587-8b38-3b9fc78a4193"
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://arweave.net"
+    }
+  ]
+}
