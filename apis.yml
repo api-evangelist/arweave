@@ -26,7 +26,7 @@ tags:
 - Data Storage
 - GraphQL
 url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/apis.yml
-specificationVersion: '0.19'
+specificationVersion: '0.23'
 modified: '2026-06-13'
 apis:
 - name: Arweave GraphQL API
