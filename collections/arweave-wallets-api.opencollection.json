@@ -1,0 +1,56 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Arweave HTTP Node Wallets API",
+    "version": "1.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Wallets",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Get wallet balance",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://arweave.net/wallet/:address/balance",
+            "params": [
+              {
+                "name": "address",
+                "value": "",
+                "type": "path",
+                "description": "Wallet address (Base64URL encoded SHA-256 of RSA public key modulus)"
+              }
+            ]
+          },
+          "docs": "Retrieve the AR balance of a wallet address in winstons. Unknown addresses return 0. Convert to AR by dividing by 10^12.\n"
+        },
+        {
+          "info": {
+            "name": "Get last transaction for wallet",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://arweave.net/wallet/:address/last_tx",
+            "params": [
+              {
+                "name": "address",
+                "value": "",
+                "type": "path",
+                "description": "Wallet address (Base64URL encoded SHA-256 of RSA public key modulus)"
+              }
+            ]
+          },
+          "docs": "Returns the transaction ID of the most recent outgoing transaction from the given wallet address. Used to populate the last_tx field when constructing new transactions.\n"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

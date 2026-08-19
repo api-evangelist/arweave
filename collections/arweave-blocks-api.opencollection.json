@@ -1,0 +1,56 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Arweave HTTP Node Blocks API",
+    "version": "1.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Blocks",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Get block by hash",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://arweave.net/block/hash/:id",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path",
+                "description": "Block independent hash (indep_hash, Base64URL encoded)"
+              }
+            ]
+          },
+          "docs": "Retrieve a full block object by its independent hash (indep_hash). Include the header X-Block-Format: 2 to request the v2 block format.\n"
+        },
+        {
+          "info": {
+            "name": "Get block by height",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://arweave.net/block/height/:height",
+            "params": [
+              {
+                "name": "height",
+                "value": "",
+                "type": "path",
+                "description": "Block height (block number, 0-indexed)"
+              }
+            ]
+          },
+          "docs": "Retrieve a full block object by its block height (block number). Include the header X-Block-Format: 2 to request the v2 block format.\n"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

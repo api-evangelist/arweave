@@ -1,0 +1,40 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Arweave HTTP Node Network API",
+    "version": "1.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Network",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Get network information",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://arweave.net/info"
+          },
+          "docs": "Returns the current network state and node information including block height, current block hash, peer count, and queue status.\n"
+        },
+        {
+          "info": {
+            "name": "Get peer list",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://arweave.net/peers"
+          },
+          "docs": "Returns a list of known peer node addresses."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

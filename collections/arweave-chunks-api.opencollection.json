@@ -1,0 +1,52 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Arweave HTTP Node Chunks API",
+    "version": "1.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Chunks",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Upload a data chunk",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://arweave.net/chunk",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Upload a single data chunk for a v2 transaction. Chunks must be uploaded after the transaction header is submitted via POST /tx. Maximum chunk size is 256 KiB. The data_root from the transaction must be registered (transaction submitted) before chunks can be uploaded.\n"
+        },
+        {
+          "info": {
+            "name": "Download a data chunk",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://arweave.net/chunk/:offset",
+            "params": [
+              {
+                "name": "offset",
+                "value": "",
+                "type": "path",
+                "description": "Byte offset of the chunk within the weave"
+              }
+            ]
+          },
+          "docs": "Download a data chunk at the specified weave byte offset. Returns the chunk data along with its offset and size metadata.\n"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

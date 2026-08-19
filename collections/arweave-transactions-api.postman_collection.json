@@ -1,0 +1,1711 @@
+{
+  "item": [
+    {
+      "id": "1ea7b703-227b-46a0-bb4e-6542458a1109",
+      "name": "Transactions",
+      "description": {
+        "content": "Endpoints for submitting and retrieving transactions",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "a20c2127-0bb5-4795-b69d-16a30da46bd4",
+          "name": "Submit a transaction",
+          "request": {
+            "name": "Submit a transaction",
+            "description": {
+              "content": "Submit a new signed transaction to the Arweave network. Transactions can transfer AR tokens, store data, or both. Use format=2 for v2 transactions which support large data via chunked uploads. The reward field must be in winstons obtained from the /price endpoint.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "tx"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "text/plain"
+              }
+            ],
+            "method": "POST",
+            "auth": null,
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"format\": \"<integer>\",\n  \"id\": \"<string>\",\n  \"last_tx\": \"<string>\",\n  \"owner\": \"<string>\",\n  \"reward\": \"<string>\",\n  \"signature\": \"<string>\",\n  \"tags\": [\n    {\n      \"name\": \"<string>\",\n      \"value\": \"<string>\"\n    },\n    {\n      \"name\": \"<string>\",\n      \"value\": \"<string>\"\n    }\n  ],\n  \"target\": \"<string>\",\n  \"quantity\": \"<string>\",\n  \"data_root\": \"<string>\",\n  \"data_size\": \"<string>\",\n  \"data\": \"<string>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "e3dd145e-f71c-464b-b0f1-2a66173dadcf",
+              "name": "Transaction accepted",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "tx"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "text/plain"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"format\": 2,\n  \"id\": \"BNttzDav3jHVnNiV7noWn2KgamiO1m_yI4vI1JcmHco\",\n  \"last_tx\": \"jUcuEDZQy3LrMd1b-M0R-GHmC1w4j5tGukPdBfDTRwE\",\n  \"owner\": \"rRQJLaVaxdvxqPkxT9JuSElkPRkFNNJnU7EIAFQN7QU...\",\n  \"tags\": [\n    {\n      \"name\": \"Q29udGVudC1UeXBl\",\n      \"value\": \"dGV4dC9wbGFpbg\"\n    }\n  ],\n  \"target\": \"\",\n  \"quantity\": \"0\",\n  \"data_root\": \"s5-IknhMNY-6SPJRCvzOoWYSjHVQkB1nVlKRKcPgbKM\",\n  \"data_size\": \"1234\",\n  \"data\": \"\",\n  \"reward\": \"321004937\",\n  \"signature\": \"NBcuDJKkj-fKPL7...\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "OK",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "d3bd513b-e8e9-49e8-94ae-1f3a00fc2925",
+              "name": "Transaction already processed",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "tx"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"format\": 2,\n  \"id\": \"BNttzDav3jHVnNiV7noWn2KgamiO1m_yI4vI1JcmHco\",\n  \"last_tx\": \"jUcuEDZQy3LrMd1b-M0R-GHmC1w4j5tGukPdBfDTRwE\",\n  \"owner\": \"rRQJLaVaxdvxqPkxT9JuSElkPRkFNNJnU7EIAFQN7QU...\",\n  \"tags\": [\n    {\n      \"name\": \"Q29udGVudC1UeXBl\",\n      \"value\": \"dGV4dC9wbGFpbg\"\n    }\n  ],\n  \"target\": \"\",\n  \"quantity\": \"0\",\n  \"data_root\": \"s5-IknhMNY-6SPJRCvzOoWYSjHVQkB1nVlKRKcPgbKM\",\n  \"data_size\": \"1234\",\n  \"data\": \"\",\n  \"reward\": \"321004937\",\n  \"signature\": \"NBcuDJKkj-fKPL7...\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Already Reported (WebDAV) (RFC 5842)",
+              "code": 208,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "5211150f-766f-44b8-a786-fc3cf1bf8381",
+              "name": "Verification failed or invalid transaction format",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "tx"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"format\": 2,\n  \"id\": \"BNttzDav3jHVnNiV7noWn2KgamiO1m_yI4vI1JcmHco\",\n  \"last_tx\": \"jUcuEDZQy3LrMd1b-M0R-GHmC1w4j5tGukPdBfDTRwE\",\n  \"owner\": \"rRQJLaVaxdvxqPkxT9JuSElkPRkFNNJnU7EIAFQN7QU...\",\n  \"tags\": [\n    {\n      \"name\": \"Q29udGVudC1UeXBl\",\n      \"value\": \"dGV4dC9wbGFpbg\"\n    }\n  ],\n  \"target\": \"\",\n  \"quantity\": \"0\",\n  \"data_root\": \"s5-IknhMNY-6SPJRCvzOoWYSjHVQkB1nVlKRKcPgbKM\",\n  \"data_size\": \"1234\",\n  \"data\": \"\",\n  \"reward\": \"321004937\",\n  \"signature\": \"NBcuDJKkj-fKPL7...\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "c353a8cd-9faa-4a81-9933-b21b7914d119",
+              "name": "Too many requests",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "tx"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"format\": 2,\n  \"id\": \"BNttzDav3jHVnNiV7noWn2KgamiO1m_yI4vI1JcmHco\",\n  \"last_tx\": \"jUcuEDZQy3LrMd1b-M0R-GHmC1w4j5tGukPdBfDTRwE\",\n  \"owner\": \"rRQJLaVaxdvxqPkxT9JuSElkPRkFNNJnU7EIAFQN7QU...\",\n  \"tags\": [\n    {\n      \"name\": \"Q29udGVudC1UeXBl\",\n      \"value\": \"dGV4dC9wbGFpbg\"\n    }\n  ],\n  \"target\": \"\",\n  \"quantity\": \"0\",\n  \"data_root\": \"s5-IknhMNY-6SPJRCvzOoWYSjHVQkB1nVlKRKcPgbKM\",\n  \"data_size\": \"1234\",\n  \"data\": \"\",\n  \"reward\": \"321004937\",\n  \"signature\": \"NBcuDJKkj-fKPL7...\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "88e29d5e-56be-4531-89e4-5b32401d7efb",
+              "name": "Service unavailable",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "tx"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"format\": 2,\n  \"id\": \"BNttzDav3jHVnNiV7noWn2KgamiO1m_yI4vI1JcmHco\",\n  \"last_tx\": \"jUcuEDZQy3LrMd1b-M0R-GHmC1w4j5tGukPdBfDTRwE\",\n  \"owner\": \"rRQJLaVaxdvxqPkxT9JuSElkPRkFNNJnU7EIAFQN7QU...\",\n  \"tags\": [\n    {\n      \"name\": \"Q29udGVudC1UeXBl\",\n      \"value\": \"dGV4dC9wbGFpbg\"\n    }\n  ],\n  \"target\": \"\",\n  \"quantity\": \"0\",\n  \"data_root\": \"s5-IknhMNY-6SPJRCvzOoWYSjHVQkB1nVlKRKcPgbKM\",\n  \"data_size\": \"1234\",\n  \"data\": \"\",\n  \"reward\": \"321004937\",\n  \"signature\": \"NBcuDJKkj-fKPL7...\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Service Unavailable",
+              "code": 503,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "52665716-b847-4281-a4d2-ec8d040098e4",
+          "name": "Get transaction by ID",
+          "request": {
+            "name": "Get transaction by ID",
+            "description": {
+              "content": "Retrieve a full transaction object by its transaction ID. Returns 202 if the transaction is pending (not yet mined into a block).\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "tx",
+                ":id"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "id",
+                  "description": "(Required) Transaction ID (Base64URL encoded SHA-256 of signature)"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "58defdb8-7179-4042-bbd5-80f53fe4946f",
+              "name": "Transaction found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "tx",
+                    ":id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) Transaction ID (Base64URL encoded SHA-256 of signature)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"format\": 1,\n  \"id\": \"string\",\n  \"last_tx\": \"string\",\n  \"owner\": \"string\",\n  \"reward\": \"string\",\n  \"signature\": \"string\",\n  \"tags\": [\n    {\n      \"name\": \"string\",\n      \"value\": \"string\"\n    },\n    {\n      \"name\": \"string\",\n      \"value\": \"string\"\n    }\n  ],\n  \"target\": \"string\",\n  \"quantity\": \"string\",\n  \"data_root\": \"string\",\n  \"data_size\": \"string\",\n  \"data\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "0bfad5a1-55e3-484a-a74d-f2a642214a25",
+              "name": "Transaction is pending (not yet mined)",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "tx",
+                    ":id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) Transaction ID (Base64URL encoded SHA-256 of signature)"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Accepted",
+              "code": 202,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "2dc8b7fc-be7a-4e4a-9c3a-9028a332869a",
+              "name": "Transaction not found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "tx",
+                    ":id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) Transaction ID (Base64URL encoded SHA-256 of signature)"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "638985ca-1da9-4f13-be06-2025c1ff3cc9",
+          "name": "Get transaction confirmation status",
+          "request": {
+            "name": "Get transaction confirmation status",
+            "description": {
+              "content": "Returns the confirmation status of a transaction including the block height it was mined into, the block hash, and the number of confirmations.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "tx",
+                ":id",
+                "status"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "id",
+                  "description": "(Required) Transaction ID (Base64URL encoded SHA-256 of signature)"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "858776f2-c258-4468-9915-0b89fa65a1a5",
+              "name": "Transaction status returned",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "tx",
+                    ":id",
+                    "status"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) Transaction ID (Base64URL encoded SHA-256 of signature)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"block_height\": 551511,\n  \"block_indep_hash\": \"XIDpYbc3b5iuiqclQ9Y3Hw7Qkp0wfUxHHhJzPmSPRNIxQrMcQ-DqlHkM7Krd7g\",\n  \"number_of_confirmations\": 10\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "a792cfe0-516c-4dfc-9885-ea46d7a55e08",
+              "name": "Transaction not found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "tx",
+                    ":id",
+                    "status"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) Transaction ID (Base64URL encoded SHA-256 of signature)"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "93a9fe1c-d561-4c54-82b6-ae9073d6d432",
+          "name": "Get a specific transaction field",
+          "request": {
+            "name": "Get a specific transaction field",
+            "description": {
+              "content": "Fetch a single field from a transaction. Valid fields are: id, last_tx, owner, tags, target, quantity, data, data_root, data_size, reward, signature.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "tx",
+                ":id",
+                ":field"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "id",
+                  "description": "(Required) Transaction ID (Base64URL encoded SHA-256 of signature)"
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "field",
+                  "description": "(Required) The transaction field to retrieve"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "text/plain"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "31b83acd-48aa-4dc9-b4aa-5edc6a7d13de",
+              "name": "Field value returned",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "tx",
+                    ":id",
+                    ":field"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) Transaction ID (Base64URL encoded SHA-256 of signature)"
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "field",
+                      "description": "(Required) The transaction field to retrieve"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "text/plain"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "string",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "8a5dc94f-c9ca-4f1f-9fe2-9c66e44917db",
+              "name": "Transaction is pending",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "tx",
+                    ":id",
+                    ":field"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) Transaction ID (Base64URL encoded SHA-256 of signature)"
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "field",
+                      "description": "(Required) The transaction field to retrieve"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Accepted",
+              "code": 202,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "bf184896-3c9d-4acf-8ecc-d9f61a5fdaa7",
+              "name": "Invalid field name or request",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "tx",
+                    ":id",
+                    ":field"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) Transaction ID (Base64URL encoded SHA-256 of signature)"
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "field",
+                      "description": "(Required) The transaction field to retrieve"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "5e488b08-da87-4911-9106-190a249a5118",
+              "name": "Transaction not found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "tx",
+                    ":id",
+                    ":field"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) Transaction ID (Base64URL encoded SHA-256 of signature)"
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "field",
+                      "description": "(Required) The transaction field to retrieve"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "8891b3bb-ab27-4cec-a42d-2ff60264c569",
+          "name": "Get transaction data",
+          "request": {
+            "name": "Get transaction data",
+            "description": {
+              "content": "Download the data payload associated with a transaction. Returns the Base64URL decoded data with the appropriate Content-Type header based on the transaction's Content-Type tag.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "tx",
+                ":id",
+                "data"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "id",
+                  "description": "(Required) Transaction ID (Base64URL encoded SHA-256 of signature)"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/octet-stream"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "400c2a9f-2f06-4be0-a957-8f1cc3c1a558",
+              "name": "Transaction data returned",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "tx",
+                    ":id",
+                    "data"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) Transaction ID (Base64URL encoded SHA-256 of signature)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/octet-stream"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/octet-stream"
+                }
+              ],
+              "body": "string",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "4957ec45-f09b-4bcb-a6b9-c3b76a36e53d",
+              "name": "Transaction is pending",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "tx",
+                    ":id",
+                    "data"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) Transaction ID (Base64URL encoded SHA-256 of signature)"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Accepted",
+              "code": 202,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "354ea09b-0170-40c7-aab7-faf1aa27e14a",
+              "name": "Invalid request",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "tx",
+                    ":id",
+                    "data"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) Transaction ID (Base64URL encoded SHA-256 of signature)"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "178af2f9-707b-4843-9ba0-0f9370e9f15c",
+              "name": "Transaction not found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "tx",
+                    ":id",
+                    "data"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) Transaction ID (Base64URL encoded SHA-256 of signature)"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "c83454d1-e5c2-4f47-8f3a-71c3f4f6eada",
+              "name": "Data not available",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "tx",
+                    ":id",
+                    "data"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) Transaction ID (Base64URL encoded SHA-256 of signature)"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Service Unavailable",
+              "code": 503,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "3e08e6d4-9874-4fe9-b5e9-5351d604ca7f",
+          "name": "Get transaction offset and size",
+          "request": {
+            "name": "Get transaction offset and size",
+            "description": {
+              "content": "Returns the byte offset of a transaction's data within the Arweave weave along with the data size. Used to retrieve specific chunks.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "tx",
+                ":id",
+                "offset"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "id",
+                  "description": "(Required) Transaction ID (Base64URL encoded SHA-256 of signature)"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "cd1a05c7-e91f-4e5b-9d7d-23b0dffbee71",
+              "name": "Offset and size returned",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "tx",
+                    ":id",
+                    "offset"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) Transaction ID (Base64URL encoded SHA-256 of signature)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"offset\": \"2191651060\",\n  \"size\": \"1234\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "db556379-c001-418a-9839-c6e9423a6512",
+              "name": "Invalid request",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "tx",
+                    ":id",
+                    "offset"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) Transaction ID (Base64URL encoded SHA-256 of signature)"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "d5d02a49-3d01-4a4b-8c7b-06fb26a045aa",
+              "name": "Service unavailable",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "tx",
+                    ":id",
+                    "offset"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) Transaction ID (Base64URL encoded SHA-256 of signature)"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Service Unavailable",
+              "code": 503,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "10244122-071f-4669-83c1-6144eb06b84b",
+          "name": "Get transaction data with MIME type hint",
+          "request": {
+            "name": "Get transaction data with MIME type hint",
+            "description": {
+              "content": "Download transaction data with the response Content-Type determined by the file extension. For example, /tx/{id}/data.html returns the data with Content-Type text/html.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "tx",
+                ":id",
+                "data.{{extension}}"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "id",
+                  "description": "(Required) Transaction ID (Base64URL encoded SHA-256 of signature)"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/octet-stream"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "f76808cb-e32c-4c5c-9ec3-d2f6bd68fa82",
+              "name": "Transaction data returned with inferred Content-Type",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "tx",
+                    ":id",
+                    "data.{{extension}}"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) Transaction ID (Base64URL encoded SHA-256 of signature)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/octet-stream"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/octet-stream"
+                }
+              ],
+              "body": "string",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "9d9719da-761f-4964-a2c9-4687ffa3c87a",
+              "name": "Transaction not found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "tx",
+                    ":id",
+                    "data.{{extension}}"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) Transaction ID (Base64URL encoded SHA-256 of signature)"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "280fcedd-e60c-487b-bb3b-153e3cf8f84d",
+          "name": "Get decoded transaction data by ID",
+          "request": {
+            "name": "Get decoded transaction data by ID",
+            "description": {
+              "content": "Retrieve and return the decoded data payload for a transaction directly by its ID. This is a shorthand for /tx/{id}/data and sets the appropriate Content-Type header from the transaction's tags.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                ":id"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "id",
+                  "description": "(Required) Transaction ID (Base64URL encoded)"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/octet-stream"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "710a37b5-6d61-4af3-90f2-4d2e02bb2c6d",
+              "name": "Decoded transaction data",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    ":id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) Transaction ID (Base64URL encoded)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/octet-stream"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/octet-stream"
+                }
+              ],
+              "body": "string",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "5559e493-3274-48f1-b21f-d3a3da71a857",
+              "name": "Transaction is pending",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    ":id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) Transaction ID (Base64URL encoded)"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Accepted",
+              "code": 202,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "57956425-8269-4ebb-a5d9-b431ed6d00ea",
+              "name": "Not found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    ":id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) Transaction ID (Base64URL encoded)"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "0dbf277a-98a7-4a61-883e-033dcceb4499",
+          "name": "Get transaction price (data only)",
+          "request": {
+            "name": "Get transaction price (data only)",
+            "description": {
+              "content": "Calculate the minimum fee in winstons required to store the specified number of bytes. Use bytes=0 to get the fee for a pure token transfer with no data.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "price",
+                ":bytes"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<integer>",
+                  "key": "bytes",
+                  "description": "(Required) Size of data in bytes (use 0 for token-only transfers)"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "text/plain"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "c2d8b32b-332b-4780-8806-2052bed26042",
+              "name": "Fee in winstons returned as a numeric string",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "price",
+                    ":bytes"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<integer>",
+                      "key": "bytes",
+                      "description": "(Required) Size of data in bytes (use 0 for token-only transfers)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "text/plain"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "321004937",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "011f72e2-8d8c-42e9-8195-57d0e91d0361",
+          "name": "Get transaction price (data + target wallet)",
+          "request": {
+            "name": "Get transaction price (data + target wallet)",
+            "description": {
+              "content": "Calculate the minimum fee in winstons for storing the specified number of bytes and optionally sending to a target wallet address. An extra fee is included for the first transaction sent to a new wallet address.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "price",
+                ":bytes",
+                ":target"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<integer>",
+                  "key": "bytes",
+                  "description": "(Required) Size of data in bytes (use 0 for token-only transfers)"
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "target",
+                  "description": "(Required) Recipient wallet address (Base64URL encoded)"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "text/plain"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "1bd95c85-8c9a-45fc-ad8a-1e7c1f4f290f",
+              "name": "Fee in winstons returned as a numeric string",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "price",
+                    ":bytes",
+                    ":target"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<integer>",
+                      "key": "bytes",
+                      "description": "(Required) Size of data in bytes (use 0 for token-only transfers)"
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "target",
+                      "description": "(Required) Recipient wallet address (Base64URL encoded)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "text/plain"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "321004937",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "https://arweave.net",
+      "key": "baseUrl"
+    },
+    {
+      "disabled": false,
+      "description": {
+        "content": "(Required) File extension used to determine MIME type (e.g. html, txt, jpg, png, mp4)",
+        "type": "text/plain"
+      },
+      "type": "any",
+      "value": "<string>",
+      "key": "extension"
+    }
+  ],
+  "info": {
+    "_postman_id": "6467d315-401c-4766-a3ad-ad4e55287003",
+    "name": "Arweave HTTP Node Transactions API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "The core Arweave node REST API for submitting and retrieving transactions, uploading data chunks, querying wallet balances, fetching blocks, and inspecting network state. Requests target any Arweave node on port 1984 (default gateway arweave.net). Amounts are denominated in winstons (1 AR = 10^12 winstons).\n\n\nContact Support:\n Name: Arweave Team\n Email: team@arweave.org",
+      "type": "text/plain"
+    }
+  }
+}

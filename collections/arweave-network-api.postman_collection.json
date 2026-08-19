@@ -1,0 +1,172 @@
+{
+  "item": [
+    {
+      "id": "f4db65ed-6d14-47c1-965c-77cad005e7b1",
+      "name": "Network",
+      "description": {
+        "content": "Endpoints for querying network state and peer information",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "b7b0f1a8-5da0-4a2c-9189-d389f18ba247",
+          "name": "Get network information",
+          "request": {
+            "name": "Get network information",
+            "description": {
+              "content": "Returns the current network state and node information including block height, current block hash, peer count, and queue status.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "info"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "d924d895-a46c-454d-96d8-4da24eb658c5",
+              "name": "Network info returned successfully",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "info"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"network\": \"arweave.N.1\",\n  \"version\": 5,\n  \"release\": 53,\n  \"height\": 551511,\n  \"current\": \"XIDpYbc3b5iuiqclQ9Y3Hw7Qkp0wfUxHHhJzPmSPRNIxQrMcQ-DqlHkM7Krd7g\",\n  \"blocks\": 551512,\n  \"peers\": 64,\n  \"queue_length\": 0,\n  \"node_state_latency\": 18\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "b75c923f-1bf9-44fb-8876-6e163886dd8e",
+          "name": "Get peer list",
+          "request": {
+            "name": "Get peer list",
+            "description": {
+              "content": "Returns a list of known peer node addresses.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "peers"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "35ffd8c2-cd08-490f-a255-822f6c11f435",
+              "name": "Peer list returned successfully",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "peers"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  \"127.0.0.1:1984\",\n  \"0.0.0.0:1984\"\n]",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "https://arweave.net",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "e8a2b74c-21a6-4e43-b072-4a652dd1f4eb",
+    "name": "Arweave HTTP Node Network API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "The core Arweave node REST API for submitting and retrieving transactions, uploading data chunks, querying wallet balances, fetching blocks, and inspecting network state. Requests target any Arweave node on port 1984 (default gateway arweave.net). Amounts are denominated in winstons (1 AR = 10^12 winstons).\n\n\nContact Support:\n Name: Arweave Team\n Email: team@arweave.org",
+      "type": "text/plain"
+    }
+  }
+}

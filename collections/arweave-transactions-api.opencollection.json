@@ -1,0 +1,222 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Arweave HTTP Node Transactions API",
+    "version": "1.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Transactions",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Submit a transaction",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://arweave.net/tx",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Submit a new signed transaction to the Arweave network. Transactions can transfer AR tokens, store data, or both. Use format=2 for v2 transactions which support large data via chunked uploads. The reward field must be in winstons obtained from the /price endpoint.\n"
+        },
+        {
+          "info": {
+            "name": "Get transaction by ID",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://arweave.net/tx/:id",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path",
+                "description": "Transaction ID (Base64URL encoded SHA-256 of signature)"
+              }
+            ]
+          },
+          "docs": "Retrieve a full transaction object by its transaction ID. Returns 202 if the transaction is pending (not yet mined into a block).\n"
+        },
+        {
+          "info": {
+            "name": "Get transaction confirmation status",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://arweave.net/tx/:id/status",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path",
+                "description": "Transaction ID (Base64URL encoded SHA-256 of signature)"
+              }
+            ]
+          },
+          "docs": "Returns the confirmation status of a transaction including the block height it was mined into, the block hash, and the number of confirmations.\n"
+        },
+        {
+          "info": {
+            "name": "Get a specific transaction field",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://arweave.net/tx/:id/:field",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path",
+                "description": "Transaction ID (Base64URL encoded SHA-256 of signature)"
+              },
+              {
+                "name": "field",
+                "value": "",
+                "type": "path",
+                "description": "The transaction field to retrieve"
+              }
+            ]
+          },
+          "docs": "Fetch a single field from a transaction. Valid fields are: id, last_tx, owner, tags, target, quantity, data, data_root, data_size, reward, signature.\n"
+        },
+        {
+          "info": {
+            "name": "Get transaction data",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://arweave.net/tx/:id/data",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path",
+                "description": "Transaction ID (Base64URL encoded SHA-256 of signature)"
+              }
+            ]
+          },
+          "docs": "Download the data payload associated with a transaction. Returns the Base64URL decoded data with the appropriate Content-Type header based on the transaction's Content-Type tag.\n"
+        },
+        {
+          "info": {
+            "name": "Get transaction offset and size",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://arweave.net/tx/:id/offset",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path",
+                "description": "Transaction ID (Base64URL encoded SHA-256 of signature)"
+              }
+            ]
+          },
+          "docs": "Returns the byte offset of a transaction's data within the Arweave weave along with the data size. Used to retrieve specific chunks.\n"
+        },
+        {
+          "info": {
+            "name": "Get transaction data with MIME type hint",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://arweave.net/tx/:id/data.:extension",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path",
+                "description": "Transaction ID (Base64URL encoded SHA-256 of signature)"
+              },
+              {
+                "name": "extension",
+                "value": "",
+                "type": "path",
+                "description": "File extension used to determine MIME type (e.g. html, txt, jpg, png, mp4)"
+              }
+            ]
+          },
+          "docs": "Download transaction data with the response Content-Type determined by the file extension. For example, /tx/{id}/data.html returns the data with Content-Type text/html.\n"
+        },
+        {
+          "info": {
+            "name": "Get decoded transaction data by ID",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://arweave.net/:id",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path",
+                "description": "Transaction ID (Base64URL encoded)"
+              }
+            ]
+          },
+          "docs": "Retrieve and return the decoded data payload for a transaction directly by its ID. This is a shorthand for /tx/{id}/data and sets the appropriate Content-Type header from the transaction's tags.\n"
+        },
+        {
+          "info": {
+            "name": "Get transaction price (data only)",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://arweave.net/price/:bytes",
+            "params": [
+              {
+                "name": "bytes",
+                "value": "",
+                "type": "path",
+                "description": "Size of data in bytes (use 0 for token-only transfers)"
+              }
+            ]
+          },
+          "docs": "Calculate the minimum fee in winstons required to store the specified number of bytes. Use bytes=0 to get the fee for a pure token transfer with no data.\n"
+        },
+        {
+          "info": {
+            "name": "Get transaction price (data + target wallet)",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://arweave.net/price/:bytes/:target",
+            "params": [
+              {
+                "name": "bytes",
+                "value": "",
+                "type": "path",
+                "description": "Size of data in bytes (use 0 for token-only transfers)"
+              },
+              {
+                "name": "target",
+                "value": "",
+                "type": "path",
+                "description": "Recipient wallet address (Base64URL encoded)"
+              }
+            ]
+          },
+          "docs": "Calculate the minimum fee in winstons for storing the specified number of bytes and optionally sending to a target wallet address. An extra fee is included for the first transaction sent to a new wallet address.\n"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

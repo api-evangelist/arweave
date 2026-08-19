@@ -1,0 +1,330 @@
+{
+  "item": [
+    {
+      "id": "bd604395-6e52-451c-9592-b9655d18b745",
+      "name": "Chunks",
+      "description": {
+        "content": "Endpoints for uploading and downloading data chunks",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "01721acc-dd40-4bdc-af65-cc6d007f0617",
+          "name": "Upload a data chunk",
+          "request": {
+            "name": "Upload a data chunk",
+            "description": {
+              "content": "Upload a single data chunk for a v2 transaction. Chunks must be uploaded after the transaction header is submitted via POST /tx. Maximum chunk size is 256 KiB. The data_root from the transaction must be registered (transaction submitted) before chunks can be uploaded.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "chunk"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "text/plain"
+              }
+            ],
+            "method": "POST",
+            "auth": null,
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data_root\": \"<string>\",\n  \"data_size\": \"<string>\",\n  \"data_path\": \"<string>\",\n  \"chunk\": \"<string>\",\n  \"offset\": \"<string>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "431d12ff-6c6b-4506-9383-245105635c9e",
+              "name": "Chunk accepted",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "chunk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "text/plain"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data_root\": \"s5-IknhMNY-6SPJRCvzOoWYSjHVQkB1nVlKRKcPgbKM\",\n  \"data_size\": \"10485760\",\n  \"data_path\": \"Abc123...\",\n  \"chunk\": \"SGVsbG8gV29ybGQ...\",\n  \"offset\": \"0\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "OK",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "099e236e-37dd-4973-ad78-4679f52f5747",
+              "name": "Invalid chunk submission",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "chunk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data_root\": \"s5-IknhMNY-6SPJRCvzOoWYSjHVQkB1nVlKRKcPgbKM\",\n  \"data_size\": \"10485760\",\n  \"data_path\": \"Abc123...\",\n  \"chunk\": \"SGVsbG8gV29ybGQ...\",\n  \"offset\": \"0\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"data_root_not_found\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "4e6863b6-2c08-4b06-b43a-92c242cc84ba",
+          "name": "Download a data chunk",
+          "request": {
+            "name": "Download a data chunk",
+            "description": {
+              "content": "Download a data chunk at the specified weave byte offset. Returns the chunk data along with its offset and size metadata.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "chunk",
+                ":offset"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "offset",
+                  "description": "(Required) Byte offset of the chunk within the weave"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "70a24eae-cdaf-4bdb-b585-5a9b656dc7a6",
+              "name": "Chunk data returned",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "chunk",
+                    ":offset"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "offset",
+                      "description": "(Required) Byte offset of the chunk within the weave"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"chunk\": \"string\",\n  \"data_path\": \"string\",\n  \"tx_path\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "0f8769f9-2765-4e20-b3bd-8fe7a0f4cdf5",
+              "name": "Invalid offset",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "chunk",
+                    ":offset"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "offset",
+                      "description": "(Required) Byte offset of the chunk within the weave"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "c96dc698-5e34-4bbb-bec2-4b42dbabc4b6",
+              "name": "Chunk not available",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "chunk",
+                    ":offset"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "offset",
+                      "description": "(Required) Byte offset of the chunk within the weave"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Service Unavailable",
+              "code": 503,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "https://arweave.net",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "f0b5984a-80c2-4e3a-981d-8824e29df089",
+    "name": "Arweave HTTP Node Chunks API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "The core Arweave node REST API for submitting and retrieving transactions, uploading data chunks, querying wallet balances, fetching blocks, and inspecting network state. Requests target any Arweave node on port 1984 (default gateway arweave.net). Amounts are denominated in winstons (1 AR = 10^12 winstons).\n\n\nContact Support:\n Name: Arweave Team\n Email: team@arweave.org",
+      "type": "text/plain"
+    }
+  }
+}
