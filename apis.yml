@@ -40,6 +40,12 @@ apis:
   baseURL: https://arweave.net/graphql
   tags:
   - GraphQL
+  - Transaction
+  - Blocks
+  - Tags
+  - Search
+  tags_raw:
+  - GraphQL
   - Transactions
   - Blocks
   - Tags
@@ -179,6 +185,8 @@ apis:
   humanURL: https://docs.arweave.org/developers/arweave-node-server/http-api
   baseURL: https://arweave.net
   tags:
+  - Transaction
+  tags_raw:
   - Transactions
   properties:
   - type: OpenAPI
