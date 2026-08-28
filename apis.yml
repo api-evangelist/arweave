@@ -5,6 +5,18 @@ description: Arweave is a permanent decentralized data storage network that enab
   metadata, retrieving wallet balances, and accessing the permaweb data ecosystem.
   The network uses the AR token for storage fees and supports bundled uploads via
   the Turbo service with fiat and multi-chain crypto payment options.
+deliveryModel:
+  model: saas
+  open_source: false
+  commercial: true
+  callable_host: true
+  label: Hosted service · you call their endpoint
+  confidence: high
+  source:
+  - openapi
+  - pricing
+  generated: '2026-08-28'
+  method: derived
 accessModel:
   pricing: free
   onboarding: unknown
