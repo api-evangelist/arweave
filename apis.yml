@@ -164,6 +164,8 @@ apis:
   humanURL: https://docs.arweave.org/developers/arweave-node-server/http-api
   baseURL: https://arweave.net
   tags:
+  - Networks
+  tags_raw:
   - Network
   properties:
   - type: OpenAPI
