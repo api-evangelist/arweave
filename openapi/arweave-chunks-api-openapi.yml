@@ -1,9 +1,7 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
   title: Arweave HTTP Node Chunks API
-  description: 'The core Arweave node REST API for submitting and retrieving transactions, uploading data chunks, querying wallet balances, fetching blocks, and inspecting network state. Requests target any Arweave node on port 1984 (default gateway arweave.net). Amounts are denominated in winstons (1 AR = 10^12 winstons).
-
-    '
+  description: The core Arweave node REST API for submitting and retrieving transactions, uploading data chunks, querying wallet balances, fetching blocks, and inspecting network state. Requests target any Arweave node on port 1984 (default gateway arweave.net). Amounts are denominated in winstons (1 AR = 10^12 winstons).
   version: 1.0.0
   contact:
     name: Arweave Team
@@ -26,9 +24,7 @@ paths:
     post:
       operationId: uploadChunk
       summary: Upload a data chunk
-      description: 'Upload a single data chunk for a v2 transaction. Chunks must be uploaded after the transaction header is submitted via POST /tx. Maximum chunk size is 256 KiB. The data_root from the transaction must be registered (transaction submitted) before chunks can be uploaded.
-
-        '
+      description: Upload a single data chunk for a v2 transaction. Chunks must be uploaded after the transaction header is submitted via POST /tx. Maximum chunk size is 256 KiB. The data_root from the transaction must be registered (transaction submitted) before chunks can be uploaded.
       tags:
       - Chunks
       requestBody:
@@ -73,9 +69,7 @@ paths:
     get:
       operationId: getChunk
       summary: Download a data chunk
-      description: 'Download a data chunk at the specified weave byte offset. Returns the chunk data along with its offset and size metadata.
-
-        '
+      description: Download a data chunk at the specified weave byte offset. Returns the chunk data along with its offset and size metadata.
       tags:
       - Chunks
       parameters:

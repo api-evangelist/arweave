@@ -1,9 +1,7 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
   title: Arweave HTTP Node Blocks API
-  description: 'The core Arweave node REST API for submitting and retrieving transactions, uploading data chunks, querying wallet balances, fetching blocks, and inspecting network state. Requests target any Arweave node on port 1984 (default gateway arweave.net). Amounts are denominated in winstons (1 AR = 10^12 winstons).
-
-    '
+  description: The core Arweave node REST API for submitting and retrieving transactions, uploading data chunks, querying wallet balances, fetching blocks, and inspecting network state. Requests target any Arweave node on port 1984 (default gateway arweave.net). Amounts are denominated in winstons (1 AR = 10^12 winstons).
   version: 1.0.0
   contact:
     name: Arweave Team
@@ -26,9 +24,7 @@ paths:
     get:
       operationId: getBlockByHash
       summary: Get block by hash
-      description: 'Retrieve a full block object by its independent hash (indep_hash). Include the header X-Block-Format: 2 to request the v2 block format.
-
-        '
+      description: 'Retrieve a full block object by its independent hash (indep_hash). Include the header X-Block-Format: 2 to request the v2 block format.'
       tags:
       - Blocks
       parameters:
@@ -51,9 +47,7 @@ paths:
     get:
       operationId: getBlockByHeight
       summary: Get block by height
-      description: 'Retrieve a full block object by its block height (block number). Include the header X-Block-Format: 2 to request the v2 block format.
-
-        '
+      description: 'Retrieve a full block object by its block height (block number). Include the header X-Block-Format: 2 to request the v2 block format.'
       tags:
       - Blocks
       parameters:

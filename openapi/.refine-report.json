@@ -1,7 +1,7 @@
 {
   "provider": "arweave",
   "sources": [
-    "openapi.yml"
+    "_original/openapi.yml"
   ],
   "outputs": [
     "arweave-blocks-api-openapi.yml",
@@ -10,13 +10,19 @@
     "arweave-transactions-api-openapi.yml",
     "arweave-wallets-api-openapi.yml"
   ],
-  "archived": [
-    "archived openapi.yml"
-  ],
+  "archived": [],
   "errors": [],
   "warnings": [],
   "notes": [
-    "discovered stray spec: openapi.yml"
+    "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
+    "openapi.yml: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
+    "apis.yml register: already-registered"
   ],
-  "skipped": []
+  "skipped": [
+    "arweave-blocks-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "arweave-chunks-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "arweave-network-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "arweave-transactions-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "arweave-wallets-api-openapi.yml: previously refined output, superseded by openapi/_original/"
+  ]
 }

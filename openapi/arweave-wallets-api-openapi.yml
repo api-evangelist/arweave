@@ -1,9 +1,7 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
   title: Arweave HTTP Node Wallets API
-  description: 'The core Arweave node REST API for submitting and retrieving transactions, uploading data chunks, querying wallet balances, fetching blocks, and inspecting network state. Requests target any Arweave node on port 1984 (default gateway arweave.net). Amounts are denominated in winstons (1 AR = 10^12 winstons).
-
-    '
+  description: The core Arweave node REST API for submitting and retrieving transactions, uploading data chunks, querying wallet balances, fetching blocks, and inspecting network state. Requests target any Arweave node on port 1984 (default gateway arweave.net). Amounts are denominated in winstons (1 AR = 10^12 winstons).
   version: 1.0.0
   contact:
     name: Arweave Team
@@ -26,9 +24,7 @@ paths:
     get:
       operationId: getWalletBalance
       summary: Get wallet balance
-      description: 'Retrieve the AR balance of a wallet address in winstons. Unknown addresses return 0. Convert to AR by dividing by 10^12.
-
-        '
+      description: Retrieve the AR balance of a wallet address in winstons. Unknown addresses return 0. Convert to AR by dividing by 10^12.
       tags:
       - Wallets
       parameters:
@@ -47,9 +43,7 @@ paths:
     get:
       operationId: getWalletLastTransaction
       summary: Get last transaction for wallet
-      description: 'Returns the transaction ID of the most recent outgoing transaction from the given wallet address. Used to populate the last_tx field when constructing new transactions.
-
-        '
+      description: Returns the transaction ID of the most recent outgoing transaction from the given wallet address. Used to populate the last_tx field when constructing new transactions.
       tags:
       - Wallets
       parameters:

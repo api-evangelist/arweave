@@ -1,9 +1,7 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
   title: Arweave HTTP Node Transactions API
-  description: 'The core Arweave node REST API for submitting and retrieving transactions, uploading data chunks, querying wallet balances, fetching blocks, and inspecting network state. Requests target any Arweave node on port 1984 (default gateway arweave.net). Amounts are denominated in winstons (1 AR = 10^12 winstons).
-
-    '
+  description: The core Arweave node REST API for submitting and retrieving transactions, uploading data chunks, querying wallet balances, fetching blocks, and inspecting network state. Requests target any Arweave node on port 1984 (default gateway arweave.net). Amounts are denominated in winstons (1 AR = 10^12 winstons).
   version: 1.0.0
   contact:
     name: Arweave Team
@@ -26,9 +24,7 @@ paths:
     post:
       operationId: submitTransaction
       summary: Submit a transaction
-      description: 'Submit a new signed transaction to the Arweave network. Transactions can transfer AR tokens, store data, or both. Use format=2 for v2 transactions which support large data via chunked uploads. The reward field must be in winstons obtained from the /price endpoint.
-
-        '
+      description: Submit a new signed transaction to the Arweave network. Transactions can transfer AR tokens, store data, or both. Use format=2 for v2 transactions which support large data via chunked uploads. The reward field must be in winstons obtained from the /price endpoint.
       tags:
       - Transactions
       requestBody:
@@ -72,9 +68,7 @@ paths:
     get:
       operationId: getTransaction
       summary: Get transaction by ID
-      description: 'Retrieve a full transaction object by its transaction ID. Returns 202 if the transaction is pending (not yet mined into a block).
-
-        '
+      description: Retrieve a full transaction object by its transaction ID. Returns 202 if the transaction is pending (not yet mined into a block).
       tags:
       - Transactions
       parameters:
@@ -94,9 +88,7 @@ paths:
     get:
       operationId: getTransactionStatus
       summary: Get transaction confirmation status
-      description: 'Returns the confirmation status of a transaction including the block height it was mined into, the block hash, and the number of confirmations.
-
-        '
+      description: Returns the confirmation status of a transaction including the block height it was mined into, the block hash, and the number of confirmations.
       tags:
       - Transactions
       parameters:
@@ -118,9 +110,7 @@ paths:
     get:
       operationId: getTransactionField
       summary: Get a specific transaction field
-      description: 'Fetch a single field from a transaction. Valid fields are: id, last_tx, owner, tags, target, quantity, data, data_root, data_size, reward, signature.
-
-        '
+      description: 'Fetch a single field from a transaction. Valid fields are: id, last_tx, owner, tags, target, quantity, data, data_root, data_size, reward, signature.'
       tags:
       - Transactions
       parameters:
@@ -160,9 +150,7 @@ paths:
     get:
       operationId: getTransactionData
       summary: Get transaction data
-      description: 'Download the data payload associated with a transaction. Returns the Base64URL decoded data with the appropriate Content-Type header based on the transaction''s Content-Type tag.
-
-        '
+      description: Download the data payload associated with a transaction. Returns the Base64URL decoded data with the appropriate Content-Type header based on the transaction's Content-Type tag.
       tags:
       - Transactions
       parameters:
@@ -187,9 +175,7 @@ paths:
     get:
       operationId: getTransactionOffset
       summary: Get transaction offset and size
-      description: 'Returns the byte offset of a transaction''s data within the Arweave weave along with the data size. Used to retrieve specific chunks.
-
-        '
+      description: Returns the byte offset of a transaction's data within the Arweave weave along with the data size. Used to retrieve specific chunks.
       tags:
       - Transactions
       parameters:
@@ -219,9 +205,7 @@ paths:
     get:
       operationId: getTransactionDataByExtension
       summary: Get transaction data with MIME type hint
-      description: 'Download transaction data with the response Content-Type determined by the file extension. For example, /tx/{id}/data.html returns the data with Content-Type text/html.
-
-        '
+      description: Download transaction data with the response Content-Type determined by the file extension. For example, /tx/{id}/data.html returns the data with Content-Type text/html.
       tags:
       - Transactions
       parameters:
@@ -246,9 +230,7 @@ paths:
     get:
       operationId: getTransactionDataById
       summary: Get decoded transaction data by ID
-      description: 'Retrieve and return the decoded data payload for a transaction directly by its ID. This is a shorthand for /tx/{id}/data and sets the appropriate Content-Type header from the transaction''s tags.
-
-        '
+      description: Retrieve and return the decoded data payload for a transaction directly by its ID. This is a shorthand for /tx/{id}/data and sets the appropriate Content-Type header from the transaction's tags.
       tags:
       - Transactions
       parameters:
@@ -274,9 +256,7 @@ paths:
     get:
       operationId: getTransactionPrice
       summary: Get transaction price (data only)
-      description: 'Calculate the minimum fee in winstons required to store the specified number of bytes. Use bytes=0 to get the fee for a pure token transfer with no data.
-
-        '
+      description: Calculate the minimum fee in winstons required to store the specified number of bytes. Use bytes=0 to get the fee for a pure token transfer with no data.
       tags:
       - Transactions
       parameters:
@@ -299,9 +279,7 @@ paths:
     get:
       operationId: getTransactionPriceWithTarget
       summary: Get transaction price (data + target wallet)
-      description: 'Calculate the minimum fee in winstons for storing the specified number of bytes and optionally sending to a target wallet address. An extra fee is included for the first transaction sent to a new wallet address.
-
-        '
+      description: Calculate the minimum fee in winstons for storing the specified number of bytes and optionally sending to a target wallet address. An extra fee is included for the first transaction sent to a new wallet address.
       tags:
       - Transactions
       parameters:
@@ -394,19 +372,6 @@ components:
           description: 'RSA-PSS signature with SHA-256 (Base64URL encoded). For ECDSA accounts: 65-byte compact signature.
 
             '
-    TransactionTag:
-      type: object
-      description: A name-value tag pair attached to a transaction (Base64URL encoded)
-      required:
-      - name
-      - value
-      properties:
-        name:
-          type: string
-          description: Tag name (Base64URL encoded)
-        value:
-          type: string
-          description: Tag value (Base64URL encoded)
     TransactionStatus:
       type: object
       description: Confirmation status of a mined transaction
@@ -420,6 +385,19 @@ components:
         number_of_confirmations:
           type: integer
           description: Number of blocks mined after the block containing the transaction
+    TransactionTag:
+      type: object
+      description: A name-value tag pair attached to a transaction (Base64URL encoded)
+      required:
+      - name
+      - value
+      properties:
+        name:
+          type: string
+          description: Tag name (Base64URL encoded)
+        value:
+          type: string
+          description: Tag value (Base64URL encoded)
   parameters:
     TransactionId:
       name: id
