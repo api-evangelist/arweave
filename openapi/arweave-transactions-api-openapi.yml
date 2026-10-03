@@ -306,6 +306,32 @@ paths:
               example: '321004937'
 components:
   schemas:
+    TransactionTag:
+      type: object
+      description: A name-value tag pair attached to a transaction (Base64URL encoded)
+      required:
+      - name
+      - value
+      properties:
+        name:
+          type: string
+          description: Tag name (Base64URL encoded)
+        value:
+          type: string
+          description: Tag value (Base64URL encoded)
+    TransactionStatus:
+      type: object
+      description: Confirmation status of a mined transaction
+      properties:
+        block_height:
+          type: integer
+          description: Block height in which the transaction was mined
+        block_indep_hash:
+          type: string
+          description: Independent hash of the block containing the transaction
+        number_of_confirmations:
+          type: integer
+          description: Number of blocks mined after the block containing the transaction
     Transaction:
       type: object
       description: 'An Arweave transaction object. Use format=2 for v2 transactions which support large data uploads via chunking. All amounts are in winstons.
@@ -372,32 +398,6 @@ components:
           description: 'RSA-PSS signature with SHA-256 (Base64URL encoded). For ECDSA accounts: 65-byte compact signature.
 
             '
-    TransactionStatus:
-      type: object
-      description: Confirmation status of a mined transaction
-      properties:
-        block_height:
-          type: integer
-          description: Block height in which the transaction was mined
-        block_indep_hash:
-          type: string
-          description: Independent hash of the block containing the transaction
-        number_of_confirmations:
-          type: integer
-          description: Number of blocks mined after the block containing the transaction
-    TransactionTag:
-      type: object
-      description: A name-value tag pair attached to a transaction (Base64URL encoded)
-      required:
-      - name
-      - value
-      properties:
-        name:
-          type: string
-          description: Tag name (Base64URL encoded)
-        value:
-          type: string
-          description: Tag value (Base64URL encoded)
   parameters:
     TransactionId:
       name: id
