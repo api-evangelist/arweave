@@ -305,20 +305,15 @@ paths:
                 type: string
               example: '321004937'
 components:
+  parameters:
+    TransactionId:
+      name: id
+      in: path
+      required: true
+      description: Transaction ID (Base64URL encoded SHA-256 of signature)
+      schema:
+        type: string
   schemas:
-    TransactionTag:
-      type: object
-      description: A name-value tag pair attached to a transaction (Base64URL encoded)
-      required:
-      - name
-      - value
-      properties:
-        name:
-          type: string
-          description: Tag name (Base64URL encoded)
-        value:
-          type: string
-          description: Tag value (Base64URL encoded)
     TransactionStatus:
       type: object
       description: Confirmation status of a mined transaction
@@ -332,6 +327,19 @@ components:
         number_of_confirmations:
           type: integer
           description: Number of blocks mined after the block containing the transaction
+    TransactionTag:
+      type: object
+      description: A name-value tag pair attached to a transaction (Base64URL encoded)
+      required:
+      - name
+      - value
+      properties:
+        name:
+          type: string
+          description: Tag name (Base64URL encoded)
+        value:
+          type: string
+          description: Tag value (Base64URL encoded)
     Transaction:
       type: object
       description: 'An Arweave transaction object. Use format=2 for v2 transactions which support large data uploads via chunking. All amounts are in winstons.
@@ -398,14 +406,6 @@ components:
           description: 'RSA-PSS signature with SHA-256 (Base64URL encoded). For ECDSA accounts: 65-byte compact signature.
 
             '
-  parameters:
-    TransactionId:
-      name: id
-      in: path
-      required: true
-      description: Transaction ID (Base64URL encoded SHA-256 of signature)
-      schema:
-        type: string
 externalDocs:
   description: Arweave HTTP API Documentation
   url: https://docs.arweave.org/developers/arweave-node-server/http-api
