@@ -42,7 +42,7 @@ tags:
 - GraphQL
 url: https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/apis.yml
 specificationVersion: '0.23'
-modified: '2026-06-13'
+modified: '2026-10-06'
 apis:
 - name: Arweave GraphQL API
   description: >-
@@ -265,6 +265,8 @@ apis:
     url: >-
       https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/examples/get-transaction-price.json
 common:
+- url: https://www.arweave.org/blog/
+  type: Blog
 - type: PostmanWorkspace
   url: https://www.postman.com/kinlaneapi/arweave/overview
 - type: DomainSecurity
