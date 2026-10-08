@@ -50,3 +50,34 @@ plans:
       - /price endpoint for fee estimation
       - Extra fee for first transaction to a new wallet address
       - Supports chunked data uploads for large files
+x-canonical:
+  generated: '2026-10-08'
+  vocabulary: all/0-working/economics/plans-canonical.yml
+  models:
+  - free
+  - metered
+  units:
+  - data
+  - transaction
+  plans:
+  - name: Free (Turbo)
+    access: other
+    model: free
+    model_how: derived
+    units:
+    - other
+    periods: []
+  - name: Pay-Per-Byte (Turbo Credits)
+    access: other
+    model: metered
+    model_how: derived
+    units:
+    - data
+    periods: []
+  - name: Direct Node (Protocol Level)
+    access: other
+    model: metered
+    model_how: derived
+    units:
+    - transaction
+    periods: []
