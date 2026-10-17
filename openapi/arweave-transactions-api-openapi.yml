@@ -305,14 +305,6 @@ paths:
                 type: string
               example: '321004937'
 components:
-  parameters:
-    TransactionId:
-      name: id
-      in: path
-      required: true
-      description: Transaction ID (Base64URL encoded SHA-256 of signature)
-      schema:
-        type: string
   schemas:
     TransactionStatus:
       type: object
@@ -406,6 +398,14 @@ components:
           description: 'RSA-PSS signature with SHA-256 (Base64URL encoded). For ECDSA accounts: 65-byte compact signature.
 
             '
+  parameters:
+    TransactionId:
+      name: id
+      in: path
+      required: true
+      description: Transaction ID (Base64URL encoded SHA-256 of signature)
+      schema:
+        type: string
 externalDocs:
   description: Arweave HTTP API Documentation
   url: https://docs.arweave.org/developers/arweave-node-server/http-api
