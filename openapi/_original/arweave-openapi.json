@@ -1,0 +1,3627 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "Turbo Upload Service",
+    "version": "1.5.0",
+    "description": "The Turbo Upload Service supports posting signed data-items to Arweave using Turbo Credits."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3001",
+      "description": "Local development server"
+    },
+    {
+      "url": "/v1",
+      "description": "v1 API base path for new implementations"
+    },
+    {
+      "url": "/",
+      "description": "Root path for backwards compatibility"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Service Info",
+      "description": "Service information and health endpoints"
+    },
+    {
+      "name": "Pricing",
+      "description": "Pricing calculation endpoints"
+    },
+    {
+      "name": "Account",
+      "description": "Account balance and wallet information"
+    },
+    {
+      "name": "Upload",
+      "description": "Data item upload endpoints (single and multi-part)"
+    },
+    {
+      "name": "Transaction Data",
+      "description": "Transaction status and metadata retrieval"
+    }
+  ],
+  "components": {
+    "parameters": {
+      "byteCount": {
+        "name": "byteCount",
+        "in": "path",
+        "description": "The byte count of the data item.",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "example": 1000
+        }
+      },
+      "token": {
+        "name": "token",
+        "in": "path",
+        "description": "The token to use for validating the transaction.",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "arweave",
+            "ethereum",
+            "solana"
+          ]
+        }
+      },
+      "x402Token": {
+        "name": "token",
+        "in": "path",
+        "description": "x402 payment token in format {currency}-{network} OR {network}-{currency} (both supported).\n\n**Supported Tokens (Enabled by Default):**\n- usdc-base OR base-usdc: USDC on Base mainnet\n- usdc-base-mainnet OR base-mainnet-usdc: Alternative name for Base mainnet\n\n**Available (requires env config):**\n- usdc-base-sepolia OR base-sepolia-usdc: USDC on Base Sepolia testnet (requires X402_BASE_TESTNET_ENABLED=true)\n- usdc-ethereum-mainnet OR ethereum-mainnet-usdc: USDC on Ethereum mainnet (requires X402_ETH_ENABLED=true)\n- usdc-polygon-mainnet OR polygon-mainnet-usdc: USDC on Polygon mainnet (requires X402_POLYGON_ENABLED=true)\n\n**Note:** Both token formats are supported for convenience. Use whichever feels more natural.\n\n**Future:** sol-mainnet, ar-mainnet, etc.\n",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "usdc-base",
+            "base-usdc",
+            "usdc-base-mainnet",
+            "base-mainnet-usdc",
+            "usdc-base-sepolia",
+            "base-sepolia-usdc",
+            "usdc-ethereum-mainnet",
+            "ethereum-mainnet-usdc",
+            "usdc-polygon-mainnet",
+            "polygon-mainnet-usdc"
+          ],
+          "example": "usdc-base"
+        }
+      },
+      "id": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "description": "A data item id.",
+          "example": "QpmY8mZmFEC8RxNsgbxSV6e36OF6quIYaPRKzvUco0o"
+        }
+      },
+      "uploadId": {
+        "name": "uploadId",
+        "in": "path",
+        "description": "The upload id of the multi-part upload.",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "example": "QpmY8mZmFEC8RxNsgbxSV6e36OF6quIYaPRKzvUco0o"
+        }
+      },
+      "chunkOffset": {
+        "name": "chunkOffset",
+        "in": "path",
+        "description": "The offset of the chunk in bytes. If -1, that will finalize an existing multi-part upload.",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "example": 0
+        }
+      },
+      "content-length": {
+        "name": "content-length",
+        "in": "header",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "format": "int64",
+          "maximum": 4294967296
+        }
+      },
+      "content-type": {
+        "name": "content-type",
+        "in": "header",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "application/octet-stream"
+          ]
+        }
+      },
+      "x-payment": {
+        "name": "X-PAYMENT",
+        "in": "header",
+        "required": false,
+        "description": "Base64-encoded x402 payment authorization for pay-as-you-go USDC payments.\n\n**x402 Payment Flow:**\n1. Upload without X-PAYMENT → Server returns 402 with payment requirements\n2. Client creates EIP-3009 authorization and signs with EIP-712\n3. Client retries upload with X-PAYMENT header containing base64(JSON)\n4. Server verifies signature, settles USDC transfer, processes upload\n5. Server returns receipt with x402Payment object and X-Payment-Response header\n\n**Decoded Structure (see X402PaymentHeader schema):**\n```json\n{\n  \"x402Version\": 1,\n  \"scheme\": \"exact\",\n  \"network\": \"base\",\n  \"payload\": {\n    \"signature\": \"0x...(EIP-712 signature)...\",\n    \"authorization\": {\n      \"from\": \"0xPayerAddress\",\n      \"to\": \"0xBundlerPaymentAddress\",\n      \"value\": \"30490\",\n      \"validAfter\": 0,\n      \"validBefore\": 1735689600,\n      \"nonce\": \"0x...(32 bytes hex)...\"\n    }\n  }\n}\n```\n\n**Creating the Header:**\n```javascript\nconst payload = { x402Version: 1, scheme: \"exact\", network: \"base\", payload: {...} };\nconst xPayment = Buffer.from(JSON.stringify(payload)).toString(\"base64\");\nheaders[\"X-PAYMENT\"] = xPayment;\n```\n\n**Requirements:**\n- Content-Length header MUST be present when using X-PAYMENT\n- Authorization value must match or exceed the 402 response's maxAmountRequired\n- Nonce must be unique (32-byte random hex string)\n\n**Supported Networks:** base, base-sepolia, ethereum-mainnet, polygon-mainnet\n\n**Standards:**\n- x402 Protocol: https://github.com/coinbase/x402\n- EIP-3009: TransferWithAuthorization (gasless USDC transfers)\n- EIP-712: Typed structured data signing\n",
+        "schema": {
+          "type": "string",
+          "format": "byte",
+          "example": "eyJ4NDAyVmVyc2lvbiI6MSwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiYmFzZSIsInBheWxvYWQiOnsic2lnbmF0dXJlIjoiMHgxMjM0NTY3ODkwYWJjZGVmLi4uIiwiYXV0aG9yaXphdGlvbiI6eyJmcm9tIjoiMHg3NDJkMzVDYzY2MzRDMDUzMjkyNWEzYjg0NEJjOWU3NTk1ZjBiRWIwIiwidG8iOiIweENGZDNmOTk2NDQ3YTU0MUNiZmJhNTQyMjMxMEVEYjQxN2Q5ZjJjRTYiLCJ2YWx1ZSI6IjMwNDkwIiwidmFsaWRBZnRlciI6MCwidmFsaWRCZWZvcmUiOjE3MzU2ODk2MDAsIm5vbmNlIjoiMHgxMjM0NTY3ODkwYWJjZGVmMTIzNDU2Nzg5MGFiY2RlZjEyMzQ1Njc4OTBhYmNkZWYxMjM0NTY3ODkwYWJjZGVmIn19fQ=="
+        }
+      },
+      "x-tag-custom": {
+        "name": "X-Tag-*",
+        "in": "header",
+        "required": false,
+        "description": "Custom tags for raw data uploads (server-signed mode only). Use pattern X-Tag-Name where Name becomes the tag name.\nExample: X-Tag-App-Name: MyApp creates tag {\"name\": \"App-Name\", \"value\": \"MyApp\"}\n\nAuto-added tags for raw uploads:\n- Bundler: Service name\n- Upload-Type: \"raw-data-x402\"\n- Payer-Address: Ethereum address from X-PAYMENT\n- Upload-Timestamp: Unix timestamp\n- Content-Type: From Content-Type header\n- X402-Tx-Hash: Blockchain transaction hash (if x402 payment)\n- X402-Payment-ID: Unique payment identifier UUID (if x402 payment)\n- X402-Network: Payment network e.g. \"base\" (if x402 payment)\n",
+        "schema": {
+          "type": "string",
+          "example": "MyApp"
+        }
+      }
+    },
+    "schemas": {
+      "DataItemStatus": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "The status of the data item.",
+            "example": "CONFIRMED",
+            "enum": [
+              "CONFIRMED",
+              "FINALIZED"
+            ]
+          },
+          "bundleId": {
+            "type": "string",
+            "description": "The bundle id of the data item.",
+            "example": "QpmY8mZmFEC8RxNsgbxSV6e36OF6quIYaPRKzvUco0o"
+          },
+          "startOffsetInRootBundle": {
+            "type": "integer",
+            "description": "The start offset in the root bundle tx of the raw data item.",
+            "example": 12345,
+            "required": false
+          },
+          "payloadContentType": {
+            "type": "string",
+            "description": "The content type of the data item payload.",
+            "example": "application/json"
+          },
+          "payloadDataStart": {
+            "type": "integer",
+            "description": "The start offset of the payload data in the raw data item.",
+            "example": 1024
+          },
+          "info": {
+            "type": "string",
+            "description": "The info of the data item.",
+            "example": "pending",
+            "enum": [
+              "new",
+              "pending",
+              "permanent"
+            ]
+          },
+          "winc": {
+            "type": "string",
+            "description": "The winston price of the data item.",
+            "example": "1000000"
+          }
+        }
+      },
+      "DataItemPost": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The id of the data item.",
+            "example": "QpmY8mZmFEC8RxNsgbxSV6e36OF6quIYaPRKzvUco0o"
+          },
+          "owner": {
+            "type": "string",
+            "description": "The normalized wallet address that signed data item. For raw data uploads, this is the server's raw data item wallet (auto-whitelisted).",
+            "example": "8wgRDgvYOrtSaWEIV21g0lTuWDUnTu4_iYj4hmA7PI0"
+          },
+          "payer": {
+            "type": "string",
+            "description": "The Ethereum address that paid for this upload via x402 (only present for raw data uploads, tracked in Payer-Address tag).",
+            "example": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb0"
+          },
+          "dataCaches": {
+            "type": "array",
+            "description": "The Arweave data caches the data item has been posted to.",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "arweave.net"
+            ]
+          },
+          "fastFinalityIndexes": {
+            "type": "array",
+            "description": "The Arweave fast finality indexes the data item has been posted to.",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "arweave.net"
+            ]
+          },
+          "deadlineHeight": {
+            "type": "integer",
+            "description": "The deadline block height for the data item to be posted to Arweave.",
+            "example": 1310000
+          },
+          "timestamp": {
+            "type": "integer",
+            "description": "The timestamp in millisecond of when the data item was fully uploaded and receipt was signed.",
+            "example": 1700590909589
+          },
+          "version": {
+            "type": "string",
+            "description": "The version of the receipt",
+            "example": "0.1.0"
+          },
+          "signature": {
+            "type": "string",
+            "description": "The base64URL signature of the receipt. Includes id, version, timestamp, public key, deadlineHeight and owner.",
+            "example": "iU_S6uuG1OD8k0XqMGOmbcKfysDckEMUy4R9-ODPXiQjKXuT4lTngRFBFKO5NQT1iIfqSDKcbTRL6gJowM_L7bBQZRGkojzXD0PNNU2F0bNNJ80VtUktHifGTXbCgz5kiFciL19n0P3nX6ZfXnOn-H8ALZzRJV69apdvwqitpNKxLMPyc-QA0QBxmC3CKPz_7fy2Qg0QHr5g_ZT2Of-YJ_RsZTEoc3g1fgzsEmMBPOsx4XtPrhV6llnA3pncngzHbPdFvypdWiO8Bvr0EWmazNsoanuwK5uKJ_ROIGXW_dBBGN8Vrfv5U6dJnhJVn5IE7JFlixpFTluF_ICRzbUq2pk_re6jEtW1H3ItH2iN0UeFUw1uDbq3HJW6lDc8aOwDwDspJI11KEI6uCz5QmQy2V8DvRknoqcxmuihF6XmmJIZgTVeo6LNufEis9kFxqtc3Dh_gn8z0cDXKEKFycudckmcHP7vkWD68uSssMMJIdVgwvPZss06svfRnI-E33j3MrQI9FzMIv-7Df8iYATyeyldM1v3gexG0kQm0AMG1_8_SLqwu2QlqzM41mrK5vNmQxOVdIQSOPWPvzbF-YGRwpCjlveRBuARGC9JNC4UipvDYri2gRWuBx2uDL7dmVFv1gRll3dYNMYaMULHYngtrrCynB3Cyfhh7cyPlwuNlk0"
+          },
+          "public": {
+            "type": "string",
+            "description": "The public key of the wallet that signed the receipt",
+            "example": "qREovbmD6oxgHYNCzOeTei07lSz0-YLcjnvgSDzqptsCiqNOtB3RKUToSX5hkPD45fJDY4057XkkcsQRuGsU8y9rgm37i-Kiyd5Z_iy6pJXrwi9XnAgGL118lIV790GZ7xe5o3DvPV3Px74C0ABsfL9lW86D4t_qClJ6wSQksKNd7rnUImIvHW0vxLswST7dfUngevzKt4kv48VTub4951XdUHjb45Uurf7xFYSCizAGtGqr5GYDFrVk-mNrzFH5bXt06PJfxe9E5ujIE5Uq1Az6vqEOO0E1mWmXqdTPluAxcjmgktkoNLHZnnU-BsYuFaTWW5NU3aS-RgJKXYs9O6Dc1-2SITl-H_wtdGNSj31fj72UkaAbkpA1mionK-8bOIkSpYgKCyTC42oHh1Fw4SLXPyLxBj1w6F32LSLjpse5dmKymj4fJPezCMdi709uIiVT7XOm4LZBCzFOxS6-UNxgE57dBFpcWkcqNO3p00biYqH5d5bzvK3bwd-4j0KyKlqPYTProSnd3P6ROZuuJaLoLD_Or5-L_dUjawHz-DFlzmckYaf8l3XdzPM4JSsE8CEDZl0NCN0AidXt_wjbr6k9JsO7cnLB226AjxhcyuxZOlhgkIn7EbxpVXx-O2mXkcXF8PixCP0k5brtriLeF1MAdspgd_S-LKQeGVr7-mk"
+          },
+          "x402Payment": {
+            "type": "object",
+            "description": "x402 payment information - present when upload was paid via X-PAYMENT header.\n\nContains blockchain transaction details for verification and audit trail.\nThe payment is settled on-chain via EIP-3009 USDC transfer before upload completes.\n",
+            "properties": {
+              "paymentId": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Unique payment identifier (UUID) for tracking and reconciliation",
+                "example": "550e8400-e29b-41d4-a716-446655440000"
+              },
+              "transactionHash": {
+                "type": "string",
+                "description": "Blockchain transaction hash for the USDC transfer.\nCan be verified on block explorer (e.g., BaseScan for Base network).\n",
+                "example": "0xb8a52725cdc816d060392dcecaa1528872acf9ea0bd097a86e2432dd5d2213ca"
+              },
+              "network": {
+                "type": "string",
+                "description": "Network where payment was settled",
+                "enum": [
+                  "base-sepolia",
+                  "base-mainnet"
+                ],
+                "example": "base-mainnet"
+              },
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "payg",
+                  "topup",
+                  "hybrid"
+                ],
+                "description": "Payment mode (currently always \"payg\" for x402):\n- payg: Pay-as-you-go (payment covers only this specific upload)\n- topup: Credit account balance (currently not used for x402)\n- hybrid: Reserve for upload + credit excess (currently not used for x402)\n",
+                "example": "payg"
+              }
+            }
+          }
+        }
+      },
+      "CreateMultipartUpload": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The id of the multi-part upload.",
+            "example": "QpmY8mZmFEC8RxNsgbxSV6e36OF6quIYaPRKzvUco0o"
+          },
+          "min": {
+            "type": "number",
+            "description": "The minimum chunk size allowed in bytes (e.g. 25KB)",
+            "example": 2500
+          },
+          "max": {
+            "type": "number",
+            "description": "The maximum chunk size allowed in bytes (e.g. 500MB)",
+            "example": "500_000_000"
+          }
+        }
+      },
+      "InFlightMultipartUpload": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The id of the multi-part upload.",
+            "example": "QpmY8mZmFEC8RxNsgbxSV6e36OF6quIYaPRKzvUco0o"
+          },
+          "min": {
+            "type": "number",
+            "description": "The minimum chunk size allowed in bytes (e.g. 25KB)",
+            "example": 2500
+          },
+          "max": {
+            "type": "number",
+            "description": "The maximum chunk size allowed in bytes (e.g. 500MB)",
+            "example": 500000000
+          },
+          "size": {
+            "type": "number",
+            "description": "The chunk size for the multi-part upload in bytes. (e.g. 25MB)",
+            "example": 25000000
+          },
+          "chunks": {
+            "type": "array",
+            "description": "A multi-dimensional array containing the chunk offset and chunk size (e.g. [chunkOffset, chunkSize] for each chunk that has been uploaded for the respective upload id, sorted in ascending order respective to the chunk offset.",
+            "example": [
+              [
+                25000000,
+                25000000
+              ],
+              [
+                50000000,
+                25000000
+              ],
+              [
+                75000000,
+                25000000
+              ],
+              [
+                100000000,
+                4858676
+              ]
+            ]
+          }
+        }
+      },
+      "CompleteMultipartUpload": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The id of the multi-part upload.",
+            "example": "QpmY8mZmFEC8RxNsgbxSV6e36OF6quIYaPRKzvUco0o"
+          },
+          "data": {
+            "$ref": "#/components/schemas/DataItemPost"
+          }
+        }
+      },
+      "ServiceInfo": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string",
+            "description": "The version of the service",
+            "example": "0.1.0"
+          },
+          "gateway": {
+            "type": "string",
+            "description": "The primary gateway address of the service (first entry of gateways)",
+            "example": "https://arweave.net"
+          },
+          "gateways": {
+            "type": "array",
+            "description": "All public-facing gateway URLs advertised by the service",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "https://arweave.net"
+            ]
+          },
+          "freeUploadLimitBytes": {
+            "type": "integer",
+            "description": "Legacy advertised free per-item size limit in bytes (kept for back-compat with older SDKs).",
+            "example": 10737418240
+          },
+          "freeTier": {
+            "type": "object",
+            "description": "Free-tier byte budgets. Present only when the free tier is enabled on\nthe service.\n",
+            "properties": {
+              "lifetimeBytes": {
+                "type": "integer",
+                "description": "Persistent per-wallet lifetime free byte budget.",
+                "example": 10485760
+              },
+              "ipBytes": {
+                "type": "integer",
+                "description": "Per-IP (subnet bucket) free byte budget.",
+                "example": 10485760
+              },
+              "maxItemBytes": {
+                "type": "integer",
+                "description": "Maximum size in bytes of a single free-tier data item.",
+                "example": 10485760
+              }
+            }
+          },
+          "addresses": {
+            "type": "object",
+            "description": "The wallet addresses of the service",
+            "properties": {
+              "arweave": {
+                "type": "string",
+                "description": "The Arweave wallet address of the service",
+                "example": "8wgRDgvYOrtSaWEIV21g0lTuWDUnTu4_iYj4hmA7PI0"
+              },
+              "ethereum": {
+                "type": "string",
+                "description": "The Ethereum wallet address of the service",
+                "example": "0x8wgRDgvYOrtSaWEIV21g0lTuWDUnTu4_iYj4hmA7PI0"
+              },
+              "solana": {
+                "type": "string",
+                "description": "The Solana wallet address of the service",
+                "example": "8wgRDgvYOrtSaWEIV21g0lTuWDUnTu4_iYj4hmA7PI0"
+              },
+              "matic": {
+                "type": "string",
+                "description": "The Matic wallet address of the service",
+                "example": "0x8wgRDgvYOrtSaWEIV21g0lTuWDUnTu4_iYj4hmA7PI0"
+              }
+            }
+          }
+        }
+      },
+      "OffsetsInfo": {
+        "type": "object",
+        "properties": {
+          "rootBundleId": {
+            "type": "string",
+            "description": "The bundle id of the data item.",
+            "example": "J40R1BgFSI1_7p25QW49T7P46BePJJnlDrsFGY1YWbM"
+          },
+          "startOffsetInRootBundle": {
+            "type": "integer",
+            "description": "The start offset in the root bundle tx of the raw data item.",
+            "example": 12345,
+            "required": false
+          },
+          "parentDataItemId": {
+            "type": "string",
+            "description": "The parent data item id of the data item.",
+            "example": "QpmY8mZmFEC8RxNsgbxSV6e36OF6quIYaPRKzvUco0o",
+            "required": false
+          },
+          "startOffsetInParentDataItemPayload": {
+            "type": "integer",
+            "description": "The start offset in the parent data item payload of the raw data item.",
+            "example": 12345,
+            "required": false
+          },
+          "rawContentLength": {
+            "type": "integer",
+            "description": "The length of the raw data item (i.e. headers and payload).",
+            "example": 123456
+          },
+          "payloadContentType": {
+            "type": "string",
+            "description": "The content type of the data item payload.",
+            "example": "application/json"
+          },
+          "payloadDataStart": {
+            "type": "integer",
+            "description": "The start offset of the payload data in the raw data item.",
+            "example": 1024
+          }
+        }
+      },
+      "X402PricingDataItem": {
+        "type": "object",
+        "description": "x402 pricing response for a complete signed ANS-104 data item",
+        "required": [
+          "token",
+          "currency",
+          "network",
+          "byteCount",
+          "winstonCost",
+          "usdcAmount",
+          "x402Version",
+          "payment"
+        ],
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "The payment token used (e.g., usdc-base)",
+            "example": "usdc-base"
+          },
+          "currency": {
+            "type": "string",
+            "description": "The payment currency (currently only usdc)",
+            "enum": [
+              "usdc"
+            ],
+            "example": "usdc"
+          },
+          "network": {
+            "type": "string",
+            "description": "The payment network",
+            "enum": [
+              "base",
+              "base-mainnet",
+              "base-sepolia",
+              "ethereum-mainnet",
+              "polygon-mainnet"
+            ],
+            "example": "base"
+          },
+          "byteCount": {
+            "type": "integer",
+            "description": "Size of the data item in bytes",
+            "example": 2048
+          },
+          "winstonCost": {
+            "type": "string",
+            "description": "Base Winston cost from Arweave gateway (no markup)",
+            "example": "674782942"
+          },
+          "usdcAmount": {
+            "type": "string",
+            "description": "Final USDC amount in atomic units (6 decimals) with markup applied",
+            "example": "3642"
+          },
+          "x402Version": {
+            "type": "integer",
+            "description": "x402 protocol version",
+            "example": 1
+          },
+          "payment": {
+            "type": "object",
+            "description": "x402-compliant payment requirements",
+            "required": [
+              "scheme",
+              "network",
+              "maxAmountRequired",
+              "resource",
+              "description",
+              "mimeType",
+              "payTo",
+              "maxTimeoutSeconds",
+              "asset"
+            ],
+            "properties": {
+              "scheme": {
+                "type": "string",
+                "enum": [
+                  "exact"
+                ],
+                "example": "exact"
+              },
+              "network": {
+                "type": "string",
+                "example": "base"
+              },
+              "maxAmountRequired": {
+                "type": "string",
+                "description": "USDC amount in atomic units (6 decimals)",
+                "example": "3642"
+              },
+              "resource": {
+                "type": "string",
+                "description": "Upload endpoint URL",
+                "example": "https://upload.example.com/v1/x402/upload/signed"
+              },
+              "description": {
+                "type": "string",
+                "example": "Upload 2048 bytes (signed data item) to Arweave via AR.IO Bundler"
+              },
+              "mimeType": {
+                "type": "string",
+                "example": "application/octet-stream"
+              },
+              "payTo": {
+                "type": "string",
+                "description": "Recipient Ethereum address for USDC payment",
+                "example": "0xCFd3f996447a541Cbfba5422310EDb417d9f2cE6"
+              },
+              "maxTimeoutSeconds": {
+                "type": "integer",
+                "description": "Payment authorization timeout",
+                "example": 3600
+              },
+              "asset": {
+                "type": "string",
+                "description": "USDC contract address on the network",
+                "example": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+              },
+              "extra": {
+                "type": "object",
+                "description": "EIP-712 domain metadata",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "USD Coin"
+                  },
+                  "version": {
+                    "type": "string",
+                    "example": "2"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "X402PricingRawData": {
+        "type": "object",
+        "description": "x402 pricing response for raw data (includes ANS-104 overhead calculation)",
+        "required": [
+          "token",
+          "currency",
+          "network",
+          "rawDataSize",
+          "userTagCount",
+          "systemTagCount",
+          "totalTagCount",
+          "estimatedDataItemSize",
+          "overhead",
+          "winstonCost",
+          "usdcAmount",
+          "x402Version",
+          "payment"
+        ],
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "The payment token used (e.g., usdc-base)",
+            "example": "usdc-base"
+          },
+          "currency": {
+            "type": "string",
+            "description": "The payment currency (currently only usdc)",
+            "enum": [
+              "usdc"
+            ],
+            "example": "usdc"
+          },
+          "network": {
+            "type": "string",
+            "description": "The payment network",
+            "enum": [
+              "base",
+              "base-mainnet",
+              "base-sepolia",
+              "ethereum-mainnet",
+              "polygon-mainnet"
+            ],
+            "example": "base"
+          },
+          "rawDataSize": {
+            "type": "integer",
+            "description": "Size of raw data in bytes (before ANS-104 wrapping)",
+            "example": 1024
+          },
+          "userTagCount": {
+            "type": "integer",
+            "description": "Number of user-provided tags",
+            "example": 3
+          },
+          "systemTagCount": {
+            "type": "integer",
+            "description": "Number of system-added tags (Bundler, Upload-Type, etc.)",
+            "example": 7
+          },
+          "totalTagCount": {
+            "type": "integer",
+            "description": "Total number of tags (user + system)",
+            "example": 11
+          },
+          "estimatedDataItemSize": {
+            "type": "integer",
+            "description": "Estimated final data item size including ANS-104 overhead",
+            "example": 2832
+          },
+          "overhead": {
+            "type": "integer",
+            "description": "ANS-104 overhead in bytes (signature, owner, tags, headers)",
+            "example": 1808
+          },
+          "winstonCost": {
+            "type": "string",
+            "description": "Base Winston cost from Arweave gateway (no markup)",
+            "example": "674782942"
+          },
+          "usdcAmount": {
+            "type": "string",
+            "description": "Final USDC amount in atomic units (6 decimals) with markup applied",
+            "example": "3642"
+          },
+          "x402Version": {
+            "type": "integer",
+            "description": "x402 protocol version",
+            "example": 1
+          },
+          "payment": {
+            "type": "object",
+            "description": "x402-compliant payment requirements",
+            "required": [
+              "scheme",
+              "network",
+              "maxAmountRequired",
+              "resource",
+              "description",
+              "mimeType",
+              "payTo",
+              "maxTimeoutSeconds",
+              "asset"
+            ],
+            "properties": {
+              "scheme": {
+                "type": "string",
+                "enum": [
+                  "exact"
+                ],
+                "example": "exact"
+              },
+              "network": {
+                "type": "string",
+                "example": "base"
+              },
+              "maxAmountRequired": {
+                "type": "string",
+                "description": "USDC amount in atomic units (6 decimals)",
+                "example": "3642"
+              },
+              "resource": {
+                "type": "string",
+                "description": "Upload endpoint URL",
+                "example": "https://upload.example.com/v1/tx"
+              },
+              "description": {
+                "type": "string",
+                "example": "Upload 2832 bytes (raw data + ANS-104 overhead) to Arweave via AR.IO Bundler"
+              },
+              "mimeType": {
+                "type": "string",
+                "example": "image/png"
+              },
+              "payTo": {
+                "type": "string",
+                "description": "Recipient Ethereum address for USDC payment",
+                "example": "0xCFd3f996447a541Cbfba5422310EDb417d9f2cE6"
+              },
+              "maxTimeoutSeconds": {
+                "type": "integer",
+                "description": "Payment authorization timeout",
+                "example": 3600
+              },
+              "asset": {
+                "type": "string",
+                "description": "USDC contract address on the network",
+                "example": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+              },
+              "extra": {
+                "type": "object",
+                "description": "EIP-712 domain metadata",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "USD Coin"
+                  },
+                  "version": {
+                    "type": "string",
+                    "example": "2"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "RawDataUploadResponse": {
+        "type": "object",
+        "description": "Response for raw data uploads via /x402/upload/unsigned endpoint.\n\n**Key differences from signed uploads:**\n- `owner` is the bundler's server wallet (signs the ANS-104 data item)\n- `payer` is the Ethereum address that paid via x402 (tracked in Payer-Address tag)\n- `receipt` contains the signed receipt with cryptographic proof\n",
+        "required": [
+          "id",
+          "owner",
+          "payer",
+          "dataCaches",
+          "fastFinalityIndexes",
+          "receipt",
+          "x402Payment"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The Arweave data item ID (base64url encoded, 43 characters)",
+            "example": "rNephs2z5BAAUlmZm_TGwQjz4TiMr6HoZNyBO3eLctA"
+          },
+          "owner": {
+            "type": "string",
+            "description": "The Arweave wallet address that signed the data item.\nFor raw uploads, this is the bundler's server wallet (RAW_DATA_ITEM_JWK).\n",
+            "example": "jHGQATyLh_yBNKwqPmU-y6qV98q-AB48fIWUiFOSJAA"
+          },
+          "payer": {
+            "type": "string",
+            "description": "The Ethereum address that paid for this upload via x402.\nThis address is recorded in the Payer-Address tag on the data item.\n",
+            "example": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb0"
+          },
+          "dataCaches": {
+            "type": "array",
+            "description": "Arweave data caches the data item has been posted to",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "arweave.net"
+            ]
+          },
+          "fastFinalityIndexes": {
+            "type": "array",
+            "description": "Arweave fast finality indexes the data item has been posted to",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "arweave.net"
+            ]
+          },
+          "receipt": {
+            "type": "object",
+            "description": "Signed receipt providing cryptographic proof of upload acceptance.\nVerify by checking the signature against the public key.\n",
+            "required": [
+              "id",
+              "timestamp",
+              "version",
+              "deadlineHeight",
+              "dataCaches",
+              "fastFinalityIndexes",
+              "winc",
+              "public",
+              "signature"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Data item ID (matches top-level id)",
+                "example": "rNephs2z5BAAUlmZm_TGwQjz4TiMr6HoZNyBO3eLctA"
+              },
+              "timestamp": {
+                "type": "integer",
+                "description": "Unix timestamp in milliseconds when receipt was signed",
+                "example": 1700590909589
+              },
+              "version": {
+                "type": "string",
+                "description": "Receipt format version",
+                "example": "0.2.0"
+              },
+              "deadlineHeight": {
+                "type": "integer",
+                "description": "Arweave block height by which data item must be posted",
+                "example": 1310000
+              },
+              "dataCaches": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "example": [
+                  "arweave.net"
+                ]
+              },
+              "fastFinalityIndexes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "example": [
+                  "arweave.net"
+                ]
+              },
+              "winc": {
+                "type": "string",
+                "description": "Winston credits equivalent of the upload (for accounting)",
+                "example": "1000000"
+              },
+              "public": {
+                "type": "string",
+                "description": "Base64url-encoded RSA public key of the signer (bundler wallet)",
+                "example": "qREovbmD6oxgHYNCzOeTei07lSz0-YLcjnvgSDzqpts..."
+              },
+              "signature": {
+                "type": "string",
+                "description": "Base64url-encoded RSA signature of the receipt.\nSigns: id + version + timestamp + public + deadlineHeight + owner\n",
+                "example": "iU_S6uuG1OD8k0XqMGOmbcKfysDckEMUy4R9-ODPXiQj..."
+              }
+            }
+          },
+          "x402Payment": {
+            "type": "object",
+            "description": "x402 payment confirmation with blockchain transaction details",
+            "required": [
+              "paymentId",
+              "transactionHash",
+              "network",
+              "mode"
+            ],
+            "properties": {
+              "paymentId": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Unique payment identifier for tracking and reconciliation",
+                "example": "edd4766e-a053-47f2-88d1-819e72c534dd"
+              },
+              "transactionHash": {
+                "type": "string",
+                "description": "Blockchain transaction hash for the USDC transfer.\nVerify on block explorer (e.g., BaseScan for Base network).\n",
+                "example": "0x9c31110e240805d9dfa5853c661f23a258c89f78b8d2e4424a922f9dfd8748f3"
+              },
+              "network": {
+                "type": "string",
+                "description": "Network where payment was settled",
+                "enum": [
+                  "base",
+                  "base-sepolia",
+                  "base-mainnet",
+                  "ethereum-mainnet",
+                  "polygon-mainnet"
+                ],
+                "example": "base"
+              },
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "payg"
+                ],
+                "description": "Payment mode (always \"payg\" for x402 raw uploads)",
+                "example": "payg"
+              }
+            }
+          }
+        }
+      },
+      "X402PaymentHeader": {
+        "type": "object",
+        "description": "Structure of the decoded X-PAYMENT header for x402 payments.\n\n**Creating the X-PAYMENT header:**\n1. Create EIP-3009 authorization object\n2. Sign with EIP-712 typed data\n3. Combine into payload object\n4. JSON.stringify and base64 encode\n\n**EIP-712 Domain (for USDC on Base):**\n```javascript\n{\n  name: \"USD Coin\",\n  version: \"2\",\n  chainId: 8453,  // Base mainnet\n  verifyingContract: \"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\"\n}\n```\n",
+        "required": [
+          "x402Version",
+          "scheme",
+          "network",
+          "payload"
+        ],
+        "properties": {
+          "x402Version": {
+            "type": "integer",
+            "description": "x402 protocol version (currently 1)",
+            "example": 1
+          },
+          "scheme": {
+            "type": "string",
+            "enum": [
+              "exact"
+            ],
+            "description": "Payment scheme",
+            "example": "exact"
+          },
+          "network": {
+            "type": "string",
+            "description": "Blockchain network for payment",
+            "example": "base"
+          },
+          "payload": {
+            "type": "object",
+            "required": [
+              "signature",
+              "authorization"
+            ],
+            "properties": {
+              "signature": {
+                "type": "string",
+                "description": "EIP-712 signature of the authorization (hex string with 0x prefix)",
+                "example": "0x1234567890abcdef..."
+              },
+              "authorization": {
+                "type": "object",
+                "description": "EIP-3009 TransferWithAuthorization parameters",
+                "required": [
+                  "from",
+                  "to",
+                  "value",
+                  "validAfter",
+                  "validBefore",
+                  "nonce"
+                ],
+                "properties": {
+                  "from": {
+                    "type": "string",
+                    "description": "Payer's Ethereum address",
+                    "example": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb0"
+                  },
+                  "to": {
+                    "type": "string",
+                    "description": "Recipient's Ethereum address (bundler's payment address)",
+                    "example": "0xCFd3f996447a541Cbfba5422310EDb417d9f2cE6"
+                  },
+                  "value": {
+                    "type": "string",
+                    "description": "USDC amount in atomic units (6 decimals). \"1000000\" = 1.00 USDC",
+                    "example": "30490"
+                  },
+                  "validAfter": {
+                    "type": "integer",
+                    "description": "Unix timestamp after which authorization is valid (usually 0)",
+                    "example": 0
+                  },
+                  "validBefore": {
+                    "type": "integer",
+                    "description": "Unix timestamp before which authorization is valid",
+                    "example": 1735689600
+                  },
+                  "nonce": {
+                    "type": "string",
+                    "description": "Unique nonce for replay protection (32-byte hex string)",
+                    "example": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/": {
+      "servers": [
+        {
+          "url": "/"
+        }
+      ],
+      "get": {
+        "summary": "Gets the info of the service",
+        "tags": [
+          "Service Info"
+        ],
+        "responses": {
+          "200": {
+            "description": "The info of the service",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceInfo"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/info": {
+      "servers": [
+        {
+          "url": "/"
+        }
+      ],
+      "get": {
+        "summary": "Gets the info of the service",
+        "tags": [
+          "Service Info"
+        ],
+        "responses": {
+          "200": {
+            "description": "The info of the service",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceInfo"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/price/:token/:byteCount": {
+      "servers": [
+        {
+          "url": "/"
+        }
+      ],
+      "get": {
+        "summary": "Gets the price in winc to upload a data item",
+        "tags": [
+          "Pricing"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/token"
+          },
+          {
+            "name": "byteCount",
+            "in": "path",
+            "description": "The byte count of the data item.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "example": 1000
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The price of the data item",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "Price": {
+                    "value": 1000000
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid byte count",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "InvalidByteCount": {
+                    "value": "Invalid byte count"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/price/:token": {
+      "servers": [
+        {
+          "url": "/"
+        }
+      ],
+      "get": {
+        "summary": "Gets the price in winc to upload a data item",
+        "tags": [
+          "Pricing"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The price of the data item",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "Price": {
+                    "value": 1000000
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid byte count",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "InvalidByteCount": {
+                    "value": "Invalid byte count"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/price/x402/data-item/:token/:byteCount": {
+      "servers": [
+        {
+          "url": "/v1"
+        },
+        {
+          "url": "/"
+        }
+      ],
+      "get": {
+        "summary": "Gets x402 pricing for a complete signed ANS-104 data item",
+        "description": "**x402 Pricing for Signed Data Items**\n\nReturns exact x402 USDC pricing for uploading a complete signed ANS-104 data item.\n\n**Use Case:** Client has already created and signed an ANS-104 data item, needs to know exact USDC payment required.\n\n**No Overhead Calculation:** The data item is already complete (includes signature, owner, tags, headers).\nPrice is calculated for the exact byte count provided.\n\n**Pricing Formula:**\n1. Get Winston cost from Arweave gateway for exact byte count\n2. Convert Winston to USDC using current AR/USD rate\n3. Apply x402 fee markup (default 15%, configurable via X402_FEE_PERCENT)\n\n**Token Format:** {currency}-{network}\n- usdc-base: USDC on Base mainnet\n- usdc-base-mainnet: Alternative name for Base mainnet\n- usdc-base-sepolia: Base Sepolia testnet (requires env config)\n\n**Future Support:** sol-mainnet, ar-mainnet, etc.\n",
+        "tags": [
+          "Pricing"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/x402Token"
+          },
+          {
+            "name": "byteCount",
+            "in": "path",
+            "description": "Size of the complete signed data item in bytes",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 4294967296,
+              "example": 2048
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "x402 pricing quote with payment requirements",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/X402PricingDataItem"
+                },
+                "examples": {
+                  "PricingMainnet": {
+                    "summary": "Pricing for signed data item on Base mainnet",
+                    "value": {
+                      "token": "usdc-base",
+                      "currency": "usdc",
+                      "network": "base",
+                      "byteCount": 2048,
+                      "winstonCost": "674782942",
+                      "usdcAmount": "3642",
+                      "x402Version": 1,
+                      "payment": {
+                        "scheme": "exact",
+                        "network": "base",
+                        "maxAmountRequired": "3642",
+                        "resource": "https://upload.example.com/v1/x402/upload/signed",
+                        "description": "Upload 2048 bytes (signed data item) to Arweave via AR.IO Bundler",
+                        "mimeType": "application/octet-stream",
+                        "payTo": "0xCFd3f996447a541Cbfba5422310EDb417d9f2cE6",
+                        "maxTimeoutSeconds": 3600,
+                        "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+                        "extra": {
+                          "name": "USD Coin",
+                          "version": "2"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "InvalidToken": {
+                    "summary": "Invalid or unsupported token",
+                    "value": "Invalid token \"sol-mainnet\". Supported tokens: usdc-base, usdc-base-mainnet"
+                  },
+                  "InvalidByteCount": {
+                    "summary": "Invalid byte count",
+                    "value": "Invalid byte count. Must be a positive integer."
+                  },
+                  "ByteCountTooLarge": {
+                    "summary": "Byte count exceeds maximum",
+                    "value": "Byte count exceeds maximum allowed size of 4294967296 bytes (4 GiB)"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (pricing calculation failed)",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "Failed to calculate pricing"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/price/x402/data/:token/:byteCount": {
+      "servers": [
+        {
+          "url": "/v1"
+        },
+        {
+          "url": "/"
+        }
+      ],
+      "get": {
+        "summary": "Gets x402 pricing for raw data (with ANS-104 overhead calculation)",
+        "description": "**x402 Pricing for Raw Data**\n\nReturns x402 USDC pricing for uploading raw data, accounting for ANS-104 overhead.\n\n**Use Case:** Client has raw data, bundler will create and sign the ANS-104 data item wrapper server-side.\nUseful for AI agents and applications without ANS-104 signing capabilities.\n\n**ANS-104 Overhead Calculation:**\n- Signature: 512 bytes (Arweave RSA-4096)\n- Owner (public key): 512 bytes\n- Headers: ~80 bytes\n- Tags: ~64 bytes per tag\n\n**System Tags (automatically added for x402 uploads):**\n1. Bundler - Service name\n2. Upload-Type - \"raw-data-x402\"\n3. Payer-Address - Ethereum address from payment\n4. X402-TX-Hash - Blockchain transaction hash\n5. X402-Payment-ID - UUID payment identifier\n6. X402-Network - Payment network (e.g., \"base\")\n7. Upload-Timestamp - Unix timestamp\n\n**Query Parameters:**\n- tags: Number of user tags (default: 0)\n- contentType: MIME type (adds Content-Type tag if provided)\n\n**Pricing Formula:**\n1. Calculate total tags (user + system + contentType if provided)\n2. Estimate final data item size: rawDataSize + signature + owner + headers + (totalTags × 64)\n3. Get Winston cost from Arweave gateway for estimated size\n4. Convert Winston to USDC using current AR/USD rate\n5. Apply x402 fee markup (default 15%, configurable via X402_FEE_PERCENT)\n\n**Token Format:** {currency}-{network}\n- usdc-base: USDC on Base mainnet\n- usdc-base-mainnet: Alternative name for Base mainnet\n- usdc-base-sepolia: Base Sepolia testnet (requires env config)\n",
+        "tags": [
+          "Pricing"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/x402Token"
+          },
+          {
+            "name": "byteCount",
+            "in": "path",
+            "description": "Size of raw data in bytes (before ANS-104 wrapping). At most\n`MAX_DATA_ITEM_SIZE`, the largest single upload the bundler accepts;\nthe `maximum` below is its default (4 GiB).\n",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 4294967296,
+              "example": 1024
+            }
+          },
+          {
+            "name": "tags",
+            "in": "query",
+            "description": "Number of user tags (default 0)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "default": 0,
+              "example": 3
+            }
+          },
+          {
+            "name": "contentType",
+            "in": "query",
+            "description": "MIME type (adds Content-Type tag if provided)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "image/png"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "x402 pricing quote with payment requirements and overhead breakdown",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/X402PricingRawData"
+                },
+                "examples": {
+                  "PricingBasic": {
+                    "summary": "Basic raw data pricing (no tags or content type)",
+                    "value": {
+                      "token": "usdc-base",
+                      "currency": "usdc",
+                      "network": "base",
+                      "rawDataSize": 1024,
+                      "userTagCount": 0,
+                      "systemTagCount": 7,
+                      "totalTagCount": 7,
+                      "estimatedDataItemSize": 2576,
+                      "overhead": 1552,
+                      "winstonCost": "674782942",
+                      "usdcAmount": "3642",
+                      "x402Version": 1,
+                      "payment": {
+                        "scheme": "exact",
+                        "network": "base",
+                        "maxAmountRequired": "3642",
+                        "resource": "https://upload.example.com/v1/tx",
+                        "description": "Upload 2576 bytes (raw data + ANS-104 overhead) to Arweave via AR.IO Bundler",
+                        "mimeType": "application/json",
+                        "payTo": "0xCFd3f996447a541Cbfba5422310EDb417d9f2cE6",
+                        "maxTimeoutSeconds": 3600,
+                        "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+                        "extra": {
+                          "name": "USD Coin",
+                          "version": "2"
+                        }
+                      }
+                    }
+                  },
+                  "PricingWithTags": {
+                    "summary": "Raw data pricing with user tags and content type",
+                    "value": {
+                      "token": "usdc-base",
+                      "currency": "usdc",
+                      "network": "base",
+                      "rawDataSize": 1024,
+                      "userTagCount": 3,
+                      "systemTagCount": 7,
+                      "totalTagCount": 11,
+                      "estimatedDataItemSize": 2832,
+                      "overhead": 1808,
+                      "winstonCost": "674782942",
+                      "usdcAmount": "3642",
+                      "x402Version": 1,
+                      "payment": {
+                        "scheme": "exact",
+                        "network": "base",
+                        "maxAmountRequired": "3642",
+                        "resource": "https://upload.example.com/v1/tx",
+                        "description": "Upload 2832 bytes (raw data + ANS-104 overhead) to Arweave via AR.IO Bundler",
+                        "mimeType": "application/json",
+                        "payTo": "0xCFd3f996447a541Cbfba5422310EDb417d9f2cE6",
+                        "maxTimeoutSeconds": 3600,
+                        "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+                        "extra": {
+                          "name": "USD Coin",
+                          "version": "2"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "InvalidToken": {
+                    "summary": "Invalid or unsupported token",
+                    "value": "Invalid token \"sol-mainnet\". Supported tokens: usdc-base, base-usdc, usdc-base-mainnet, base-mainnet-usdc"
+                  },
+                  "InvalidByteCount": {
+                    "summary": "Invalid byte count",
+                    "value": "Invalid byte count. Must be a positive integer."
+                  },
+                  "ByteCountTooLarge": {
+                    "summary": "Byte count exceeds maximum",
+                    "value": "Byte count exceeds maximum allowed size of 4294967296 bytes"
+                  },
+                  "InvalidTags": {
+                    "summary": "Invalid tags parameter",
+                    "value": "Invalid tags parameter. Must be a non-negative integer."
+                  },
+                  "TooManyTags": {
+                    "summary": "Tag count exceeds maximum",
+                    "value": "Tag count exceeds maximum of 100"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (pricing calculation failed)",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "Failed to calculate pricing"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/account/balance/:id": {
+      "servers": [
+        {
+          "url": "/"
+        }
+      ],
+      "get": {
+        "summary": "Gets the balance of a wallet",
+        "tags": [
+          "Account"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The balance of the wallet",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "Balance": {
+                    "value": 1000000
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Not found"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Internal server error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tx": {
+      "servers": [
+        {
+          "url": "/v1"
+        },
+        {
+          "url": "/"
+        }
+      ],
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/content-length"
+        },
+        {
+          "$ref": "#/components/parameters/content-type"
+        },
+        {
+          "$ref": "#/components/parameters/x-payment"
+        },
+        {
+          "$ref": "#/components/parameters/x-tag-custom"
+        }
+      ],
+      "post": {
+        "summary": "Posts a signed ANS-104 data item OR raw data to Arweave",
+        "description": "**Two Upload Modes:**\n\n**1. Traditional ANS-104 Upload (Client-Signed)**\n\nClient creates and signs ANS-104 data item before uploading. The service detects ANS-104 format by checking the first 2 bytes (signature type 1-8).\n\nPayment options:\n- Traditional balance (user has pre-loaded credits)\n- x402 payment (include X-PAYMENT header with EIP-3009 authorization)\n\n**2. Raw Data Upload (Server-Signed, x402 Only)**\n\nSimplified flow for AI agents and applications without ANS-104 signing capabilities. Requires RAW_DATA_UPLOADS_ENABLED=true on server.\n\nThe service automatically detects raw data (non-ANS-104) and:\n- Returns 402 Payment Required if no X-PAYMENT header provided\n- Creates and signs ANS-104 data item server-side using RAW_DATA_ITEM_JWK wallet\n- Adds attribution tags: Bundler, Upload-Type, Payer-Address, Upload-Timestamp, Content-Type\n- Validates x402 payment against payer's Ethereum address (not the signer)\n- Returns response with both `owner` (server wallet) and `payer` (Ethereum address) fields\n\nRequest formats for raw data:\n- Binary upload with X-Tag-* headers for custom tags\n- JSON envelope: `{\"data\": \"<base64>\", \"contentType\": \"...\", \"tags\": [...]}`\n\nWhen using X-PAYMENT header, Content-Length must be present to enable fraud detection.\n",
+        "tags": [
+          "Upload"
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "A signed ANS-104 data item (binary) OR raw data (binary/JSON envelope for server-signing)",
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "format": "binary",
+                "description": "Traditional ANS-104 data item (client-signed)"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Raw data upload envelope (server-signed, x402 only)",
+                "properties": {
+                  "data": {
+                    "type": "string",
+                    "format": "byte",
+                    "description": "Base64-encoded raw data",
+                    "example": "SGVsbG8gV29ybGQh"
+                  },
+                  "contentType": {
+                    "type": "string",
+                    "description": "MIME type of the data",
+                    "example": "text/plain"
+                  },
+                  "tags": {
+                    "type": "array",
+                    "description": "Custom tags to add to the data item",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "example": "App-Name"
+                        },
+                        "value": {
+                          "type": "string",
+                          "example": "MyApp"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The signed data item was successfully submitted to and indexed on Arweave.",
+            "headers": {
+              "X-Payment-Response": {
+                "schema": {
+                  "type": "string",
+                  "format": "byte"
+                },
+                "description": "Base64-encoded x402 payment response (present only if upload was paid via X-PAYMENT header).\n\n**Decodes to JSON with:**\n- paymentId: UUID for tracking\n- txHash: Blockchain transaction hash (verify on block explorer)\n- network: Payment network (e.g., \"base-mainnet\")\n- mode: Payment mode (currently always \"payg\")\n\n**Example (decoded):**\n```json\n{\n  \"paymentId\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"transactionHash\": \"0xb8a52725cdc816d060392dcecaa1528872acf9ea0bd097a86e2432dd5d2213ca\",\n  \"network\": \"base-mainnet\",\n  \"mode\": \"payg\"\n}\n```\n\n**Per x402 standard:** This header provides payment confirmation and can be used by clients\nto verify the payment was successfully settled on-chain.\n",
+                "example": "eyJwYXltZW50SWQiOiI1NTBlODQwMC1lMjliLTQxZDQtYTcxNi00NDY2NTU0NDAwMDAiLCJ0cmFuc2FjdGlvbkhhc2giOiIweGI4YTUyNzI1Y2RjODE2ZDA2MDM5MmRjZWNhYTE1Mjg4NzJhY2Y5ZWEwYmQwOTdhODZlMjQzMmRkNWQyMjEzY2EiLCJuZXR3b3JrIjoiYmFzZS1tYWlubmV0IiwibW9kZSI6InBheWcifQ=="
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataItemPost"
+                },
+                "examples": {
+                  "SignedUploadWithX402": {
+                    "summary": "ANS-104 upload paid with x402",
+                    "description": "Traditional signed ANS-104 data item upload paid via x402 USDC payment.\nClient signs data item with their wallet, includes X-PAYMENT header with USDC authorization.\n",
+                    "value": {
+                      "id": "QpmY8mZmFEC8RxNsgbxSV6e36OF6quIYaPRKzvUco0o",
+                      "timestamp": 1700590909589,
+                      "version": "0.2.0",
+                      "owner": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb0",
+                      "deadlineHeight": 1310000,
+                      "dataCaches": [
+                        "arweave.net"
+                      ],
+                      "fastFinalityIndexes": [
+                        "arweave.net"
+                      ],
+                      "winc": "1000000",
+                      "signature": "iU_S6uuG1OD8k0XqMGOmbcKfysDckEMUy4R9-ODPXiQj...",
+                      "public": "qREovbmD6oxgHYNCzOeTei07lSz0-YLcjnvgSDzqpts...",
+                      "x402Payment": {
+                        "paymentId": "550e8400-e29b-41d4-a716-446655440000",
+                        "transactionHash": "0xb8a52725cdc816d060392dcecaa1528872acf9ea0bd097a86e2432dd5d2213ca",
+                        "network": "base-mainnet",
+                        "mode": "payg"
+                      }
+                    }
+                  },
+                  "RawDataUploadWithX402": {
+                    "summary": "Raw data upload (server-signed) with x402",
+                    "description": "Simplified flow for AI agents - raw data uploaded, server creates ANS-104 data item.\nRequires X-PAYMENT header. Owner is server wallet, payer is Ethereum address from payment.\n",
+                    "value": {
+                      "id": "ZpmY8mZmFEC8RxNsgbxSV6e36OF6quIYaPRKzvUcp1q",
+                      "timestamp": 1700590909589,
+                      "version": "0.2.0",
+                      "owner": "8wgRDgvYOrtSaWEIV21g0lTuWDUnTu4_iYj4hmA7PI0",
+                      "payer": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb0",
+                      "deadlineHeight": 1310000,
+                      "dataCaches": [
+                        "arweave.net"
+                      ],
+                      "fastFinalityIndexes": [
+                        "arweave.net"
+                      ],
+                      "winc": "1000000",
+                      "signature": "jV_T7vvH2PE9l1YrNHPncLgzteEflFNVz5S0-PEQYjRk...",
+                      "public": "rSFpwcmE7pyfTmt1qJWYoVWnR5yX1nt0-ZMdkjpXmqt...",
+                      "x402Payment": {
+                        "paymentId": "660f9511-f3ac-52e5-b827-557766551111",
+                        "transactionHash": "0xc9b63836dde927e171504fa1539ecbb1e3c9dc8c1cd208c7c5c9fb5c3344eddb",
+                        "network": "base-mainnet",
+                        "mode": "payg"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Data item has already been posted to this service.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "DataItemExists": {
+                    "value": "Data Item Exists"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid data item post",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "InvalidContentType": {
+                    "value": "Invalid Content Type"
+                  },
+                  "MissingContentLength": {
+                    "value": "Request content has no length"
+                  },
+                  "InvalidContentLength": {
+                    "value": "Data item is too large, this service only accepts data items up to 4294967296 bytes!"
+                  },
+                  "InvalidDataItem": {
+                    "value": "Data item parsing error!"
+                  }
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment Required. Two variants share this status:\n\n**1. x402 payment required (parseable envelope).** The standard\nx402-compliant response that enables automatic payment with x402-fetch\nand other x402 standard clients. Accompanied by the\n`X-Payment-Required: x402-1` header and an `accepts[]` array.\n\n**Response Flow:**\n1. Client uploads without payment → Receives this 402 response\n2. Client extracts payment requirements from response body\n3. Client creates EIP-3009 authorization and signs with EIP-712\n4. Client retries upload with X-PAYMENT header\n5. Server processes payment and accepts upload\n\n**For browser clients:** If Accept header includes \"text/html\", the payment service\nmay return an interactive HTML paywall with MetaMask integration and Coinbase Onramp.\n\n**2. Free tier exhausted (non-retryable).** When the address has no\nfree allowance and no balance and the x402 envelope is not available,\nthe body carries `code: \"FREE_TIER_EXHAUSTED\"` and a `topUpUrl`\ninstead of `accepts[]`. This is a PERMANENT condition — retrying will\nnot help. Every 402 sub-case sets the `X-Free-Tier-Exhausted: true`\nheader so SDKs can distinguish \"pay to continue\" from a transient\nerror and avoid retry-looping. Note: this fallback body deliberately\ndoes NOT set `X-Payment-Required` because it has no `accepts[]`.\n",
+            "headers": {
+              "X-Payment-Required": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Present only on the x402 envelope variant; signals a parseable x402 body.",
+                "example": "x402-1"
+              },
+              "X-Free-Tier-Exhausted": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                },
+                "description": "Set to \"true\" on every 402 to signal no free allowance and no balance (pay to continue).",
+                "example": "true"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Either an x402 payment-requirements envelope (x402Version +\naccepts[]) or a free-tier-exhausted body (code + topUpUrl +\nbyteCount).\n",
+                  "properties": {
+                    "x402Version": {
+                      "type": "integer",
+                      "description": "x402 protocol version (currently 1)",
+                      "example": 1
+                    },
+                    "accepts": {
+                      "type": "array",
+                      "description": "Array of accepted payment methods (may include multiple networks)",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "scheme",
+                          "network",
+                          "maxAmountRequired",
+                          "resource",
+                          "description",
+                          "mimeType",
+                          "payTo",
+                          "maxTimeoutSeconds",
+                          "asset"
+                        ],
+                        "properties": {
+                          "scheme": {
+                            "type": "string",
+                            "description": "Payment scheme identifier",
+                            "enum": [
+                              "exact"
+                            ],
+                            "example": "exact"
+                          },
+                          "network": {
+                            "type": "string",
+                            "description": "Blockchain network identifier",
+                            "enum": [
+                              "base-sepolia",
+                              "base-mainnet"
+                            ],
+                            "example": "base-mainnet"
+                          },
+                          "maxAmountRequired": {
+                            "type": "string",
+                            "description": "Maximum USDC payment required in smallest unit (6 decimals).\nExample: \"1000000\" = 1.00 USDC\n",
+                            "example": "1000000"
+                          },
+                          "resource": {
+                            "type": "string",
+                            "description": "The resource URL being paid for (this upload endpoint)",
+                            "example": "/v1/tx"
+                          },
+                          "description": {
+                            "type": "string",
+                            "description": "Human-readable description of what the payment is for",
+                            "example": "Upload 1024 bytes to Arweave via AR.IO Bundler"
+                          },
+                          "mimeType": {
+                            "type": "string",
+                            "description": "Expected MIME type of successful response",
+                            "example": "application/json"
+                          },
+                          "outputSchema": {
+                            "type": "object",
+                            "description": "JSON schema describing the successful response structure"
+                          },
+                          "payTo": {
+                            "type": "string",
+                            "description": "Recipient Ethereum address for USDC payment",
+                            "example": "0x6A0A10FFD285c971B841bee8892878c0d583Bf67"
+                          },
+                          "maxTimeoutSeconds": {
+                            "type": "integer",
+                            "description": "Maximum time in seconds before authorization expires",
+                            "example": 300
+                          },
+                          "asset": {
+                            "type": "string",
+                            "description": "EIP-3009 compliant USDC contract address on the specified network",
+                            "example": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+                          },
+                          "extra": {
+                            "type": "object",
+                            "description": "Additional metadata about the payment asset (for EIP-712 domain)",
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "Token name for EIP-712 domain",
+                                "example": "USD Coin"
+                              },
+                              "version": {
+                                "type": "string",
+                                "description": "EIP-712 domain version for USDC contract",
+                                "example": "2"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "Optional error message providing additional context",
+                      "example": "Insufficient balance"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Present on the free-tier-exhausted variant. A distinct, non-retryable code.",
+                      "enum": [
+                        "FREE_TIER_EXHAUSTED"
+                      ],
+                      "example": "FREE_TIER_EXHAUSTED"
+                    },
+                    "topUpUrl": {
+                      "type": "string",
+                      "description": "Present on the free-tier-exhausted variant. Where the user can add credits.",
+                      "example": "https://payment.example.com/topup"
+                    },
+                    "byteCount": {
+                      "type": "integer",
+                      "description": "Present on the free-tier-exhausted variant. The byte count of the rejected upload.",
+                      "example": 1024
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Present on the free-tier-exhausted variant. Human-readable explanation.",
+                      "example": "This upload requires payment: this address has no free allowance or sufficient balance for it."
+                    }
+                  }
+                },
+                "examples": {
+                  "NoBalanceX402Required": {
+                    "summary": "Standard 402 response for x402 payment",
+                    "value": {
+                      "x402Version": 1,
+                      "accepts": [
+                        {
+                          "scheme": "exact",
+                          "network": "base-mainnet",
+                          "maxAmountRequired": "1000000",
+                          "resource": "/v1/tx",
+                          "description": "Upload 1024 bytes to Arweave via AR.IO Bundler",
+                          "mimeType": "application/json",
+                          "payTo": "0x6A0A10FFD285c971B841bee8892878c0d583Bf67",
+                          "maxTimeoutSeconds": 300,
+                          "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+                          "extra": {
+                            "name": "USD Coin",
+                            "version": "2"
+                          }
+                        }
+                      ],
+                      "error": "Insufficient balance"
+                    }
+                  },
+                  "FreeTierExhausted": {
+                    "summary": "Free tier exhausted (non-retryable, no x402 envelope)",
+                    "value": {
+                      "error": "Payment required",
+                      "code": "FREE_TIER_EXHAUSTED",
+                      "topUpUrl": "https://payment.example.com/topup",
+                      "message": "This upload requires payment: this address has no free allowance or sufficient balance for it.",
+                      "byteCount": 1024
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "With an X-PAYMENT header: the x402 facilitator refused this\nbundler's credentials (nothing settled), or settlement was attempted\nand gave no definite answer: the payment might have settled, so\ncheck for the transfer before paying again. The reason in the\nbrackets is a status, an error code, or\n\"no response from payment service\".\n",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "VerificationUnavailable": {
+                    "value": "x402 payment verification is temporarily unavailable"
+                  },
+                  "SettlementUnavailable": {
+                    "value": "x402 payment settlement is temporarily unavailable"
+                  },
+                  "SettleOutcomeUnknown": {
+                    "summary": "Settle was attempted; the payment might have settled",
+                    "value": "x402 payment settlement did not complete (payment service answered 503). The payment might have settled: check for the transfer before paying again"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tx/:token": {
+      "servers": [
+        {
+          "url": "/v1"
+        },
+        {
+          "url": "/"
+        }
+      ],
+      "post": {
+        "summary": "Posts a signed data item to arweave for a specific token",
+        "description": "Uploads a signed ANS-104 data item to the bundler with token-specific handling. Payment can be handled via:\n- Traditional balance (user has pre-loaded credits)\n- x402 payment (include X-PAYMENT header with EIP-3009 authorization)\n\nWhen using X-PAYMENT header, Content-Length must be present to enable fraud detection.\n",
+        "tags": [
+          "Upload"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/token"
+          },
+          {
+            "$ref": "#/components/parameters/content-length"
+          },
+          {
+            "$ref": "#/components/parameters/content-type"
+          },
+          {
+            "$ref": "#/components/parameters/x-payment"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "A signed data item",
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The receipt of the uploaded data item.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataItemPost"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Data item has already been posted to this service.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "DataItemExists": {
+                    "value": "Data Item Exists"
+                  }
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient balance",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "default": "Insufficient balance"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "With an X-PAYMENT header: the x402 facilitator refused this\nbundler's credentials (nothing settled), or settlement was attempted\nand gave no definite answer: the payment might have settled, so\ncheck for the transfer before paying again. The reason in the\nbrackets is a status, an error code, or\n\"no response from payment service\".\n",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "VerificationUnavailable": {
+                    "value": "x402 payment verification is temporarily unavailable"
+                  },
+                  "SettlementUnavailable": {
+                    "value": "x402 payment settlement is temporarily unavailable"
+                  },
+                  "SettleOutcomeUnknown": {
+                    "summary": "Settle was attempted; the payment might have settled",
+                    "value": "x402 payment settlement did not complete (payment service answered 503). The payment might have settled: check for the transfer before paying again"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/x402/upload/signed": {
+      "servers": [
+        {
+          "url": "/v1"
+        },
+        {
+          "url": "/"
+        }
+      ],
+      "post": {
+        "summary": "Posts a signed ANS-104 data item with x402 payment",
+        "description": "**x402-Specific Upload Endpoint for Signed Data Items**\n\nThis endpoint is identical to `/tx` but explicitly signals x402 payment intent. It accepts\nsigned ANS-104 data items and processes x402 USDC payments.\n\n**Use Case:** Clients that want to use x402 payments for signed data item uploads.\n\n**Payment Flow:**\n1. Client uploads without X-PAYMENT header → Server returns 402 Payment Required\n2. Server response includes x402 payment requirements (USDC amount, recipient, network)\n3. Client creates EIP-3009 authorization and signs with EIP-712\n4. Client retries upload with X-PAYMENT header (base64-encoded JSON)\n5. Server verifies payment signature, settles USDC transfer on-chain\n6. Server accepts upload and returns receipt with x402Payment object\n\n**Requirements:**\n- Content-Type: application/octet-stream\n- Content-Length: Required (for fraud detection with x402 payments)\n- X-PAYMENT: Required for x402 payment authorization (after 402 response)\n\n**Supported Networks:**\n- base (Base mainnet) - Default, enabled\n- base-sepolia (Base Sepolia testnet) - Requires X402_BASE_TESTNET_ENABLED=true\n- ethereum-mainnet - Requires X402_ETH_ENABLED=true\n- polygon-mainnet - Requires X402_POLYGON_ENABLED=true\n\n**Note:** This endpoint has the same behavior as `/tx` - the separate path is for clarity\nand allows clients to explicitly signal x402 payment intent.\n",
+        "tags": [
+          "Upload"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/content-length"
+          },
+          {
+            "$ref": "#/components/parameters/content-type"
+          },
+          {
+            "$ref": "#/components/parameters/x-payment"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "A signed ANS-104 data item (binary)",
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "format": "binary",
+                "description": "ANS-104 data item signed with Arweave, Ethereum, or Solana key"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The receipt of the uploaded data item with x402 payment confirmation",
+            "headers": {
+              "X-Payment-Response": {
+                "schema": {
+                  "type": "string",
+                  "format": "byte"
+                },
+                "description": "Base64-encoded x402 payment response containing:\n- paymentId: UUID for tracking\n- transactionHash: Blockchain transaction hash\n- network: Payment network (e.g., \"base\")\n- mode: Payment mode (always \"payg\" for x402)\n",
+                "example": "eyJwYXltZW50SWQiOiI1NTBlODQwMC1lMjliLTQxZDQtYTcxNi00NDY2NTU0NDAwMDAiLCJ0cmFuc2FjdGlvbkhhc2giOiIweGI4YTUyNzI1Y2RjODE2ZDA2MDM5MmRjZWNhYTE1Mjg4NzJhY2Y5ZWEwYmQwOTdhODZlMjQzMmRkNWQyMjEzY2EiLCJuZXR3b3JrIjoiYmFzZSIsIm1vZGUiOiJwYXlnIn0="
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataItemPost"
+                },
+                "examples": {
+                  "X402Upload": {
+                    "summary": "Signed data item upload with x402 payment",
+                    "value": {
+                      "id": "QpmY8mZmFEC8RxNsgbxSV6e36OF6quIYaPRKzvUco0o",
+                      "timestamp": 1700590909589,
+                      "version": "0.2.0",
+                      "owner": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb0",
+                      "deadlineHeight": 1310000,
+                      "dataCaches": [
+                        "arweave.net"
+                      ],
+                      "fastFinalityIndexes": [
+                        "arweave.net"
+                      ],
+                      "winc": "1000000",
+                      "signature": "iU_S6uuG1OD8k0XqMGOmbcKfysDckEMUy4R9-ODPXiQj...",
+                      "public": "qREovbmD6oxgHYNCzOeTei07lSz0-YLcjnvgSDzqpts...",
+                      "x402Payment": {
+                        "paymentId": "550e8400-e29b-41d4-a716-446655440000",
+                        "transactionHash": "0xb8a52725cdc816d060392dcecaa1528872acf9ea0bd097a86e2432dd5d2213ca",
+                        "network": "base",
+                        "mode": "payg"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Data item has already been posted to this service",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "DataItemExists": {
+                    "value": "Data Item Exists"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "InvalidContentType": {
+                    "value": "Invalid Content Type"
+                  },
+                  "MissingContentLength": {
+                    "summary": "Content-Length required for x402 payments",
+                    "value": "Missing Content Length. Content Length is required for x402 upload."
+                  },
+                  "ContentTooLarge": {
+                    "value": "Data item is too large, this service only accepts data items up to 4294967296 bytes!"
+                  },
+                  "InvalidDataItem": {
+                    "value": "Data item parsing error!"
+                  }
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment Required - x402 payment needed.\n\n**Standard x402 402 Response** - Contains payment requirements for USDC payment.\n\nClient should:\n1. Extract payment requirements from response body\n2. Create EIP-3009 authorization with USDC amount\n3. Sign authorization with EIP-712\n4. Retry request with X-PAYMENT header\n\n**Supported Networks:** Payment requirements may include multiple networks (base, ethereum-mainnet, polygon-mainnet).\nClient chooses which network to use for payment.\n",
+            "headers": {
+              "X-Payment-Required": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "x402 protocol version identifier",
+                "example": "x402-1"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "x402Version",
+                    "accepts"
+                  ],
+                  "properties": {
+                    "x402Version": {
+                      "type": "integer",
+                      "description": "x402 protocol version",
+                      "example": 1
+                    },
+                    "accepts": {
+                      "type": "array",
+                      "description": "Array of accepted payment methods (may include multiple networks)",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "scheme",
+                          "network",
+                          "maxAmountRequired",
+                          "resource",
+                          "description",
+                          "mimeType",
+                          "payTo",
+                          "maxTimeoutSeconds",
+                          "asset"
+                        ],
+                        "properties": {
+                          "scheme": {
+                            "type": "string",
+                            "enum": [
+                              "exact"
+                            ],
+                            "example": "exact"
+                          },
+                          "network": {
+                            "type": "string",
+                            "enum": [
+                              "base",
+                              "base-sepolia",
+                              "ethereum-mainnet",
+                              "polygon-mainnet"
+                            ],
+                            "example": "base"
+                          },
+                          "maxAmountRequired": {
+                            "type": "string",
+                            "description": "USDC amount in atomic units (6 decimals)",
+                            "example": "1000000"
+                          },
+                          "resource": {
+                            "type": "string",
+                            "example": "/v1/x402/upload/signed"
+                          },
+                          "description": {
+                            "type": "string",
+                            "example": "Upload 1024 bytes to Arweave via AR.IO Bundler"
+                          },
+                          "mimeType": {
+                            "type": "string",
+                            "example": "application/json"
+                          },
+                          "payTo": {
+                            "type": "string",
+                            "description": "Recipient Ethereum address",
+                            "example": "0x6A0A10FFD285c971B841bee8892878c0d583Bf67"
+                          },
+                          "maxTimeoutSeconds": {
+                            "type": "integer",
+                            "example": 300
+                          },
+                          "asset": {
+                            "type": "string",
+                            "description": "USDC contract address on the network",
+                            "example": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+                          },
+                          "extra": {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "example": "USD Coin"
+                              },
+                              "version": {
+                                "type": "string",
+                                "example": "2"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "Optional error message",
+                      "example": "Payment required"
+                    }
+                  }
+                },
+                "examples": {
+                  "X402PaymentRequired": {
+                    "summary": "x402 payment required for upload",
+                    "value": {
+                      "x402Version": 1,
+                      "accepts": [
+                        {
+                          "scheme": "exact",
+                          "network": "base",
+                          "maxAmountRequired": "1000000",
+                          "resource": "/v1/x402/upload/signed",
+                          "description": "Upload 1024 bytes to Arweave via AR.IO Bundler",
+                          "mimeType": "application/json",
+                          "payTo": "0x6A0A10FFD285c971B841bee8892878c0d583Bf67",
+                          "maxTimeoutSeconds": 300,
+                          "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+                          "extra": {
+                            "name": "USD Coin",
+                            "version": "2"
+                          }
+                        }
+                      ],
+                      "error": "Payment required"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "Internal server error"
+              }
+            }
+          },
+          "503": {
+            "description": "With an X-PAYMENT header: the x402 facilitator refused this\nbundler's credentials (nothing settled), or settlement was attempted\nand gave no definite answer: the payment might have settled, so\ncheck for the transfer before paying again. The reason in the\nbrackets is a status, an error code, or\n\"no response from payment service\".\n",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "VerificationUnavailable": {
+                    "value": "x402 payment verification is temporarily unavailable"
+                  },
+                  "SettlementUnavailable": {
+                    "value": "x402 payment settlement is temporarily unavailable"
+                  },
+                  "SettleOutcomeUnknown": {
+                    "summary": "Settle was attempted; the payment might have settled",
+                    "value": "x402 payment settlement did not complete (payment service answered 503). The payment might have settled: check for the transfer before paying again"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/x402/data-item/signed": {
+      "servers": [
+        {
+          "url": "/v1"
+        },
+        {
+          "url": "/"
+        }
+      ],
+      "post": {
+        "summary": "Posts a signed ANS-104 data item with x402 payment (alias of /x402/upload/signed)",
+        "description": "**Alias of `/x402/upload/signed`.** Identical behavior and handler\n(`dataItemRoute`) — accepts a signed ANS-104 data item and processes an\nx402 USDC payment. Provided as an alternate path for clients that prefer\nthe `/x402/data-item/*` naming. See `/x402/upload/signed` for the full\npayment flow, requirements and supported networks.\n",
+        "tags": [
+          "Upload"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/content-length"
+          },
+          {
+            "$ref": "#/components/parameters/content-type"
+          },
+          {
+            "$ref": "#/components/parameters/x-payment"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "A signed ANS-104 data item (binary)",
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "format": "binary",
+                "description": "ANS-104 data item signed with Arweave, Ethereum, or Solana key"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The receipt of the uploaded data item with x402 payment confirmation",
+            "headers": {
+              "X-Payment-Response": {
+                "schema": {
+                  "type": "string",
+                  "format": "byte"
+                },
+                "description": "Base64-encoded x402 payment response (paymentId, transactionHash, network, mode)."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataItemPost"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Data item has already been posted to this service",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "DataItemExists": {
+                    "value": "Data Item Exists"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "InvalidContentType": {
+                    "value": "Invalid Content Type"
+                  },
+                  "MissingContentLength": {
+                    "summary": "Content-Length required for x402 payments",
+                    "value": "Missing Content Length. Content Length is required for x402 upload."
+                  },
+                  "ContentTooLarge": {
+                    "value": "Data item is too large, this service only accepts data items up to 4294967296 bytes!"
+                  },
+                  "InvalidDataItem": {
+                    "value": "Data item parsing error!"
+                  }
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment Required - x402 payment needed. Contains an x402 payment-requirements\nenvelope (x402Version + accepts[]). See `/x402/upload/signed` for the full schema.\n",
+            "headers": {
+              "X-Payment-Required": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "x402 protocol version identifier",
+                "example": "x402-1"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "x402Version",
+                    "accepts"
+                  ],
+                  "properties": {
+                    "x402Version": {
+                      "type": "integer",
+                      "example": 1
+                    },
+                    "accepts": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "error": {
+                      "type": "string",
+                      "example": "Payment required"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "Internal server error"
+              }
+            }
+          },
+          "503": {
+            "description": "With an X-PAYMENT header: the x402 facilitator refused this\nbundler's credentials (nothing settled), or settlement was attempted\nand gave no definite answer: the payment might have settled, so\ncheck for the transfer before paying again. The reason in the\nbrackets is a status, an error code, or\n\"no response from payment service\".\n",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "VerificationUnavailable": {
+                    "value": "x402 payment verification is temporarily unavailable"
+                  },
+                  "SettlementUnavailable": {
+                    "value": "x402 payment settlement is temporarily unavailable"
+                  },
+                  "SettleOutcomeUnknown": {
+                    "summary": "Settle was attempted; the payment might have settled",
+                    "value": "x402 payment settlement did not complete (payment service answered 503). The payment might have settled: check for the transfer before paying again"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/x402/upload/unsigned": {
+      "servers": [
+        {
+          "url": "/v1"
+        },
+        {
+          "url": "/"
+        }
+      ],
+      "post": {
+        "summary": "Posts raw data with x402 payment (bundler creates ANS-104 wrapper)",
+        "description": "**x402-Specific Upload Endpoint for Raw Data (Server-Signed)**\n\nThis endpoint accepts raw data (images, files, text, etc.) and the bundler creates and signs\nthe ANS-104 data item wrapper server-side. Payment is via x402 USDC.\n\n**Use Case:** AI agents, simple apps, and clients that don't want to implement ANS-104 signing.\n\n---\n\n## Payment Flow\n\n```\n1. POST raw data (no X-PAYMENT header)\n   ↓\n2. Server returns 402 with payment requirements\n   ↓\n3. Client creates EIP-3009 authorization + EIP-712 signature\n   ↓\n4. POST raw data WITH X-PAYMENT header\n   ↓\n5. Server: verify → settle USDC → create data item → store → return receipt\n```\n\n---\n\n## Pricing\n\n**Formula:**\n```\nestimatedSize = rawDataSize + 512 (signature) + 512 (owner) + 80 (headers) + (totalTags × 64)\nwinstonCost = arweaveGateway.getPrice(estimatedSize)\nusdcAmount = (winstonCost / 10^12) × arPriceUSD × 10^6 × (1 + feePercent/100)\n```\n\n**Fee:** Configurable via X402_FEE_PERCENT (default: 15%); X402_PRICING_BUFFER_PERCENT is the deprecated fallback\n\n**Get price quote first:** `GET /v1/price/x402/data/{token}/{byteCount}?tags={n}&contentType={mime}`\n\n---\n\n## System Tags (Automatically Added)\n\n| Tag | Description | Example |\n|-----|-------------|---------|\n| Bundler | Service name | \"AR.IO Bundler\" |\n| Upload-Type | Upload method | \"raw-data-x402\" |\n| Payer-Address | Ethereum payer | \"0x742d35Cc...\" |\n| X402-TX-Hash | Blockchain tx | \"0x9c31110e...\" |\n| X402-Payment-ID | Tracking UUID | \"edd4766e-...\" |\n| X402-Network | Payment network | \"base\" |\n| Upload-Timestamp | Unix ms | \"1700590909589\" |\n| Content-Type | MIME type | \"image/png\" |\n\n---\n\n## Custom Tags\n\n**Via Headers:** `X-Tag-App-Name: MyApp` → `{\"name\": \"App-Name\", \"value\": \"MyApp\"}`\n\n**Via a JSON header:** `x-data-item-tags: [{\"name\": \"App-Name\", \"value\": \"MyApp\"}]`, as @ardrive/turbo-sdk sends. A value that is not a JSON array of `{name, value}` strings is refused with 400 before any payment; an empty value is ignored. Header values are Latin-1, an HTTP limit: send other text in the envelope.\n\n**Via JSON Envelope:** `{\"data\": \"...\", \"tags\": [{\"name\": \"App-Name\", \"value\": \"MyApp\"}]}`\n\nNote: Header tag names are converted from kebab-case to Proper-Case.\n\nTags from every source are kept, in this order: the envelope's, `x-data-item-tags`, then `X-Tag-*`. The item's Content-Type comes from one explicit source: a `Content-Type` tag (any case) or the envelope's `contentType`. More than one is refused with 400, even when they agree. With neither, a binary upload uses the request's Content-Type unless it is `application/octet-stream`, and an envelope gets none. An empty value counts as absent.\n\nA JSON body is read as an envelope when `data` is a non-empty string and every other key is an envelope key (`tags`, `contentType`, and the unused `target` and `anchor`). `data` can be standard or url-safe base64, with or without padding or line breaks. Any other JSON body, such as a document with its own `data` field and other keys, is stored byte for byte. An envelope whose `data` is not base64, whose `tags` are not `{name, value}` strings, or whose `contentType`, `target` or `anchor` is not a string is refused with 400 before any payment. A `null` optional field counts as absent.\n\n---\n\n## Important Notes\n\n- **Ownership:** The `owner` field is the bundler's server wallet. The payer's address is recorded in the `Payer-Address` tag only.\n- **Server Requirement:** Requires `RAW_DATA_UPLOADS_ENABLED=true` on server\n- **Max Size:** the request body is limited to `MAX_DATA_ITEM_SIZE` bytes (default 4 GiB); a larger body answers 413. A JSON envelope carries base64, about 4/3 the size of the data, so its data can be at most about 3/4 of that limit.\n- **Max Tags:** 4096 serialized tag bytes for the whole item, including the Content-Type tag and the 7 system tags this bundler adds. Checked before payment.\n\n---\n\n## Supported Networks\n\n| Network | Token | Status | USDC Contract |\n|---------|-------|--------|---------------|\n| Base mainnet | usdc-base | Default | 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913 |\n| Base Sepolia | usdc-base-sepolia | Requires env | 0x036CbD53842c5426634e7929541eC2318f3dCF7e |\n| Ethereum | usdc-ethereum-mainnet | Requires env | 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 |\n| Polygon | usdc-polygon-mainnet | Requires env | 0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359 |\n",
+        "tags": [
+          "Upload"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/content-length"
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "MIME type of the raw data (e.g., image/png, application/pdf)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "image/png"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/x-payment"
+          },
+          {
+            "name": "x-data-item-tags",
+            "in": "header",
+            "description": "Tags as a JSON array of `{\"name\": string, \"value\": string}` objects.\nMalformed values are refused with 400 before any payment; an empty\nvalue is ignored. Header values are Latin-1 (an HTTP limit).\n",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "[{\"name\":\"Content-Type\",\"value\":\"application/json\"},{\"name\":\"App-Name\",\"value\":\"MyApp\"}]"
+            }
+          },
+          {
+            "name": "X-TAG-*",
+            "in": "header",
+            "description": "Custom tags in the format X-TAG-Name: Value.\nMultiple tags can be specified. Tag names are case-insensitive.\n",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "AppName": {
+                "summary": "Application name tag",
+                "value": "MyApp"
+              },
+              "Version": {
+                "summary": "Version tag",
+                "value": "1.0.0"
+              }
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Raw data to upload. Supports two formats:\n\n**1. Binary Upload (Recommended for files)**\n- Content-Type: application/octet-stream, image/png, application/pdf, etc.\n- Body: Raw binary data\n- Custom tags via X-Tag-* headers\n\n**2. JSON Envelope (Alternative for programmatic use)**\n- Content-Type: application/json\n- Body: `{\"data\": \"<base64>\", \"contentType\": \"...\", \"tags\": [...]}`\n- Useful when headers are difficult to set (e.g., some HTTP clients)\n",
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "format": "binary",
+                "description": "Raw binary data (use X-Tag-* headers for custom tags)"
+              }
+            },
+            "image/png": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "image/jpeg": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "application/pdf": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "text/plain": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "JSON envelope format for raw data uploads.\nUse this when you can't easily set X-Tag-* headers.\n",
+                "required": [
+                  "data"
+                ],
+                "properties": {
+                  "data": {
+                    "type": "string",
+                    "format": "byte",
+                    "description": "Base64-encoded raw data",
+                    "example": "SGVsbG8gV29ybGQh"
+                  },
+                  "contentType": {
+                    "type": "string",
+                    "description": "MIME type of the data (adds Content-Type tag)",
+                    "example": "image/png"
+                  },
+                  "tags": {
+                    "type": "array",
+                    "description": "Custom tags to add to the data item (no count limit; the item's tags, with the Content-Type and system tags, must fit in 4096 bytes)",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "name",
+                        "value"
+                      ],
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "description": "Tag name",
+                          "example": "App-Name"
+                        },
+                        "value": {
+                          "type": "string",
+                          "description": "Tag value",
+                          "example": "MyApp"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "SimpleText": {
+                  "summary": "Simple text upload",
+                  "value": {
+                    "data": "SGVsbG8gV29ybGQh",
+                    "contentType": "text/plain"
+                  }
+                },
+                "WithTags": {
+                  "summary": "Upload with custom tags",
+                  "value": {
+                    "data": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+                    "contentType": "image/png",
+                    "tags": [
+                      {
+                        "name": "App-Name",
+                        "value": "MyApp"
+                      },
+                      {
+                        "name": "App-Version",
+                        "value": "1.0.0"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The raw data was successfully uploaded and wrapped in an ANS-104 data item.\n\n**Response includes:**\n- `id`: The data item ID (Arweave transaction ID)\n- `owner`: Server's raw data item wallet address (signs the data item)\n- `payer`: Ethereum address that paid via x402 (tracked in Payer-Address tag)\n- `receipt`: Signed receipt object with cryptographic proof\n- `x402Payment`: Payment confirmation with blockchain transaction hash\n",
+            "headers": {
+              "X-Payment-Response": {
+                "schema": {
+                  "type": "string",
+                  "format": "byte"
+                },
+                "description": "Base64-encoded x402 payment response containing:\n- paymentId: UUID for tracking\n- transactionHash: Blockchain transaction hash\n- network: Payment network (e.g., \"base\")\n- mode: Payment mode (always \"payg\" for x402)\n"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RawDataUploadResponse"
+                },
+                "examples": {
+                  "RawDataUpload": {
+                    "summary": "Raw data upload with x402 payment",
+                    "value": {
+                      "id": "rNephs2z5BAAUlmZm_TGwQjz4TiMr6HoZNyBO3eLctA",
+                      "owner": "jHGQATyLh_yBNKwqPmU-y6qV98q-AB48fIWUiFOSJAA",
+                      "payer": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb0",
+                      "dataCaches": [
+                        "arweave.net"
+                      ],
+                      "fastFinalityIndexes": [
+                        "arweave.net"
+                      ],
+                      "receipt": {
+                        "id": "rNephs2z5BAAUlmZm_TGwQjz4TiMr6HoZNyBO3eLctA",
+                        "timestamp": 1700590909589,
+                        "version": "0.2.0",
+                        "deadlineHeight": 1310000,
+                        "dataCaches": [
+                          "arweave.net"
+                        ],
+                        "fastFinalityIndexes": [
+                          "arweave.net"
+                        ],
+                        "winc": "1000000",
+                        "public": "qREovbmD6oxgHYNCzOeTei07lSz0-YLcjnvgSDzqpts...",
+                        "signature": "iU_S6uuG1OD8k0XqMGOmbcKfysDckEMUy4R9-ODPXiQj..."
+                      },
+                      "x402Payment": {
+                        "paymentId": "edd4766e-a053-47f2-88d1-819e72c534dd",
+                        "transactionHash": "0x9c31110e240805d9dfa5853c661f23a258c89f78b8d2e4424a922f9dfd8748f3",
+                        "network": "base",
+                        "mode": "payg"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request. Every 400 is answered before any payment settles.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "MissingContentLength": {
+                    "summary": "Content-Length required with X-PAYMENT",
+                    "value": "Content-Length header is required when providing payment"
+                  },
+                  "EmptyData": {
+                    "value": "Data cannot be empty"
+                  },
+                  "InvalidPaymentHeader": {
+                    "value": "Invalid payment header format"
+                  },
+                  "NetworkNotConfigured": {
+                    "value": "Network base-goerli is not configured"
+                  },
+                  "NetworkNotEnabled": {
+                    "value": "Network base-sepolia is not enabled"
+                  },
+                  "MalformedTagsHeader": {
+                    "value": "The x-data-item-tags header must be a JSON array of {\"name\": string, \"value\": string} objects"
+                  },
+                  "EnvelopeDataNotBase64": {
+                    "value": "The envelope's data must be base64 (standard or url-safe)"
+                  },
+                  "EnvelopeTagsMalformed": {
+                    "value": "The envelope's tags must be an array of {\"name\": string, \"value\": string} objects"
+                  },
+                  "EnvelopeFieldNotString": {
+                    "summary": "contentType, target or anchor that is not a string",
+                    "value": "The envelope's contentType must be a string"
+                  },
+                  "TwoContentTypes": {
+                    "value": "Send the Content-Type once, as one Content-Type tag or the envelope's contentType: it becomes the data item's Content-Type"
+                  },
+                  "TagsTooLarge": {
+                    "summary": "The item's tags would exceed 4096 bytes",
+                    "value": "Tags are too large: with the tags this bundler adds, the data item's tags would exceed 4096 bytes"
+                  },
+                  "InvalidTagValue": {
+                    "summary": "A non-string payer address",
+                    "value": "Invalid tags: Invalid tag format for [object Object], expected {name:string, value: string}"
+                  }
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment Required. Without an X-PAYMENT header, the body is the x402\nquote (JSON), or a JSON notice when no x402 network is enabled. With\nan X-PAYMENT header, the payment was refused or not verified at\nverify (including a facilitator outage); nothing settled. The body is\nthe reason as plain text.\n",
+            "headers": {
+              "X-Payment-Required": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "x402-1"
+                  ]
+                },
+                "description": "x402 protocol version (set on the JSON bodies)"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "x402Version": {
+                      "type": "integer",
+                      "example": 1
+                    },
+                    "accepts": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "scheme": {
+                            "type": "string",
+                            "example": "exact"
+                          },
+                          "network": {
+                            "type": "string",
+                            "example": "base"
+                          },
+                          "maxAmountRequired": {
+                            "type": "string",
+                            "description": "USDC amount in smallest unit (6 decimals)",
+                            "example": "3508"
+                          },
+                          "resource": {
+                            "type": "string",
+                            "example": "https://upload.yourdomain.com/v1/tx"
+                          },
+                          "description": {
+                            "type": "string",
+                            "example": "Upload 1716 bytes to Arweave via AR.IO Bundler"
+                          },
+                          "mimeType": {
+                            "type": "string",
+                            "description": "The item's Content-Type, or application/octet-stream",
+                            "example": "text/plain"
+                          },
+                          "payTo": {
+                            "type": "string",
+                            "example": "0xCFd3f996447a541Cbfba5422310EDb417d9f2cE6"
+                          },
+                          "maxTimeoutSeconds": {
+                            "type": "integer",
+                            "example": 3600
+                          },
+                          "asset": {
+                            "type": "string",
+                            "description": "USDC contract address",
+                            "example": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+                          },
+                          "extra": {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "example": "USD Coin"
+                              },
+                              "version": {
+                                "type": "string",
+                                "example": "2"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "error": {
+                      "type": "string",
+                      "example": "Payment required to upload data"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Present only when no x402 network is enabled"
+                    }
+                  }
+                },
+                "examples": {
+                  "NoNetworkEnabled": {
+                    "summary": "No x402 network is enabled on this bundler",
+                    "value": {
+                      "error": "Payment required",
+                      "message": "x402 payments are not currently available on this bundler."
+                    }
+                  }
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "InsufficientAmount": {
+                    "summary": "Refused at verify; nothing settled",
+                    "value": "Insufficient amount: 1000 < 3508"
+                  },
+                  "InvalidSignature": {
+                    "summary": "Refused at verify; nothing settled",
+                    "value": "Invalid EIP-712 signature"
+                  },
+                  "FacilitatorOutage": {
+                    "summary": "Not verified (facilitator error); nothing settled",
+                    "value": "Request failed with status code 502"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Raw data uploads are disabled on this bundler, or the content scan\nrefused the upload (before any payment).\n",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "RawUploadsDisabled": {
+                    "value": "Raw data uploads are not enabled on this bundler"
+                  },
+                  "ContentScanRefused": {
+                    "value": "Forbidden"
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The request body is larger than `MAX_DATA_ITEM_SIZE` (default 4 GiB).\nRefused by the declared Content-Length before the body is read, or\nwhile reading it, before any payment.\n",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Data is too large. Maximum allowed is 4294967296 bytes."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "With one of the two bodies below, the payment settled and the item\ncould not be built or stored. A 500 with any other body, such as\nKoa's \"Internal Server Error\" when the price lookup fails, can come\nbefore payment.\n",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "CreateFailed": {
+                    "value": "Failed to create data item from raw data"
+                  },
+                  "StoreFailed": {
+                    "value": "Failed to store data item"
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The x402 facilitator refused this bundler's credentials at verify or\nsettle (nothing settled), or settlement was attempted and did not\ncomplete: the payment might have settled, so check for the transfer\nbefore paying again.\n",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "VerificationUnavailable": {
+                    "value": "x402 payment verification is temporarily unavailable"
+                  },
+                  "SettlementUnavailable": {
+                    "value": "x402 payment settlement is temporarily unavailable"
+                  },
+                  "SettleOutcomeUnknown": {
+                    "summary": "Settle was attempted; the payment might have settled",
+                    "value": "x402 payment settlement did not complete (socket hang up). The payment might have settled: check for the transfer before paying again"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tx/:id/status": {
+      "servers": [
+        {
+          "url": "/v1"
+        },
+        {
+          "url": "/"
+        }
+      ],
+      "get": {
+        "summary": "Gets the status of a data item",
+        "tags": [
+          "Transaction Data"
+        ],
+        "responses": {
+          "200": {
+            "description": "The status of the data item",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataItemStatus"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Data item not found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "TX doesn't exist"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tx/:id/offsets": {
+      "servers": [
+        {
+          "url": "/v1"
+        },
+        {
+          "url": "/"
+        }
+      ],
+      "get": {
+        "summary": "Gets the offsets of a data item",
+        "tags": [
+          "Transaction Data"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The offsets of the data item",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OffsetsInfo"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Data item not found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "TX doesn't exist"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chunks/{token}/-1/-1": {
+      "servers": [
+        {
+          "url": "/v1"
+        },
+        {
+          "url": "/"
+        }
+      ],
+      "get": {
+        "summary": "Creates a new multi-part upload. Chunks should be posted to /chunks/:token/:uploadId/:chunkOffset using the returned uploadId. ARx compatible.",
+        "tags": [
+          "Upload"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Creates a new multi-part upload. The returned upload id can then be used to send chunks.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateMultipartUpload"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Internal server error. For an x402 multipart upload (with\n`totalBytes` and an X-PAYMENT header), a JSON body instead: the\nfacilitator refused this bundler's credentials (nothing settled),\nor settlement gave no definite answer and the payment might have\nsettled, so check for the transfer before paying again.\n",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Internal server error"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "VerificationUnavailable": {
+                    "value": {
+                      "error": "x402 payment verification is temporarily unavailable"
+                    }
+                  },
+                  "SettlementUnavailable": {
+                    "value": {
+                      "error": "x402 payment settlement is temporarily unavailable"
+                    }
+                  },
+                  "SettleOutcomeUnknown": {
+                    "summary": "Settle was attempted; the payment might have settled",
+                    "value": {
+                      "error": "x402 payment settlement did not complete (payment service answered 503). The payment might have settled: check for the transfer before paying again"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chunks/:token/:uploadId/-1": {
+      "servers": [
+        {
+          "url": "/"
+        }
+      ],
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/uploadId"
+        },
+        {
+          "$ref": "#/components/parameters/token"
+        }
+      ],
+      "get": {
+        "summary": "Gets an existing multi-part upload, including all existing chunks that have been uploaded. ARx compatible.",
+        "tags": [
+          "Upload"
+        ],
+        "responses": {
+          "200": {
+            "description": "The existing multipart upload, including all existing chunks that have been uploaded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InFlightMultipartUpload"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Multi-part upload not found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "MultipartUploadNotFound": {
+                    "value": "Multi-part upload not found"
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Internal server error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Finalizes a multi-part upload. ARx compatible.",
+        "tags": [
+          "Upload"
+        ],
+        "responses": {
+          "200": {
+            "description": "The multi-part upload was successfully finalized. The receipt includes a signature of the id, version, timestamp, public key, deadlineHeight and owner.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompleteMultipartUpload"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient balance",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "default": "Insufficient balance"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Multi-part upload not found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "MultipartUploadNotFound": {
+                    "value": "Multi-part upload not found"
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Internal server error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chunks/:token/:uploadId/finalize": {
+      "servers": [
+        {
+          "url": "/"
+        }
+      ],
+      "post": {
+        "summary": "Finalizes a multi-part upload asynchronously.",
+        "tags": [
+          "Upload"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/uploadId"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "The multi-part upload was successfully enqueued.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompleteMultipartUpload"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient balance",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "default": "Insufficient balance"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Multi-part upload not found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "MultipartUploadNotFound": {
+                    "value": "Multi-part upload not found"
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Internal server error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chunks/:token/:uploadId/status": {
+      "servers": [
+        {
+          "url": "/"
+        }
+      ],
+      "get": {
+        "summary": "Gets the status of a multi-part upload.",
+        "tags": [
+          "Upload"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/token"
+          },
+          {
+            "$ref": "#/components/parameters/uploadId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The status of the multi-part upload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "description": "The status of the multi-part upload.",
+                      "example": "VALIDATING",
+                      "enum": [
+                        "VALIDATING",
+                        "ASSEMBLING",
+                        "INVALID",
+                        "UNDERFUNDED"
+                      ]
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "description": "The timestamp in millisecond of when the multi-part status was retrieved.",
+                      "example": 1700590909589
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Multi-part upload not found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "MultipartUploadNotFound": {
+                    "value": "Multi-part upload not found"
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Internal server error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chunks/:token/:uploadId/:chunkOffset": {
+      "servers": [
+        {
+          "url": "/"
+        }
+      ],
+      "post": {
+        "summary": "Posts a chunk of a multi-part upload. ARx compatible.",
+        "tags": [
+          "Upload"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/uploadId"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          },
+          {
+            "$ref": "#/components/parameters/chunkOffset"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "A chunk of a multi-part upload",
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The chunk was successfully posted."
+          },
+          "402": {
+            "description": "Insufficient balance",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "default": "Insufficient balance"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Multi-part upload not found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "MultipartUploadNotFound": {
+                    "value": "Multi-part upload not found"
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Internal server error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health check endpoint",
+        "description": "Simple health check endpoint that returns \"OK\" if the service is running.\n\n**Use Case:** Load balancers, monitoring systems, and orchestration platforms use this\nto verify service availability.\n\n**Response:** Plain text \"OK\" with HTTP 200 status.\n",
+        "tags": [
+          "Service Info"
+        ],
+        "responses": {
+          "200": {
+            "description": "Service is healthy",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "OK"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bundler_metrics": {
+      "get": {
+        "summary": "Prometheus metrics endpoint",
+        "description": "Prometheus-formatted metrics for monitoring and observability.\n\n**Metrics Include:**\n- Node.js default metrics (heap memory, event loop lag, etc.)\n- Custom application metrics (upload counts, bundle sizes, etc.)\n- Process metrics (CPU, memory usage)\n\n**Format:** Prometheus text exposition format\n\n**Use Case:** Prometheus scraping, Grafana dashboards, monitoring alerts\n",
+        "tags": [
+          "Service Info"
+        ],
+        "responses": {
+          "200": {
+            "description": "Prometheus metrics in text format",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "# HELP process_cpu_user_seconds_total Total user CPU time spent in seconds.\n# TYPE process_cpu_user_seconds_total counter\nprocess_cpu_user_seconds_total 0.123456\n\n# HELP nodejs_heap_size_total_bytes Process heap size from Node.js in bytes.\n# TYPE nodejs_heap_size_total_bytes gauge\nnodejs_heap_size_total_bytes 123456789\n"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/openapi.json": {
+      "get": {
+        "summary": "OpenAPI specification (JSON)",
+        "description": "Returns the complete OpenAPI 3.1 specification for this API in JSON format.\n\n**Use Case:**\n- API documentation generation\n- Client SDK generation (OpenAPI Generator, Swagger Codegen)\n- API testing tools (Postman, Insomnia)\n- Contract validation\n\n**Format:** OpenAPI 3.1.1 compliant JSON\n",
+        "tags": [
+          "Service Info"
+        ],
+        "responses": {
+          "200": {
+            "description": "OpenAPI specification in JSON format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "OpenAPI 3.1 specification object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api-docs": {
+      "get": {
+        "summary": "Swagger UI documentation",
+        "description": "Interactive API documentation powered by Swagger UI.\n\n**Features:**\n- Browse all endpoints with detailed descriptions\n- View request/response schemas and examples\n- Try out API calls directly from the browser (requires CORS)\n- Download OpenAPI spec\n\n**URL:** http://localhost:3001/api-docs (or your deployment URL)\n\n**Use Case:** Developer-friendly API exploration and testing\n",
+        "tags": [
+          "Service Info"
+        ],
+        "responses": {
+          "200": {
+            "description": "Swagger UI HTML page",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,2118 @@
+openapi: 3.2.0
+info:
+  title: Turbo Service Upload API
+  version: 1.5.0
+  description: The Turbo Upload Service supports posting signed data-items to Arweave using Turbo Credits.
+servers:
+- url: http://localhost:3001
+  description: Local development server
+- url: /v1
+  description: v1 API base path for new implementations
+- url: /
+  description: Root path for backwards compatibility
+tags:
+- name: Upload
+  description: Data item upload endpoints (single and multi-part)
+paths:
+  /tx:
+    servers:
+    - url: /v1
+    - url: /
+    parameters:
+    - $ref: '#/components/parameters/content-length'
+    - $ref: '#/components/parameters/content-type'
+    - $ref: '#/components/parameters/x-payment'
+    - $ref: '#/components/parameters/x-tag-custom'
+    post:
+      summary: Posts a signed ANS-104 data item OR raw data to Arweave
+      description: '**Two Upload Modes:**
+
+
+        **1. Traditional ANS-104 Upload (Client-Signed)**
+
+
+        Client creates and signs ANS-104 data item before uploading. The service detects ANS-104 format by checking the first 2 bytes (signature type 1-8).
+
+
+        Payment options:
+
+        - Traditional balance (user has pre-loaded credits)
+
+        - x402 payment (include X-PAYMENT header with EIP-3009 authorization)
+
+
+        **2. Raw Data Upload (Server-Signed, x402 Only)**
+
+
+        Simplified flow for AI agents and applications without ANS-104 signing capabilities. Requires RAW_DATA_UPLOADS_ENABLED=true on server.
+
+
+        The service automatically detects raw data (non-ANS-104) and:
+
+        - Returns 402 Payment Required if no X-PAYMENT header provided
+
+        - Creates and signs ANS-104 data item server-side using RAW_DATA_ITEM_JWK wallet
+
+        - Adds attribution tags: Bundler, Upload-Type, Payer-Address, Upload-Timestamp, Content-Type
+
+        - Validates x402 payment against payer''s Ethereum address (not the signer)
+
+        - Returns response with both `owner` (server wallet) and `payer` (Ethereum address) fields
+
+
+        Request formats for raw data:
+
+        - Binary upload with X-Tag-* headers for custom tags
+
+        - JSON envelope: `{"data": "", "contentType": "...", "tags": [...]}`
+
+
+        When using X-PAYMENT header, Content-Length must be present to enable fraud detection.'
+      tags:
+      - Upload
+      requestBody:
+        required: true
+        description: A signed ANS-104 data item (binary) OR raw data (binary/JSON envelope for server-signing)
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+              description: Traditional ANS-104 data item (client-signed)
+          application/json:
+            schema:
+              type: object
+              description: Raw data upload envelope (server-signed, x402 only)
+              properties:
+                data:
+                  type: string
+                  format: byte
+                  description: Base64-encoded raw data
+                  example: SGVsbG8gV29ybGQh
+                contentType:
+                  type: string
+                  description: MIME type of the data
+                  example: text/plain
+                tags:
+                  type: array
+                  description: Custom tags to add to the data item
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        example: App-Name
+                      value:
+                        type: string
+                        example: MyApp
+      responses:
+        '200':
+          description: The signed data item was successfully submitted to and indexed on Arweave.
+          headers:
+            X-Payment-Response:
+              schema:
+                type: string
+                format: byte
+              description: "Base64-encoded x402 payment response (present only if upload was paid via X-PAYMENT header).\n\n**Decodes to JSON with:**\n- paymentId: UUID for tracking\n- txHash: Blockchain transaction hash (verify on block explorer)\n- network: Payment network (e.g., \"base-mainnet\")\n- mode: Payment mode (currently always \"payg\")\n\n**Example (decoded):**\n```json\n{\n  \"paymentId\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"transactionHash\": \"0xb8a52725cdc816d060392dcecaa1528872acf9ea0bd097a86e2432dd5d2213ca\",\n  \"network\": \"base-mainnet\",\n  \"mode\": \"payg\"\n}\n```\n\n**Per x402 standard:** This header provides payment confirmation and can be used by clients\nto verify the payment was successfully settled on-chain.\n"
+              example: eyJwYXltZW50SWQiOiI1NTBlODQwMC1lMjliLTQxZDQtYTcxNi00NDY2NTU0NDAwMDAiLCJ0cmFuc2FjdGlvbkhhc2giOiIweGI4YTUyNzI1Y2RjODE2ZDA2MDM5MmRjZWNhYTE1Mjg4NzJhY2Y5ZWEwYmQwOTdhODZlMjQzMmRkNWQyMjEzY2EiLCJuZXR3b3JrIjoiYmFzZS1tYWlubmV0IiwibW9kZSI6InBheWcifQ==
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataItemPost'
+              examples:
+                SignedUploadWithX402:
+                  summary: ANS-104 upload paid with x402
+                  description: 'Traditional signed ANS-104 data item upload paid via x402 USDC payment.
+
+                    Client signs data item with their wallet, includes X-PAYMENT header with USDC authorization.
+
+                    '
+                  value:
+                    id: QpmY8mZmFEC8RxNsgbxSV6e36OF6quIYaPRKzvUco0o
+                    timestamp: 1700590909589
+                    version: 0.2.0
+                    owner: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb0'
+                    deadlineHeight: 1310000
+                    dataCaches:
+                    - arweave.net
+                    fastFinalityIndexes:
+                    - arweave.net
+                    winc: '1000000'
+                    signature: iU_S6uuG1OD8k0XqMGOmbcKfysDckEMUy4R9-ODPXiQj...
+                    public: qREovbmD6oxgHYNCzOeTei07lSz0-YLcjnvgSDzqpts...
+                    x402Payment:
+                      paymentId: 550e8400-e29b-41d4-a716-446655440000
+                      transactionHash: '0xb8a52725cdc816d060392dcecaa1528872acf9ea0bd097a86e2432dd5d2213ca'
+                      network: base-mainnet
+                      mode: payg
+                RawDataUploadWithX402:
+                  summary: Raw data upload (server-signed) with x402
+                  description: 'Simplified flow for AI agents - raw data uploaded, server creates ANS-104 data item.
+
+                    Requires X-PAYMENT header. Owner is server wallet, payer is Ethereum address from payment.
+
+                    '
+                  value:
+                    id: ZpmY8mZmFEC8RxNsgbxSV6e36OF6quIYaPRKzvUcp1q
+                    timestamp: 1700590909589
+                    version: 0.2.0
+                    owner: 8wgRDgvYOrtSaWEIV21g0lTuWDUnTu4_iYj4hmA7PI0
+                    payer: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb0'
+                    deadlineHeight: 1310000
+                    dataCaches:
+                    - arweave.net
+                    fastFinalityIndexes:
+                    - arweave.net
+                    winc: '1000000'
+                    signature: jV_T7vvH2PE9l1YrNHPncLgzteEflFNVz5S0-PEQYjRk...
+                    public: rSFpwcmE7pyfTmt1qJWYoVWnR5yX1nt0-ZMdkjpXmqt...
+                    x402Payment:
+                      paymentId: 660f9511-f3ac-52e5-b827-557766551111
+                      transactionHash: '0xc9b63836dde927e171504fa1539ecbb1e3c9dc8c1cd208c7c5c9fb5c3344eddb'
+                      network: base-mainnet
+                      mode: payg
+        '202':
+          description: Data item has already been posted to this service.
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                DataItemExists:
+                  value: Data Item Exists
+        '400':
+          description: Invalid data item post
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                InvalidContentType:
+                  value: Invalid Content Type
+                MissingContentLength:
+                  value: Request content has no length
+                InvalidContentLength:
+                  value: Data item is too large, this service only accepts data items up to 4294967296 bytes!
+                InvalidDataItem:
+                  value: Data item parsing error!
+        '402':
+          description: 'Payment Required. Two variants share this status:
+
+
+            **1. x402 payment required (parseable envelope).** The standard
+
+            x402-compliant response that enables automatic payment with x402-fetch
+
+            and other x402 standard clients. Accompanied by the
+
+            `X-Payment-Required: x402-1` header and an `accepts[]` array.
+
+
+            **Response Flow:**
+
+            1. Client uploads without payment → Receives this 402 response
+
+            2. Client extracts payment requirements from response body
+
+            3. Client creates EIP-3009 authorization and signs with EIP-712
+
+            4. Client retries upload with X-PAYMENT header
+
+            5. Server processes payment and accepts upload
+
+
+            **For browser clients:** If Accept header includes "text/html", the payment service
+
+            may return an interactive HTML paywall with MetaMask integration and Coinbase Onramp.
+
+
+            **2. Free tier exhausted (non-retryable).** When the address has no
+
+            free allowance and no balance and the x402 envelope is not available,
+
+            the body carries `code: "FREE_TIER_EXHAUSTED"` and a `topUpUrl`
+
+            instead of `accepts[]`. This is a PERMANENT condition — retrying will
+
+            not help. Every 402 sub-case sets the `X-Free-Tier-Exhausted: true`
+
+            header so SDKs can distinguish "pay to continue" from a transient
+
+            error and avoid retry-looping. Note: this fallback body deliberately
+
+            does NOT set `X-Payment-Required` because it has no `accepts[]`.
+
+            '
+          headers:
+            X-Payment-Required:
+              schema:
+                type: string
+              description: Present only on the x402 envelope variant; signals a parseable x402 body.
+              example: x402-1
+            X-Free-Tier-Exhausted:
+              schema:
+                type: string
+                enum:
+                - 'true'
+              description: Set to "true" on every 402 to signal no free allowance and no balance (pay to continue).
+              example: 'true'
+          content:
+            application/json:
+              schema:
+                type: object
+                description: 'Either an x402 payment-requirements envelope (x402Version +
+
+                  accepts[]) or a free-tier-exhausted body (code + topUpUrl +
+
+                  byteCount).
+
+                  '
+                properties:
+                  x402Version:
+                    type: integer
+                    description: x402 protocol version (currently 1)
+                    example: 1
+                  accepts:
+                    type: array
+                    description: Array of accepted payment methods (may include multiple networks)
+                    items:
+                      type: object
+                      required:
+                      - scheme
+                      - network
+                      - maxAmountRequired
+                      - resource
+                      - description
+                      - mimeType
+                      - payTo
+                      - maxTimeoutSeconds
+                      - asset
+                      properties:
+                        scheme:
+                          type: string
+                          description: Payment scheme identifier
+                          enum:
+                          - exact
+                          example: exact
+                        network:
+                          type: string
+                          description: Blockchain network identifier
+                          enum:
+                          - base-sepolia
+                          - base-mainnet
+                          example: base-mainnet
+                        maxAmountRequired:
+                          type: string
+                          description: 'Maximum USDC payment required in smallest unit (6 decimals).
+
+                            Example: "1000000" = 1.00 USDC
+
+                            '
+                          example: '1000000'
+                        resource:
+                          type: string
+                          description: The resource URL being paid for (this upload endpoint)
+                          example: /v1/tx
+                        description:
+                          type: string
+                          description: Human-readable description of what the payment is for
+                          example: Upload 1024 bytes to Arweave via AR.IO Bundler
+                        mimeType:
+                          type: string
+                          description: Expected MIME type of successful response
+                          example: application/json
+                        outputSchema:
+                          type: object
+                          description: JSON schema describing the successful response structure
+                        payTo:
+                          type: string
+                          description: Recipient Ethereum address for USDC payment
+                          example: '0x6A0A10FFD285c971B841bee8892878c0d583Bf67'
+                        maxTimeoutSeconds:
+                          type: integer
+                          description: Maximum time in seconds before authorization expires
+                          example: 300
+                        asset:
+                          type: string
+                          description: EIP-3009 compliant USDC contract address on the specified network
+                          example: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
+                        extra:
+                          type: object
+                          description: Additional metadata about the payment asset (for EIP-712 domain)
+                          properties:
+                            name:
+                              type: string
+                              description: Token name for EIP-712 domain
+                              example: USD Coin
+                            version:
+                              type: string
+                              description: EIP-712 domain version for USDC contract
+                              example: '2'
+                  error:
+                    type: string
+                    description: Optional error message providing additional context
+                    example: Insufficient balance
+                  code:
+                    type: string
+                    description: Present on the free-tier-exhausted variant. A distinct, non-retryable code.
+                    enum:
+                    - FREE_TIER_EXHAUSTED
+                    example: FREE_TIER_EXHAUSTED
+                  topUpUrl:
+                    type: string
+                    description: Present on the free-tier-exhausted variant. Where the user can add credits.
+                    example: https://payment.example.com/topup
+                  byteCount:
+                    type: integer
+                    description: Present on the free-tier-exhausted variant. The byte count of the rejected upload.
+                    example: 1024
+                  message:
+                    type: string
+                    description: Present on the free-tier-exhausted variant. Human-readable explanation.
+                    example: 'This upload requires payment: this address has no free allowance or sufficient balance for it.'
+              examples:
+                NoBalanceX402Required:
+                  summary: Standard 402 response for x402 payment
+                  value:
+                    x402Version: 1
+                    accepts:
+                    - scheme: exact
+                      network: base-mainnet
+                      maxAmountRequired: '1000000'
+                      resource: /v1/tx
+                      description: Upload 1024 bytes to Arweave via AR.IO Bundler
+                      mimeType: application/json
+                      payTo: '0x6A0A10FFD285c971B841bee8892878c0d583Bf67'
+                      maxTimeoutSeconds: 300
+                      asset: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
+                      extra:
+                        name: USD Coin
+                        version: '2'
+                    error: Insufficient balance
+                FreeTierExhausted:
+                  summary: Free tier exhausted (non-retryable, no x402 envelope)
+                  value:
+                    error: Payment required
+                    code: FREE_TIER_EXHAUSTED
+                    topUpUrl: https://payment.example.com/topup
+                    message: 'This upload requires payment: this address has no free allowance or sufficient balance for it.'
+                    byteCount: 1024
+        '503':
+          description: 'With an X-PAYMENT header: the x402 facilitator refused this
+
+            bundler''s credentials (nothing settled), or settlement was attempted
+
+            and gave no definite answer: the payment might have settled, so
+
+            check for the transfer before paying again. The reason in the
+
+            brackets is a status, an error code, or
+
+            "no response from payment service".
+
+            '
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                VerificationUnavailable:
+                  value: x402 payment verification is temporarily unavailable
+                SettlementUnavailable:
+                  value: x402 payment settlement is temporarily unavailable
+                SettleOutcomeUnknown:
+                  summary: Settle was attempted; the payment might have settled
+                  value: 'x402 payment settlement did not complete (payment service answered 503). The payment might have settled: check for the transfer before paying again'
+      operationId: postTx
+      x-operation-id-source: derived
+  /tx/:token:
+    servers:
+    - url: /v1
+    - url: /
+    post:
+      summary: Posts a signed data item to arweave for a specific token
+      description: 'Uploads a signed ANS-104 data item to the bundler with token-specific handling. Payment can be handled via:
+
+        - Traditional balance (user has pre-loaded credits)
+
+        - x402 payment (include X-PAYMENT header with EIP-3009 authorization)
+
+
+        When using X-PAYMENT header, Content-Length must be present to enable fraud detection.'
+      tags:
+      - Upload
+      parameters:
+      - $ref: '#/components/parameters/token'
+      - $ref: '#/components/parameters/content-length'
+      - $ref: '#/components/parameters/content-type'
+      - $ref: '#/components/parameters/x-payment'
+      requestBody:
+        required: true
+        description: A signed data item
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: The receipt of the uploaded data item.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataItemPost'
+        '202':
+          description: Data item has already been posted to this service.
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                DataItemExists:
+                  value: Data Item Exists
+        '402':
+          description: Insufficient balance
+          content:
+            text/plain:
+              schema:
+                type: string
+                default: Insufficient balance
+        '503':
+          description: 'With an X-PAYMENT header: the x402 facilitator refused this
+
+            bundler''s credentials (nothing settled), or settlement was attempted
+
+            and gave no definite answer: the payment might have settled, so
+
+            check for the transfer before paying again. The reason in the
+
+            brackets is a status, an error code, or
+
+            "no response from payment service".
+
+            '
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                VerificationUnavailable:
+                  value: x402 payment verification is temporarily unavailable
+                SettlementUnavailable:
+                  value: x402 payment settlement is temporarily unavailable
+                SettleOutcomeUnknown:
+                  summary: Settle was attempted; the payment might have settled
+                  value: 'x402 payment settlement did not complete (payment service answered 503). The payment might have settled: check for the transfer before paying again'
+      operationId: postTx:token
+      x-operation-id-source: derived
+  /x402/upload/signed:
+    servers:
+    - url: /v1
+    - url: /
+    post:
+      summary: Posts a signed ANS-104 data item with x402 payment
+      description: '**x402-Specific Upload Endpoint for Signed Data Items**
+
+
+        This endpoint is identical to `/tx` but explicitly signals x402 payment intent. It accepts
+
+        signed ANS-104 data items and processes x402 USDC payments.
+
+
+        **Use Case:** Clients that want to use x402 payments for signed data item uploads.
+
+
+        **Payment Flow:**
+
+        1. Client uploads without X-PAYMENT header → Server returns 402 Payment Required
+
+        2. Server response includes x402 payment requirements (USDC amount, recipient, network)
+
+        3. Client creates EIP-3009 authorization and signs with EIP-712
+
+        4. Client retries upload with X-PAYMENT header (base64-encoded JSON)
+
+        5. Server verifies payment signature, settles USDC transfer on-chain
+
+        6. Server accepts upload and returns receipt with x402Payment object
+
+
+        **Requirements:**
+
+        - Content-Type: application/octet-stream
+
+        - Content-Length: Required (for fraud detection with x402 payments)
+
+        - X-PAYMENT: Required for x402 payment authorization (after 402 response)
+
+
+        **Supported Networks:**
+
+        - base (Base mainnet) - Default, enabled
+
+        - base-sepolia (Base Sepolia testnet) - Requires X402_BASE_TESTNET_ENABLED=true
+
+        - ethereum-mainnet - Requires X402_ETH_ENABLED=true
+
+        - polygon-mainnet - Requires X402_POLYGON_ENABLED=true
+
+
+        **Note:** This endpoint has the same behavior as `/tx` - the separate path is for clarity
+
+        and allows clients to explicitly signal x402 payment intent.'
+      tags:
+      - Upload
+      parameters:
+      - $ref: '#/components/parameters/content-length'
+      - $ref: '#/components/parameters/content-type'
+      - $ref: '#/components/parameters/x-payment'
+      requestBody:
+        required: true
+        description: A signed ANS-104 data item (binary)
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+              description: ANS-104 data item signed with Arweave, Ethereum, or Solana key
+      responses:
+        '200':
+          description: The receipt of the uploaded data item with x402 payment confirmation
+          headers:
+            X-Payment-Response:
+              schema:
+                type: string
+                format: byte
+              description: 'Base64-encoded x402 payment response containing:
+
+                - paymentId: UUID for tracking
+
+                - transactionHash: Blockchain transaction hash
+
+                - network: Payment network (e.g., "base")
+
+                - mode: Payment mode (always "payg" for x402)
+
+                '
+              example: eyJwYXltZW50SWQiOiI1NTBlODQwMC1lMjliLTQxZDQtYTcxNi00NDY2NTU0NDAwMDAiLCJ0cmFuc2FjdGlvbkhhc2giOiIweGI4YTUyNzI1Y2RjODE2ZDA2MDM5MmRjZWNhYTE1Mjg4NzJhY2Y5ZWEwYmQwOTdhODZlMjQzMmRkNWQyMjEzY2EiLCJuZXR3b3JrIjoiYmFzZSIsIm1vZGUiOiJwYXlnIn0=
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataItemPost'
+              examples:
+                X402Upload:
+                  summary: Signed data item upload with x402 payment
+                  value:
+                    id: QpmY8mZmFEC8RxNsgbxSV6e36OF6quIYaPRKzvUco0o
+                    timestamp: 1700590909589
+                    version: 0.2.0
+                    owner: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb0'
+                    deadlineHeight: 1310000
+                    dataCaches:
+                    - arweave.net
+                    fastFinalityIndexes:
+                    - arweave.net
+                    winc: '1000000'
+                    signature: iU_S6uuG1OD8k0XqMGOmbcKfysDckEMUy4R9-ODPXiQj...
+                    public: qREovbmD6oxgHYNCzOeTei07lSz0-YLcjnvgSDzqpts...
+                    x402Payment:
+                      paymentId: 550e8400-e29b-41d4-a716-446655440000
+                      transactionHash: '0xb8a52725cdc816d060392dcecaa1528872acf9ea0bd097a86e2432dd5d2213ca'
+                      network: base
+                      mode: payg
+        '202':
+          description: Data item has already been posted to this service
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                DataItemExists:
+                  value: Data Item Exists
+        '400':
+          description: Invalid request
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                InvalidContentType:
+                  value: Invalid Content Type
+                MissingContentLength:
+                  summary: Content-Length required for x402 payments
+                  value: Missing Content Length. Content Length is required for x402 upload.
+                ContentTooLarge:
+                  value: Data item is too large, this service only accepts data items up to 4294967296 bytes!
+                InvalidDataItem:
+                  value: Data item parsing error!
+        '402':
+          description: 'Payment Required - x402 payment needed.
+
+
+            **Standard x402 402 Response** - Contains payment requirements for USDC payment.
+
+
+            Client should:
+
+            1. Extract payment requirements from response body
+
+            2. Create EIP-3009 authorization with USDC amount
+
+            3. Sign authorization with EIP-712
+
+            4. Retry request with X-PAYMENT header
+
+
+            **Supported Networks:** Payment requirements may include multiple networks (base, ethereum-mainnet, polygon-mainnet).
+
+            Client chooses which network to use for payment.
+
+            '
+          headers:
+            X-Payment-Required:
+              schema:
+                type: string
+              description: x402 protocol version identifier
+              example: x402-1
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - x402Version
+                - accepts
+                properties:
+                  x402Version:
+                    type: integer
+                    description: x402 protocol version
+                    example: 1
+                  accepts:
+                    type: array
+                    description: Array of accepted payment methods (may include multiple networks)
+                    items:
+                      type: object
+                      required:
+                      - scheme
+                      - network
+                      - maxAmountRequired
+                      - resource
+                      - description
+                      - mimeType
+                      - payTo
+                      - maxTimeoutSeconds
+                      - asset
+                      properties:
+                        scheme:
+                          type: string
+                          enum:
+                          - exact
+                          example: exact
+                        network:
+                          type: string
+                          enum:
+                          - base
+                          - base-sepolia
+                          - ethereum-mainnet
+                          - polygon-mainnet
+                          example: base
+                        maxAmountRequired:
+                          type: string
+                          description: USDC amount in atomic units (6 decimals)
+                          example: '1000000'
+                        resource:
+                          type: string
+                          example: /v1/x402/upload/signed
+                        description:
+                          type: string
+                          example: Upload 1024 bytes to Arweave via AR.IO Bundler
+                        mimeType:
+                          type: string
+                          example: application/json
+                        payTo:
+                          type: string
+                          description: Recipient Ethereum address
+                          example: '0x6A0A10FFD285c971B841bee8892878c0d583Bf67'
+                        maxTimeoutSeconds:
+                          type: integer
+                          example: 300
+                        asset:
+                          type: string
+                          description: USDC contract address on the network
+                          example: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
+                        extra:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                              example: USD Coin
+                            version:
+                              type: string
+                              example: '2'
+                  error:
+                    type: string
+                    description: Optional error message
+                    example: Payment required
+              examples:
+                X402PaymentRequired:
+                  summary: x402 payment required for upload
+                  value:
+                    x402Version: 1
+                    accepts:
+                    - scheme: exact
+                      network: base
+                      maxAmountRequired: '1000000'
+                      resource: /v1/x402/upload/signed
+                      description: Upload 1024 bytes to Arweave via AR.IO Bundler
+                      mimeType: application/json
+                      payTo: '0x6A0A10FFD285c971B841bee8892878c0d583Bf67'
+                      maxTimeoutSeconds: 300
+                      asset: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
+                      extra:
+                        name: USD Coin
+                        version: '2'
+                    error: Payment required
+        '500':
+          description: Internal server error
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: Internal server error
+        '503':
+          description: 'With an X-PAYMENT header: the x402 facilitator refused this
+
+            bundler''s credentials (nothing settled), or settlement was attempted
+
+            and gave no definite answer: the payment might have settled, so
+
+            check for the transfer before paying again. The reason in the
+
+            brackets is a status, an error code, or
+
+            "no response from payment service".
+
+            '
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                VerificationUnavailable:
+                  value: x402 payment verification is temporarily unavailable
+                SettlementUnavailable:
+                  value: x402 payment settlement is temporarily unavailable
+                SettleOutcomeUnknown:
+                  summary: Settle was attempted; the payment might have settled
+                  value: 'x402 payment settlement did not complete (payment service answered 503). The payment might have settled: check for the transfer before paying again'
+      operationId: postX402UploadSigned
+      x-operation-id-source: derived
+  /x402/data-item/signed:
+    servers:
+    - url: /v1
+    - url: /
+    post:
+      summary: Posts a signed ANS-104 data item with x402 payment (alias of…
+      description: '**Alias of `/x402/upload/signed`.** Identical behavior and handler
+
+        (`dataItemRoute`) — accepts a signed ANS-104 data item and processes an
+
+        x402 USDC payment. Provided as an alternate path for clients that prefer
+
+        the `/x402/data-item/*` naming. See `/x402/upload/signed` for the full
+
+        payment flow, requirements and supported networks.'
+      tags:
+      - Upload
+      parameters:
+      - $ref: '#/components/parameters/content-length'
+      - $ref: '#/components/parameters/content-type'
+      - $ref: '#/components/parameters/x-payment'
+      requestBody:
+        required: true
+        description: A signed ANS-104 data item (binary)
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+              description: ANS-104 data item signed with Arweave, Ethereum, or Solana key
+      responses:
+        '200':
+          description: The receipt of the uploaded data item with x402 payment confirmation
+          headers:
+            X-Payment-Response:
+              schema:
+                type: string
+                format: byte
+              description: Base64-encoded x402 payment response (paymentId, transactionHash, network, mode).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataItemPost'
+        '202':
+          description: Data item has already been posted to this service
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                DataItemExists:
+                  value: Data Item Exists
+        '400':
+          description: Invalid request
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                InvalidContentType:
+                  value: Invalid Content Type
+                MissingContentLength:
+                  summary: Content-Length required for x402 payments
+                  value: Missing Content Length. Content Length is required for x402 upload.
+                ContentTooLarge:
+                  value: Data item is too large, this service only accepts data items up to 4294967296 bytes!
+                InvalidDataItem:
+                  value: Data item parsing error!
+        '402':
+          description: 'Payment Required - x402 payment needed. Contains an x402 payment-requirements
+
+            envelope (x402Version + accepts[]). See `/x402/upload/signed` for the full schema.
+
+            '
+          headers:
+            X-Payment-Required:
+              schema:
+                type: string
+              description: x402 protocol version identifier
+              example: x402-1
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - x402Version
+                - accepts
+                properties:
+                  x402Version:
+                    type: integer
+                    example: 1
+                  accepts:
+                    type: array
+                    items:
+                      type: object
+                  error:
+                    type: string
+                    example: Payment required
+        '500':
+          description: Internal server error
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: Internal server error
+        '503':
+          description: 'With an X-PAYMENT header: the x402 facilitator refused this
+
+            bundler''s credentials (nothing settled), or settlement was attempted
+
+            and gave no definite answer: the payment might have settled, so
+
+            check for the transfer before paying again. The reason in the
+
+            brackets is a status, an error code, or
+
+            "no response from payment service".
+
+            '
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                VerificationUnavailable:
+                  value: x402 payment verification is temporarily unavailable
+                SettlementUnavailable:
+                  value: x402 payment settlement is temporarily unavailable
+                SettleOutcomeUnknown:
+                  summary: Settle was attempted; the payment might have settled
+                  value: 'x402 payment settlement did not complete (payment service answered 503). The payment might have settled: check for the transfer before paying again'
+      operationId: postX402DataItemSigned
+      x-operation-id-source: derived
+  /x402/upload/unsigned:
+    servers:
+    - url: /v1
+    - url: /
+    post:
+      summary: Posts raw data with x402 payment (bundler creates ANS-104 wrapper)
+      description: '**x402-Specific Upload Endpoint for Raw Data (Server-Signed)**
+
+
+        This endpoint accepts raw data (images, files, text, etc.) and the bundler creates and signs
+
+        the ANS-104 data item wrapper server-side. Payment is via x402 USDC. **Use Case:** AI agents, simple apps, and clients that don''t want to implement ANS-104 signing. ---
+
+
+        ## Payment Flow
+
+
+        ```
+
+        1. POST raw data (no X-PAYMENT header)
+
+        ↓
+
+        2. Server returns 402 with payment requirements
+
+        ↓
+
+        3. Client creates EIP-3009 authorization + EIP-712 signature
+
+        ↓
+
+        4. POST raw data WITH X-PAYMENT header
+
+        ↓
+
+        5. Server: verify → settle USDC → create data item → store → return receipt
+
+        ```
+
+
+        ---
+
+
+        ## Pricing
+
+
+        **Formula:**
+
+        ```
+
+        estimatedSize = rawDataSize + 512 (signature) + 512 (owner) + 80 (headers) + (totalTags × 64)
+
+        winstonCost = arweaveGateway.getPrice(estimatedSize)
+
+        usdcAmount = (winstonCost / 10^12) × arPriceUSD × 10^6 × (1 + feePercent/100)
+
+        ```
+
+
+        **Fee:** Configurable via X402_FEE_PERCENT (default: 15%); X402_PRICING_BUFFER_PERCENT is the deprecated fallback
+
+
+        **Get price quote first:** `GET /v1/price/x402/data/{token}/{byteCount}?tags={n}&contentType={mime}`
+
+
+        ---
+
+
+        ## System Tags (Automatically Added)
+
+
+        | Tag | Description | Example |
+
+        |-----|-------------|---------|
+
+        | Bundler | Service name | "AR.IO Bundler" |
+
+        | Upload-Type | Upload method | "raw-data-x402" |
+
+        | Payer-Address | Ethereum payer | "0x742d35Cc..." |
+
+        | X402-TX-Hash | Blockchain tx | "0x9c31110e..." |
+
+        | X402-Payment-ID | Tracking UUID | "edd4766e-..." |
+
+        | X402-Network | Payment network | "base" |
+
+        | Upload-Timestamp | Unix ms | "1700590909589" |
+
+        | Content-Type | MIME type | "image/png" |
+
+
+        ---
+
+
+        ## Custom Tags
+
+
+        **Via Headers:** `X-Tag-App-Name: MyApp` → `{"name": "App-Name", "value": "MyApp"}`
+
+
+        **Via a JSON header:** `x-data-item-tags: [{"name": "App-Name", "value": "MyApp"}]`, as @ardrive/turbo-sdk sends. A value that is not a JSON array of `{name, value}` strings is refused with 400 before any payment; an empty value is ignored. Header values are Latin-1, an HTTP limit: send other text in the envelope. **Via JSON Envelope:** `{"data": "...", "tags": [{"name": "App-Name", "value": "MyApp"}]}`
+
+
+        Note: Header tag names are converted from kebab-case to Proper-Case. Tags from every source are kept, in this order: the envelope''s, `x-data-item-tags`, then `X-Tag-*`. The item''s Content-Type comes from one explicit source: a `Content-Type` tag (any case) or the envelope''s `contentType`. More than one is refused with 400, even when they agree. With neither, a binary upload uses the request''s Content-Type unless it is `application/octet-stream`, and an envelope gets none. An empty value counts as absent. A JSON body is read as an envelope when `data` is a non-empty string and every other key is an envelope key (`tags`, `contentType`, and the unused `target` and `anchor`). `data` can be standard or url-safe base64, with or without padding or line breaks. Any other JSON body, such as a document with its own `data` field and other keys, is stored byte for byte. An envelope whose `data` is not base64, whose `tags` are not `{name, value}` strings, or whose `contentType`, `target` or `anchor` is not a string is refused with 400 before any payment. A `null` optional field counts as absent. ---
+
+
+        ## Important Notes
+
+
+        - **Ownership:** The `owner` field is the bundler''s server wallet. The payer''s address is recorded in the `Payer-Address` tag only. - **Server Requirement:** Requires `RAW_DATA_UPLOADS_ENABLED=true` on server
+
+        - **Max Size:** the request body is limited to `MAX_DATA_ITEM_SIZE` bytes (default 4 GiB); a larger body answers 413. A JSON envelope carries base64, about 4/3 the size of the data, so its data can be at most about 3/4 of that limit. - **Max Tags:** 4096 serialized tag bytes for the whole item, including the Content-Type tag and the 7 system tags this bundler adds. Checked before payment.'
+      tags:
+      - Upload
+      parameters:
+      - $ref: '#/components/parameters/content-length'
+      - name: Content-Type
+        in: header
+        description: MIME type of the raw data (e.g., image/png, application/pdf)
+        required: false
+        schema:
+          type: string
+          example: image/png
+      - $ref: '#/components/parameters/x-payment'
+      - name: x-data-item-tags
+        in: header
+        description: 'Tags as a JSON array of `{"name": string, "value": string}` objects.
+
+          Malformed values are refused with 400 before any payment; an empty
+
+          value is ignored. Header values are Latin-1 (an HTTP limit).
+
+          '
+        required: false
+        schema:
+          type: string
+          example: '[{"name":"Content-Type","value":"application/json"},{"name":"App-Name","value":"MyApp"}]'
+      - name: X-TAG-*
+        in: header
+        description: 'Custom tags in the format X-TAG-Name: Value.
+
+          Multiple tags can be specified. Tag names are case-insensitive.
+
+          '
+        required: false
+        schema:
+          type: string
+        examples:
+          AppName:
+            summary: Application name tag
+            value: MyApp
+          Version:
+            summary: Version tag
+            value: 1.0.0
+      requestBody:
+        required: true
+        description: 'Raw data to upload. Supports two formats:
+
+
+          **1. Binary Upload (Recommended for files)**
+
+          - Content-Type: application/octet-stream, image/png, application/pdf, etc.
+
+          - Body: Raw binary data
+
+          - Custom tags via X-Tag-* headers
+
+
+          **2. JSON Envelope (Alternative for programmatic use)**
+
+          - Content-Type: application/json
+
+          - Body: `{"data": "<base64>", "contentType": "...", "tags": [...]}`
+
+          - Useful when headers are difficult to set (e.g., some HTTP clients)
+
+          '
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+              description: Raw binary data (use X-Tag-* headers for custom tags)
+          image/png:
+            schema:
+              type: string
+              format: binary
+          image/jpeg:
+            schema:
+              type: string
+              format: binary
+          application/pdf:
+            schema:
+              type: string
+              format: binary
+          text/plain:
+            schema:
+              type: string
+              format: binary
+          application/json:
+            schema:
+              type: object
+              description: 'JSON envelope format for raw data uploads.
+
+                Use this when you can''t easily set X-Tag-* headers.
+
+                '
+              required:
+              - data
+              properties:
+                data:
+                  type: string
+                  format: byte
+                  description: Base64-encoded raw data
+                  example: SGVsbG8gV29ybGQh
+                contentType:
+                  type: string
+                  description: MIME type of the data (adds Content-Type tag)
+                  example: image/png
+                tags:
+                  type: array
+                  description: Custom tags to add to the data item (no count limit; the item's tags, with the Content-Type and system tags, must fit in 4096 bytes)
+                  items:
+                    type: object
+                    required:
+                    - name
+                    - value
+                    properties:
+                      name:
+                        type: string
+                        description: Tag name
+                        example: App-Name
+                      value:
+                        type: string
+                        description: Tag value
+                        example: MyApp
+            examples:
+              SimpleText:
+                summary: Simple text upload
+                value:
+                  data: SGVsbG8gV29ybGQh
+                  contentType: text/plain
+              WithTags:
+                summary: Upload with custom tags
+                value:
+                  data: iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+                  contentType: image/png
+                  tags:
+                  - name: App-Name
+                    value: MyApp
+                  - name: App-Version
+                    value: 1.0.0
+      responses:
+        '200':
+          description: 'The raw data was successfully uploaded and wrapped in an ANS-104 data item.
+
+
+            **Response includes:**
+
+            - `id`: The data item ID (Arweave transaction ID)
+
+            - `owner`: Server''s raw data item wallet address (signs the data item)
+
+            - `payer`: Ethereum address that paid via x402 (tracked in Payer-Address tag)
+
+            - `receipt`: Signed receipt object with cryptographic proof
+
+            - `x402Payment`: Payment confirmation with blockchain transaction hash
+
+            '
+          headers:
+            X-Payment-Response:
+              schema:
+                type: string
+                format: byte
+              description: 'Base64-encoded x402 payment response containing:
+
+                - paymentId: UUID for tracking
+
+                - transactionHash: Blockchain transaction hash
+
+                - network: Payment network (e.g., "base")
+
+                - mode: Payment mode (always "payg" for x402)
+
+                '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RawDataUploadResponse'
+              examples:
+                RawDataUpload:
+                  summary: Raw data upload with x402 payment
+                  value:
+                    id: rNephs2z5BAAUlmZm_TGwQjz4TiMr6HoZNyBO3eLctA
+                    owner: jHGQATyLh_yBNKwqPmU-y6qV98q-AB48fIWUiFOSJAA
+                    payer: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb0'
+                    dataCaches:
+                    - arweave.net
+                    fastFinalityIndexes:
+                    - arweave.net
+                    receipt:
+                      id: rNephs2z5BAAUlmZm_TGwQjz4TiMr6HoZNyBO3eLctA
+                      timestamp: 1700590909589
+                      version: 0.2.0
+                      deadlineHeight: 1310000
+                      dataCaches:
+                      - arweave.net
+                      fastFinalityIndexes:
+                      - arweave.net
+                      winc: '1000000'
+                      public: qREovbmD6oxgHYNCzOeTei07lSz0-YLcjnvgSDzqpts...
+                      signature: iU_S6uuG1OD8k0XqMGOmbcKfysDckEMUy4R9-ODPXiQj...
+                    x402Payment:
+                      paymentId: edd4766e-a053-47f2-88d1-819e72c534dd
+                      transactionHash: '0x9c31110e240805d9dfa5853c661f23a258c89f78b8d2e4424a922f9dfd8748f3'
+                      network: base
+                      mode: payg
+        '400':
+          description: Invalid request. Every 400 is answered before any payment settles.
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                MissingContentLength:
+                  summary: Content-Length required with X-PAYMENT
+                  value: Content-Length header is required when providing payment
+                EmptyData:
+                  value: Data cannot be empty
+                InvalidPaymentHeader:
+                  value: Invalid payment header format
+                NetworkNotConfigured:
+                  value: Network base-goerli is not configured
+                NetworkNotEnabled:
+                  value: Network base-sepolia is not enabled
+                MalformedTagsHeader:
+                  value: 'The x-data-item-tags header must be a JSON array of {"name": string, "value": string} objects'
+                EnvelopeDataNotBase64:
+                  value: The envelope's data must be base64 (standard or url-safe)
+                EnvelopeTagsMalformed:
+                  value: 'The envelope''s tags must be an array of {"name": string, "value": string} objects'
+                EnvelopeFieldNotString:
+                  summary: contentType, target or anchor that is not a string
+                  value: The envelope's contentType must be a string
+                TwoContentTypes:
+                  value: 'Send the Content-Type once, as one Content-Type tag or the envelope''s contentType: it becomes the data item''s Content-Type'
+                TagsTooLarge:
+                  summary: The item's tags would exceed 4096 bytes
+                  value: 'Tags are too large: with the tags this bundler adds, the data item''s tags would exceed 4096 bytes'
+                InvalidTagValue:
+                  summary: A non-string payer address
+                  value: 'Invalid tags: Invalid tag format for [object Object], expected {name:string, value: string}'
+        '402':
+          description: 'Payment Required. Without an X-PAYMENT header, the body is the x402
+
+            quote (JSON), or a JSON notice when no x402 network is enabled. With
+
+            an X-PAYMENT header, the payment was refused or not verified at
+
+            verify (including a facilitator outage); nothing settled. The body is
+
+            the reason as plain text.
+
+            '
+          headers:
+            X-Payment-Required:
+              schema:
+                type: string
+                enum:
+                - x402-1
+              description: x402 protocol version (set on the JSON bodies)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  x402Version:
+                    type: integer
+                    example: 1
+                  accepts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        scheme:
+                          type: string
+                          example: exact
+                        network:
+                          type: string
+                          example: base
+                        maxAmountRequired:
+                          type: string
+                          description: USDC amount in smallest unit (6 decimals)
+                          example: '3508'
+                        resource:
+                          type: string
+                          example: https://upload.yourdomain.com/v1/tx
+                        description:
+                          type: string
+                          example: Upload 1716 bytes to Arweave via AR.IO Bundler
+                        mimeType:
+                          type: string
+                          description: The item's Content-Type, or application/octet-stream
+                          example: text/plain
+                        payTo:
+                          type: string
+                          example: '0xCFd3f996447a541Cbfba5422310EDb417d9f2cE6'
+                        maxTimeoutSeconds:
+                          type: integer
+                          example: 3600
+                        asset:
+                          type: string
+                          description: USDC contract address
+                          example: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
+                        extra:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                              example: USD Coin
+                            version:
+                              type: string
+                              example: '2'
+                  error:
+                    type: string
+                    example: Payment required to upload data
+                  message:
+                    type: string
+                    description: Present only when no x402 network is enabled
+              examples:
+                NoNetworkEnabled:
+                  summary: No x402 network is enabled on this bundler
+                  value:
+                    error: Payment required
+                    message: x402 payments are not currently available on this bundler.
+            text/plain:
+              schema:
+                type: string
+              examples:
+                InsufficientAmount:
+                  summary: Refused at verify; nothing settled
+                  value: 'Insufficient amount: 1000 < 3508'
+                InvalidSignature:
+                  summary: Refused at verify; nothing settled
+                  value: Invalid EIP-712 signature
+                FacilitatorOutage:
+                  summary: Not verified (facilitator error); nothing settled
+                  value: Request failed with status code 502
+        '403':
+          description: 'Raw data uploads are disabled on this bundler, or the content scan
+
+            refused the upload (before any payment).
+
+            '
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                RawUploadsDisabled:
+                  value: Raw data uploads are not enabled on this bundler
+                ContentScanRefused:
+                  value: Forbidden
+        '413':
+          description: 'The request body is larger than `MAX_DATA_ITEM_SIZE` (default 4 GiB).
+
+            Refused by the declared Content-Length before the body is read, or
+
+            while reading it, before any payment.
+
+            '
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Data is too large. Maximum allowed is 4294967296 bytes.
+        '500':
+          description: 'With one of the two bodies below, the payment settled and the item
+
+            could not be built or stored. A 500 with any other body, such as
+
+            Koa''s "Internal Server Error" when the price lookup fails, can come
+
+            before payment.
+
+            '
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                CreateFailed:
+                  value: Failed to create data item from raw data
+                StoreFailed:
+                  value: Failed to store data item
+        '503':
+          description: 'The x402 facilitator refused this bundler''s credentials at verify or
+
+            settle (nothing settled), or settlement was attempted and did not
+
+            complete: the payment might have settled, so check for the transfer
+
+            before paying again.
+
+            '
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                VerificationUnavailable:
+                  value: x402 payment verification is temporarily unavailable
+                SettlementUnavailable:
+                  value: x402 payment settlement is temporarily unavailable
+                SettleOutcomeUnknown:
+                  summary: Settle was attempted; the payment might have settled
+                  value: 'x402 payment settlement did not complete (socket hang up). The payment might have settled: check for the transfer before paying again'
+      operationId: postX402UploadUnsigned
+      x-operation-id-source: derived
+  /chunks/{token}/-1/-1:
+    servers:
+    - url: /v1
+    - url: /
+    get:
+      summary: Creates a new multi-part upload.
+      tags:
+      - Upload
+      parameters:
+      - $ref: '#/components/parameters/token'
+      responses:
+        '200':
+          description: Creates a new multi-part upload. The returned upload id can then be used to send chunks.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateMultipartUpload'
+        '503':
+          description: 'Internal server error. For an x402 multipart upload (with
+
+            `totalBytes` and an X-PAYMENT header), a JSON body instead: the
+
+            facilitator refused this bundler''s credentials (nothing settled),
+
+            or settlement gave no definite answer and the payment might have
+
+            settled, so check for the transfer before paying again.
+
+            '
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Internal server error
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              examples:
+                VerificationUnavailable:
+                  value:
+                    error: x402 payment verification is temporarily unavailable
+                SettlementUnavailable:
+                  value:
+                    error: x402 payment settlement is temporarily unavailable
+                SettleOutcomeUnknown:
+                  summary: Settle was attempted; the payment might have settled
+                  value:
+                    error: 'x402 payment settlement did not complete (payment service answered 503). The payment might have settled: check for the transfer before paying again'
+      operationId: getChunksByToken11
+      x-operation-id-source: derived
+  /chunks/:token/:uploadId/-1:
+    servers:
+    - url: /
+    parameters:
+    - $ref: '#/components/parameters/uploadId'
+    - $ref: '#/components/parameters/token'
+    get:
+      summary: Gets an existing multi-part upload, including all existing chunks that have…
+      tags:
+      - Upload
+      responses:
+        '200':
+          description: The existing multipart upload, including all existing chunks that have been uploaded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InFlightMultipartUpload'
+        '404':
+          description: Multi-part upload not found
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                MultipartUploadNotFound:
+                  value: Multi-part upload not found
+        '503':
+          description: Internal server error
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Internal server error
+      operationId: getChunks:token:uploadId1
+      x-operation-id-source: derived
+    post:
+      summary: Finalizes a multi-part upload. ARx compatible
+      tags:
+      - Upload
+      responses:
+        '200':
+          description: The multi-part upload was successfully finalized. The receipt includes a signature of the id, version, timestamp, public key, deadlineHeight and owner.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompleteMultipartUpload'
+        '402':
+          description: Insufficient balance
+          content:
+            text/plain:
+              schema:
+                type: string
+                default: Insufficient balance
+        '404':
+          description: Multi-part upload not found
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                MultipartUploadNotFound:
+                  value: Multi-part upload not found
+        '503':
+          description: Internal server error
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Internal server error
+      operationId: postChunks:token:uploadId1
+      x-operation-id-source: derived
+  /chunks/:token/:uploadId/finalize:
+    servers:
+    - url: /
+    post:
+      summary: Finalizes a multi-part upload asynchronously
+      tags:
+      - Upload
+      parameters:
+      - $ref: '#/components/parameters/uploadId'
+      - $ref: '#/components/parameters/token'
+      responses:
+        '202':
+          description: The multi-part upload was successfully enqueued.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompleteMultipartUpload'
+        '402':
+          description: Insufficient balance
+          content:
+            text/plain:
+              schema:
+                type: string
+                default: Insufficient balance
+        '404':
+          description: Multi-part upload not found
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                MultipartUploadNotFound:
+                  value: Multi-part upload not found
+        '503':
+          description: Internal server error
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Internal server error
+      operationId: postChunks:token:uploadIdFinalize
+      x-operation-id-source: derived
+  /chunks/:token/:uploadId/status:
+    servers:
+    - url: /
+    get:
+      summary: Gets the status of a multi-part upload
+      tags:
+      - Upload
+      parameters:
+      - $ref: '#/components/parameters/token'
+      - $ref: '#/components/parameters/uploadId'
+      responses:
+        '200':
+          description: The status of the multi-part upload
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: The status of the multi-part upload.
+                    example: VALIDATING
+                    enum:
+                    - VALIDATING
+                    - ASSEMBLING
+                    - INVALID
+                    - UNDERFUNDED
+                  timestamp:
+                    type: integer
+                    description: The timestamp in millisecond of when the multi-part status was retrieved.
+                    example: 1700590909589
+        '404':
+          description: Multi-part upload not found
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                MultipartUploadNotFound:
+                  value: Multi-part upload not found
+        '503':
+          description: Internal server error
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Internal server error
+      operationId: getChunks:token:uploadIdStatus
+      x-operation-id-source: derived
+  /chunks/:token/:uploadId/:chunkOffset:
+    servers:
+    - url: /
+    post:
+      summary: Posts a chunk of a multi-part upload. ARx compatible
+      tags:
+      - Upload
+      parameters:
+      - $ref: '#/components/parameters/uploadId'
+      - $ref: '#/components/parameters/token'
+      - $ref: '#/components/parameters/chunkOffset'
+      requestBody:
+        required: true
+        description: A chunk of a multi-part upload
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: The chunk was successfully posted.
+        '402':
+          description: Insufficient balance
+          content:
+            text/plain:
+              schema:
+                type: string
+                default: Insufficient balance
+        '404':
+          description: Multi-part upload not found
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                MultipartUploadNotFound:
+                  value: Multi-part upload not found
+        '503':
+          description: Internal server error
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Internal server error
+      operationId: postChunks:token:uploadId:chunkOffset
+      x-operation-id-source: derived
+components:
+  schemas:
+    RawDataUploadResponse:
+      type: object
+      description: 'Response for raw data uploads via /x402/upload/unsigned endpoint.
+
+
+        **Key differences from signed uploads:**
+
+        - `owner` is the bundler''s server wallet (signs the ANS-104 data item)
+
+        - `payer` is the Ethereum address that paid via x402 (tracked in Payer-Address tag)
+
+        - `receipt` contains the signed receipt with cryptographic proof
+
+        '
+      required:
+      - id
+      - owner
+      - payer
+      - dataCaches
+      - fastFinalityIndexes
+      - receipt
+      - x402Payment
+      properties:
+        id:
+          type: string
+          description: The Arweave data item ID (base64url encoded, 43 characters)
+          example: rNephs2z5BAAUlmZm_TGwQjz4TiMr6HoZNyBO3eLctA
+        owner:
+          type: string
+          description: 'The Arweave wallet address that signed the data item.
+
+            For raw uploads, this is the bundler''s server wallet (RAW_DATA_ITEM_JWK).
+
+            '
+          example: jHGQATyLh_yBNKwqPmU-y6qV98q-AB48fIWUiFOSJAA
+        payer:
+          type: string
+          description: 'The Ethereum address that paid for this upload via x402.
+
+            This address is recorded in the Payer-Address tag on the data item.
+
+            '
+          example: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb0'
+        dataCaches:
+          type: array
+          description: Arweave data caches the data item has been posted to
+          items:
+            type: string
+          example:
+          - arweave.net
+        fastFinalityIndexes:
+          type: array
+          description: Arweave fast finality indexes the data item has been posted to
+          items:
+            type: string
+          example:
+          - arweave.net
+        receipt:
+          type: object
+          description: 'Signed receipt providing cryptographic proof of upload acceptance.
+
+            Verify by checking the signature against the public key.
+
+            '
+          required:
+          - id
+          - timestamp
+          - version
+          - deadlineHeight
+          - dataCaches
+          - fastFinalityIndexes
+          - winc
+          - public
+          - signature
+          properties:
+            id:
+              type: string
+              description: Data item ID (matches top-level id)
+              example: rNephs2z5BAAUlmZm_TGwQjz4TiMr6HoZNyBO3eLctA
+            timestamp:
+              type: integer
+              description: Unix timestamp in milliseconds when receipt was signed
+              example: 1700590909589
+            version:
+              type: string
+              description: Receipt format version
+              example: 0.2.0
+            deadlineHeight:
+              type: integer
+              description: Arweave block height by which data item must be posted
+              example: 1310000
+            dataCaches:
+              type: array
+              items:
+                type: string
+              example:
+              - arweave.net
+            fastFinalityIndexes:
+              type: array
+              items:
+                type: string
+              example:
+              - arweave.net
+            winc:
+              type: string
+              description: Winston credits equivalent of the upload (for accounting)
+              example: '1000000'
+            public:
+              type: string
+              description: Base64url-encoded RSA public key of the signer (bundler wallet)
+              example: qREovbmD6oxgHYNCzOeTei07lSz0-YLcjnvgSDzqpts...
+            signature:
+              type: string
+              description: 'Base64url-encoded RSA signature of the receipt.
+
+                Signs: id + version + timestamp + public + deadlineHeight + owner
+
+                '
+              example: iU_S6uuG1OD8k0XqMGOmbcKfysDckEMUy4R9-ODPXiQj...
+        x402Payment:
+          type: object
+          description: x402 payment confirmation with blockchain transaction details
+          required:
+          - paymentId
+          - transactionHash
+          - network
+          - mode
+          properties:
+            paymentId:
+              type: string
+              format: uuid
+              description: Unique payment identifier for tracking and reconciliation
+              example: edd4766e-a053-47f2-88d1-819e72c534dd
+            transactionHash:
+              type: string
+              description: 'Blockchain transaction hash for the USDC transfer.
+
+                Verify on block explorer (e.g., BaseScan for Base network).
+
+                '
+              example: '0x9c31110e240805d9dfa5853c661f23a258c89f78b8d2e4424a922f9dfd8748f3'
+            network:
+              type: string
+              description: Network where payment was settled
+              enum:
+              - base
+              - base-sepolia
+              - base-mainnet
+              - ethereum-mainnet
+              - polygon-mainnet
+              example: base
+            mode:
+              type: string
+              enum:
+              - payg
+              description: Payment mode (always "payg" for x402 raw uploads)
+              example: payg
+    CompleteMultipartUpload:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The id of the multi-part upload.
+          example: QpmY8mZmFEC8RxNsgbxSV6e36OF6quIYaPRKzvUco0o
+        data:
+          $ref: '#/components/schemas/DataItemPost'
+    DataItemPost:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The id of the data item.
+          example: QpmY8mZmFEC8RxNsgbxSV6e36OF6quIYaPRKzvUco0o
+        owner:
+          type: string
+          description: The normalized wallet address that signed data item. For raw data uploads, this is the server's raw data item wallet (auto-whitelisted).
+          example: 8wgRDgvYOrtSaWEIV21g0lTuWDUnTu4_iYj4hmA7PI0
+        payer:
+          type: string
+          description: The Ethereum address that paid for this upload via x402 (only present for raw data uploads, tracked in Payer-Address tag).
+          example: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb0'
+        dataCaches:
+          type: array
+          description: The Arweave data caches the data item has been posted to.
+          items:
+            type: string
+          example:
+          - arweave.net
+        fastFinalityIndexes:
+          type: array
+          description: The Arweave fast finality indexes the data item has been posted to.
+          items:
+            type: string
+          example:
+          - arweave.net
+        deadlineHeight:
+          type: integer
+          description: The deadline block height for the data item to be posted to Arweave.
+          example: 1310000
+        timestamp:
+          type: integer
+          description: The timestamp in millisecond of when the data item was fully uploaded and receipt was signed.
+          example: 1700590909589
+        version:
+          type: string
+          description: The version of the receipt
+          example: 0.1.0
+        signature:
+          type: string
+          description: The base64URL signature of the receipt. Includes id, version, timestamp, public key, deadlineHeight and owner.
+          example: iU_S6uuG1OD8k0XqMGOmbcKfysDckEMUy4R9-ODPXiQjKXuT4lTngRFBFKO5NQT1iIfqSDKcbTRL6gJowM_L7bBQZRGkojzXD0PNNU2F0bNNJ80VtUktHifGTXbCgz5kiFciL19n0P3nX6ZfXnOn-H8ALZzRJV69apdvwqitpNKxLMPyc-QA0QBxmC3CKPz_7fy2Qg0QHr5g_ZT2Of-YJ_RsZTEoc3g1fgzsEmMBPOsx4XtPrhV6llnA3pncngzHbPdFvypdWiO8Bvr0EWmazNsoanuwK5uKJ_ROIGXW_dBBGN8Vrfv5U6dJnhJVn5IE7JFlixpFTluF_ICRzbUq2pk_re6jEtW1H3ItH2iN0UeFUw1uDbq3HJW6lDc8aOwDwDspJI11KEI6uCz5QmQy2V8DvRknoqcxmuihF6XmmJIZgTVeo6LNufEis9kFxqtc3Dh_gn8z0cDXKEKFycudckmcHP7vkWD68uSssMMJIdVgwvPZss06svfRnI-E33j3MrQI9FzMIv-7Df8iYATyeyldM1v3gexG0kQm0AMG1_8_SLqwu2QlqzM41mrK5vNmQxOVdIQSOPWPvzbF-YGRwpCjlveRBuARGC9JNC4UipvDYri2gRWuBx2uDL7dmVFv1gRll3dYNMYaMULHYngtrrCynB3Cyfhh7cyPlwuNlk0
+        public:
+          type: string
+          description: The public key of the wallet that signed the receipt
+          example: qREovbmD6oxgHYNCzOeTei07lSz0-YLcjnvgSDzqptsCiqNOtB3RKUToSX5hkPD45fJDY4057XkkcsQRuGsU8y9rgm37i-Kiyd5Z_iy6pJXrwi9XnAgGL118lIV790GZ7xe5o3DvPV3Px74C0ABsfL9lW86D4t_qClJ6wSQksKNd7rnUImIvHW0vxLswST7dfUngevzKt4kv48VTub4951XdUHjb45Uurf7xFYSCizAGtGqr5GYDFrVk-mNrzFH5bXt06PJfxe9E5ujIE5Uq1Az6vqEOO0E1mWmXqdTPluAxcjmgktkoNLHZnnU-BsYuFaTWW5NU3aS-RgJKXYs9O6Dc1-2SITl-H_wtdGNSj31fj72UkaAbkpA1mionK-8bOIkSpYgKCyTC42oHh1Fw4SLXPyLxBj1w6F32LSLjpse5dmKymj4fJPezCMdi709uIiVT7XOm4LZBCzFOxS6-UNxgE57dBFpcWkcqNO3p00biYqH5d5bzvK3bwd-4j0KyKlqPYTProSnd3P6ROZuuJaLoLD_Or5-L_dUjawHz-DFlzmckYaf8l3XdzPM4JSsE8CEDZl0NCN0AidXt_wjbr6k9JsO7cnLB226AjxhcyuxZOlhgkIn7EbxpVXx-O2mXkcXF8PixCP0k5brtriLeF1MAdspgd_S-LKQeGVr7-mk
+        x402Payment:
+          type: object
+          description: 'x402 payment information - present when upload was paid via X-PAYMENT header.
+
+
+            Contains blockchain transaction details for verification and audit trail.
+
+            The payment is settled on-chain via EIP-3009 USDC transfer before upload completes.
+
+            '
+          properties:
+            paymentId:
+              type: string
+              format: uuid
+              description: Unique payment identifier (UUID) for tracking and reconciliation
+              example: 550e8400-e29b-41d4-a716-446655440000
+            transactionHash:
+              type: string
+              description: 'Blockchain transaction hash for the USDC transfer.
+
+                Can be verified on block explorer (e.g., BaseScan for Base network).
+
+                '
+              example: '0xb8a52725cdc816d060392dcecaa1528872acf9ea0bd097a86e2432dd5d2213ca'
+            network:
+              type: string
+              description: Network where payment was settled
+              enum:
+              - base-sepolia
+              - base-mainnet
+              example: base-mainnet
+            mode:
+              type: string
+              enum:
+              - payg
+              - topup
+              - hybrid
+              description: 'Payment mode (currently always "payg" for x402):
+
+                - payg: Pay-as-you-go (payment covers only this specific upload)
+
+                - topup: Credit account balance (currently not used for x402)
+
+                - hybrid: Reserve for upload + credit excess (currently not used for x402)
+
+                '
+              example: payg
+    InFlightMultipartUpload:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The id of the multi-part upload.
+          example: QpmY8mZmFEC8RxNsgbxSV6e36OF6quIYaPRKzvUco0o
+        min:
+          type: number
+          description: The minimum chunk size allowed in bytes (e.g. 25KB)
+          example: 2500
+        max:
+          type: number
+          description: The maximum chunk size allowed in bytes (e.g. 500MB)
+          example: 500000000
+        size:
+          type: number
+          description: The chunk size for the multi-part upload in bytes. (e.g. 25MB)
+          example: 25000000
+        chunks:
+          type: array
+          description: A multi-dimensional array containing the chunk offset and chunk size (e.g. [chunkOffset, chunkSize] for each chunk that has been uploaded for the respective upload id, sorted in ascending order respective to the chunk offset.
+          example:
+          - - 25000000
+            - 25000000
+          - - 50000000
+            - 25000000
+          - - 75000000
+            - 25000000
+          - - 100000000
+            - 4858676
+    CreateMultipartUpload:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The id of the multi-part upload.
+          example: QpmY8mZmFEC8RxNsgbxSV6e36OF6quIYaPRKzvUco0o
+        min:
+          type: number
+          description: The minimum chunk size allowed in bytes (e.g. 25KB)
+          example: 2500
+        max:
+          type: number
+          description: The maximum chunk size allowed in bytes (e.g. 500MB)
+          example: '500_000_000'
+  parameters:
+    token:
+      name: token
+      in: path
+      description: The token to use for validating the transaction.
+      required: true
+      schema:
+        type: string
+        enum:
+        - arweave
+        - ethereum
+        - solana
+    x-tag-custom:
+      name: X-Tag-*
+      in: header
+      required: false
+      description: 'Custom tags for raw data uploads (server-signed mode only). Use pattern X-Tag-Name where Name becomes the tag name.
+
+        Example: X-Tag-App-Name: MyApp creates tag {"name": "App-Name", "value": "MyApp"}
+
+
+        Auto-added tags for raw uploads:
+
+        - Bundler: Service name
+
+        - Upload-Type: "raw-data-x402"
+
+        - Payer-Address: Ethereum address from X-PAYMENT
+
+        - Upload-Timestamp: Unix timestamp
+
+        - Content-Type: From Content-Type header
+
+        - X402-Tx-Hash: Blockchain transaction hash (if x402 payment)
+
+        - X402-Payment-ID: Unique payment identifier UUID (if x402 payment)
+
+        - X402-Network: Payment network e.g. "base" (if x402 payment)
+
+        '
+      schema:
+        type: string
+        example: MyApp
+    uploadId:
+      name: uploadId
+      in: path
+      description: The upload id of the multi-part upload.
+      required: true
+      schema:
+        type: string
+        example: QpmY8mZmFEC8RxNsgbxSV6e36OF6quIYaPRKzvUco0o
+    chunkOffset:
+      name: chunkOffset
+      in: path
+      description: The offset of the chunk in bytes. If -1, that will finalize an existing multi-part upload.
+      required: true
+      schema:
+        type: integer
+        example: 0
+    x-payment:
+      name: X-PAYMENT
+      in: header
+      required: false
+      description: "Base64-encoded x402 payment authorization for pay-as-you-go USDC payments.\n\n**x402 Payment Flow:**\n1. Upload without X-PAYMENT → Server returns 402 with payment requirements\n2. Client creates EIP-3009 authorization and signs with EIP-712\n3. Client retries upload with X-PAYMENT header containing base64(JSON)\n4. Server verifies signature, settles USDC transfer, processes upload\n5. Server returns receipt with x402Payment object and X-Payment-Response header\n\n**Decoded Structure (see X402PaymentHeader schema):**\n```json\n{\n  \"x402Version\": 1,\n  \"scheme\": \"exact\",\n  \"network\": \"base\",\n  \"payload\": {\n    \"signature\": \"0x...(EIP-712 signature)...\",\n    \"authorization\": {\n      \"from\": \"0xPayerAddress\",\n      \"to\": \"0xBundlerPaymentAddress\",\n      \"value\": \"30490\",\n      \"validAfter\": 0,\n      \"validBefore\": 1735689600,\n      \"nonce\": \"0x...(32 bytes hex)...\"\n    }\n  }\n}\n```\n\n**Creating the Header:**\n```javascript\nconst payload = { x402Version: 1, scheme: \"exact\", network: \"base\", payload: {...} };\nconst xPayment = Buffer.from(JSON.stringify(payload)).toString(\"base64\");\nheaders[\"X-PAYMENT\"] = xPayment;\n```\n\n**Requirements:**\n- Content-Length header MUST be present when using X-PAYMENT\n- Authorization value must match or exceed the 402 response's maxAmountRequired\n- Nonce must be unique (32-byte random hex string)\n\n**Supported Networks:** base, base-sepolia, ethereum-mainnet, polygon-mainnet\n\n**Standards:**\n- x402 Protocol: https://github.com/coinbase/x402\n- EIP-3009: TransferWithAuthorization (gasless USDC transfers)\n- EIP-712: Typed structured data signing\n"
+      schema:
+        type: string
+        format: byte
+        example: eyJ4NDAyVmVyc2lvbiI6MSwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiYmFzZSIsInBheWxvYWQiOnsic2lnbmF0dXJlIjoiMHgxMjM0NTY3ODkwYWJjZGVmLi4uIiwiYXV0aG9yaXphdGlvbiI6eyJmcm9tIjoiMHg3NDJkMzVDYzY2MzRDMDUzMjkyNWEzYjg0NEJjOWU3NTk1ZjBiRWIwIiwidG8iOiIweENGZDNmOTk2NDQ3YTU0MUNiZmJhNTQyMjMxMEVEYjQxN2Q5ZjJjRTYiLCJ2YWx1ZSI6IjMwNDkwIiwidmFsaWRBZnRlciI6MCwidmFsaWRCZWZvcmUiOjE3MzU2ODk2MDAsIm5vbmNlIjoiMHgxMjM0NTY3ODkwYWJjZGVmMTIzNDU2Nzg5MGFiY2RlZjEyMzQ1Njc4OTBhYmNkZWYxMjM0NTY3ODkwYWJjZGVmIn19fQ==
+    content-length:
+      name: content-length
+      in: header
+      required: false
+      schema:
+        type: integer
+        format: int64
+        maximum: 4294967296
+    content-type:
+      name: content-type
+      in: header
+      required: false
+      schema:
+        type: string
+        enum:
+        - application/octet-stream

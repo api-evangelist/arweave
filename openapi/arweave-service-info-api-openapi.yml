@@ -1,0 +1,242 @@
+openapi: 3.2.0
+info:
+  title: Turbo Upload Service Service Info API
+  version: 1.5.0
+  description: The Turbo Upload Service supports posting signed data-items to Arweave using Turbo Credits.
+servers:
+- url: http://localhost:3001
+  description: Local development server
+- url: /v1
+  description: v1 API base path for new implementations
+- url: /
+  description: Root path for backwards compatibility
+tags:
+- name: Service Info
+  description: Service information and health endpoints
+paths:
+  /:
+    servers:
+    - url: /
+    get:
+      summary: Gets the info of the service
+      tags:
+      - Service Info
+      responses:
+        '200':
+          description: The info of the service
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceInfo'
+      operationId: getRoot
+      x-operation-id-source: derived
+  /info:
+    servers:
+    - url: /
+    get:
+      summary: Gets the info of the service
+      tags:
+      - Service Info
+      responses:
+        '200':
+          description: The info of the service
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceInfo'
+      operationId: getInfo
+      x-operation-id-source: derived
+  /health:
+    get:
+      summary: Health check endpoint
+      description: 'Simple health check endpoint that returns "OK" if the service is running.
+
+
+        **Use Case:** Load balancers, monitoring systems, and orchestration platforms use this
+
+        to verify service availability.
+
+
+        **Response:** Plain text "OK" with HTTP 200 status.'
+      tags:
+      - Service Info
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: OK
+      operationId: getHealth
+      x-operation-id-source: derived
+  /bundler_metrics:
+    get:
+      summary: Prometheus metrics endpoint
+      description: 'Prometheus-formatted metrics for monitoring and observability.
+
+
+        **Metrics Include:**
+
+        - Node.js default metrics (heap memory, event loop lag, etc.)
+
+        - Custom application metrics (upload counts, bundle sizes, etc.)
+
+        - Process metrics (CPU, memory usage)
+
+
+        **Format:** Prometheus text exposition format
+
+
+        **Use Case:** Prometheus scraping, Grafana dashboards, monitoring alerts'
+      tags:
+      - Service Info
+      responses:
+        '200':
+          description: Prometheus metrics in text format
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: '# HELP process_cpu_user_seconds_total Total user CPU time spent in seconds.
+
+                # TYPE process_cpu_user_seconds_total counter
+
+                process_cpu_user_seconds_total 0.123456
+
+
+                # HELP nodejs_heap_size_total_bytes Process heap size from Node.js in bytes.
+
+                # TYPE nodejs_heap_size_total_bytes gauge
+
+                nodejs_heap_size_total_bytes 123456789
+
+                '
+      operationId: getBundlerMetrics
+      x-operation-id-source: derived
+  /openapi.json:
+    get:
+      summary: OpenAPI specification (JSON)
+      description: 'Returns the complete OpenAPI 3.1 specification for this API in JSON format.
+
+
+        **Use Case:**
+
+        - API documentation generation
+
+        - Client SDK generation (OpenAPI Generator, Swagger Codegen)
+
+        - API testing tools (Postman, Insomnia)
+
+        - Contract validation
+
+
+        **Format:** OpenAPI 3.1.1 compliant JSON'
+      tags:
+      - Service Info
+      responses:
+        '200':
+          description: OpenAPI specification in JSON format
+          content:
+            application/json:
+              schema:
+                type: object
+                description: OpenAPI 3.1 specification object
+      operationId: getOpenapiJson
+      x-operation-id-source: derived
+  /api-docs:
+    get:
+      summary: Swagger UI documentation
+      description: 'Interactive API documentation powered by Swagger UI.
+
+
+        **Features:**
+
+        - Browse all endpoints with detailed descriptions
+
+        - View request/response schemas and examples
+
+        - Try out API calls directly from the browser (requires CORS)
+
+        - Download OpenAPI spec
+
+
+        **URL:** http://localhost:3001/api-docs (or your deployment URL)
+
+
+        **Use Case:** Developer-friendly API exploration and testing'
+      tags:
+      - Service Info
+      responses:
+        '200':
+          description: Swagger UI HTML page
+          content:
+            text/html:
+              schema:
+                type: string
+      operationId: getApiDocs
+      x-operation-id-source: derived
+components:
+  schemas:
+    ServiceInfo:
+      type: object
+      properties:
+        version:
+          type: string
+          description: The version of the service
+          example: 0.1.0
+        gateway:
+          type: string
+          description: The primary gateway address of the service (first entry of gateways)
+          example: https://arweave.net
+        gateways:
+          type: array
+          description: All public-facing gateway URLs advertised by the service
+          items:
+            type: string
+          example:
+          - https://arweave.net
+        freeUploadLimitBytes:
+          type: integer
+          description: Legacy advertised free per-item size limit in bytes (kept for back-compat with older SDKs).
+          example: 10737418240
+        freeTier:
+          type: object
+          description: 'Free-tier byte budgets. Present only when the free tier is enabled on
+
+            the service.
+
+            '
+          properties:
+            lifetimeBytes:
+              type: integer
+              description: Persistent per-wallet lifetime free byte budget.
+              example: 10485760
+            ipBytes:
+              type: integer
+              description: Per-IP (subnet bucket) free byte budget.
+              example: 10485760
+            maxItemBytes:
+              type: integer
+              description: Maximum size in bytes of a single free-tier data item.
+              example: 10485760
+        addresses:
+          type: object
+          description: The wallet addresses of the service
+          properties:
+            arweave:
+              type: string
+              description: The Arweave wallet address of the service
+              example: 8wgRDgvYOrtSaWEIV21g0lTuWDUnTu4_iYj4hmA7PI0
+            ethereum:
+              type: string
+              description: The Ethereum wallet address of the service
+              example: 0x8wgRDgvYOrtSaWEIV21g0lTuWDUnTu4_iYj4hmA7PI0
+            solana:
+              type: string
+              description: The Solana wallet address of the service
+              example: 8wgRDgvYOrtSaWEIV21g0lTuWDUnTu4_iYj4hmA7PI0
+            matic:
+              type: string
+              description: The Matic wallet address of the service
+              example: 0x8wgRDgvYOrtSaWEIV21g0lTuWDUnTu4_iYj4hmA7PI0

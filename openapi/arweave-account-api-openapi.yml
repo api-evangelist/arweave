@@ -1,0 +1,61 @@
+openapi: 3.2.0
+info:
+  title: Turbo Upload Service Account API
+  version: 1.5.0
+  description: The Turbo Upload Service supports posting signed data-items to Arweave using Turbo Credits.
+servers:
+- url: http://localhost:3001
+  description: Local development server
+- url: /v1
+  description: v1 API base path for new implementations
+- url: /
+  description: Root path for backwards compatibility
+tags:
+- name: Account
+  description: Account balance and wallet information
+paths:
+  /account/balance/:id:
+    servers:
+    - url: /
+    get:
+      summary: Gets the balance of a wallet
+      tags:
+      - Account
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: The balance of the wallet
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                Balance:
+                  value: 1000000
+        '404':
+          description: Not found
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Not found
+        '503':
+          description: Internal server error
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Internal server error
+      operationId: getAccountBalance:id
+      x-operation-id-source: derived
+components:
+  parameters:
+    id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        description: A data item id.
+        example: QpmY8mZmFEC8RxNsgbxSV6e36OF6quIYaPRKzvUco0o

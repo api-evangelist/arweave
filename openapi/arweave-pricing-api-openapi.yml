@@ -1,0 +1,690 @@
+openapi: 3.2.0
+info:
+  title: Turbo Upload Service Pricing API
+  version: 1.5.0
+  description: The Turbo Upload Service supports posting signed data-items to Arweave using Turbo Credits.
+servers:
+- url: http://localhost:3001
+  description: Local development server
+- url: /v1
+  description: v1 API base path for new implementations
+- url: /
+  description: Root path for backwards compatibility
+tags:
+- name: Pricing
+  description: Pricing calculation endpoints
+paths:
+  /price/:token/:byteCount:
+    servers:
+    - url: /
+    get:
+      summary: Gets the price in winc to upload a data item
+      tags:
+      - Pricing
+      parameters:
+      - $ref: '#/components/parameters/token'
+      - name: byteCount
+        in: path
+        description: The byte count of the data item.
+        required: true
+        schema:
+          type: integer
+          example: 1000
+      responses:
+        '200':
+          description: The price of the data item
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                Price:
+                  value: 1000000
+        '400':
+          description: Invalid byte count
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                InvalidByteCount:
+                  value: Invalid byte count
+      operationId: getPrice:token:byteCount
+      x-operation-id-source: derived
+  /price/:token:
+    servers:
+    - url: /
+    get:
+      summary: Gets the price in winc to upload a data item
+      tags:
+      - Pricing
+      parameters:
+      - $ref: '#/components/parameters/token'
+      responses:
+        '200':
+          description: The price of the data item
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                Price:
+                  value: 1000000
+        '400':
+          description: Invalid byte count
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                InvalidByteCount:
+                  value: Invalid byte count
+      operationId: getPrice:token
+      x-operation-id-source: derived
+  /price/x402/data-item/:token/:byteCount:
+    servers:
+    - url: /v1
+    - url: /
+    get:
+      summary: Gets x402 pricing for a complete signed ANS-104 data item
+      description: '**x402 Pricing for Signed Data Items**
+
+
+        Returns exact x402 USDC pricing for uploading a complete signed ANS-104 data item.
+
+
+        **Use Case:** Client has already created and signed an ANS-104 data item, needs to know exact USDC payment required.
+
+
+        **No Overhead Calculation:** The data item is already complete (includes signature, owner, tags, headers).
+
+        Price is calculated for the exact byte count provided.
+
+
+        **Pricing Formula:**
+
+        1. Get Winston cost from Arweave gateway for exact byte count
+
+        2. Convert Winston to USDC using current AR/USD rate
+
+        3. Apply x402 fee markup (default 15%, configurable via X402_FEE_PERCENT)
+
+
+        **Token Format:** {currency}-{network}
+
+        - usdc-base: USDC on Base mainnet
+
+        - usdc-base-mainnet: Alternative name for Base mainnet
+
+        - usdc-base-sepolia: Base Sepolia testnet (requires env config)
+
+
+        **Future Support:** sol-mainnet, ar-mainnet, etc.'
+      tags:
+      - Pricing
+      parameters:
+      - $ref: '#/components/parameters/x402Token'
+      - name: byteCount
+        in: path
+        description: Size of the complete signed data item in bytes
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 4294967296
+          example: 2048
+      responses:
+        '200':
+          description: x402 pricing quote with payment requirements
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/X402PricingDataItem'
+              examples:
+                PricingMainnet:
+                  summary: Pricing for signed data item on Base mainnet
+                  value:
+                    token: usdc-base
+                    currency: usdc
+                    network: base
+                    byteCount: 2048
+                    winstonCost: '674782942'
+                    usdcAmount: '3642'
+                    x402Version: 1
+                    payment:
+                      scheme: exact
+                      network: base
+                      maxAmountRequired: '3642'
+                      resource: https://upload.example.com/v1/x402/upload/signed
+                      description: Upload 2048 bytes (signed data item) to Arweave via AR.IO Bundler
+                      mimeType: application/octet-stream
+                      payTo: '0xCFd3f996447a541Cbfba5422310EDb417d9f2cE6'
+                      maxTimeoutSeconds: 3600
+                      asset: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
+                      extra:
+                        name: USD Coin
+                        version: '2'
+        '400':
+          description: Invalid request parameters
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                InvalidToken:
+                  summary: Invalid or unsupported token
+                  value: 'Invalid token "sol-mainnet". Supported tokens: usdc-base, usdc-base-mainnet'
+                InvalidByteCount:
+                  summary: Invalid byte count
+                  value: Invalid byte count. Must be a positive integer.
+                ByteCountTooLarge:
+                  summary: Byte count exceeds maximum
+                  value: Byte count exceeds maximum allowed size of 4294967296 bytes (4 GiB)
+        '500':
+          description: Internal server error (pricing calculation failed)
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: Failed to calculate pricing
+      operationId: getPriceX402DataItem:token:byteCount
+      x-operation-id-source: derived
+  /price/x402/data/:token/:byteCount:
+    servers:
+    - url: /v1
+    - url: /
+    get:
+      summary: Gets x402 pricing for raw data (with ANS-104 overhead calculation)
+      description: '**x402 Pricing for Raw Data**
+
+
+        Returns x402 USDC pricing for uploading raw data, accounting for ANS-104 overhead.
+
+
+        **Use Case:** Client has raw data, bundler will create and sign the ANS-104 data item wrapper server-side.
+
+        Useful for AI agents and applications without ANS-104 signing capabilities.
+
+
+        **ANS-104 Overhead Calculation:**
+
+        - Signature: 512 bytes (Arweave RSA-4096)
+
+        - Owner (public key): 512 bytes
+
+        - Headers: ~80 bytes
+
+        - Tags: ~64 bytes per tag
+
+
+        **System Tags (automatically added for x402 uploads):**
+
+        1. Bundler - Service name
+
+        2. Upload-Type - "raw-data-x402"
+
+        3. Payer-Address - Ethereum address from payment
+
+        4. X402-TX-Hash - Blockchain transaction hash
+
+        5. X402-Payment-ID - UUID payment identifier
+
+        6. X402-Network - Payment network (e.g., "base")
+
+        7. Upload-Timestamp - Unix timestamp
+
+
+        **Query Parameters:**
+
+        - tags: Number of user tags (default: 0)
+
+        - contentType: MIME type (adds Content-Type tag if provided)
+
+
+        **Pricing Formula:**
+
+        1. Calculate total tags (user + system + contentType if provided)
+
+        2. Estimate final data item size: rawDataSize + signature + owner + headers + (totalTags × 64)
+
+        3. Get Winston cost from Arweave gateway for estimated size
+
+        4. Convert Winston to USDC using current AR/USD rate
+
+        5. Apply x402 fee markup (default 15%, configurable via X402_FEE_PERCENT)
+
+
+        **Token Format:** {currency}-{network}
+
+        - usdc-base: USDC on Base mainnet
+
+        - usdc-base-mainnet: Alternative name for Base mainnet
+
+        - usdc-base-sepolia: Base Sepolia testnet (requires env config)'
+      tags:
+      - Pricing
+      parameters:
+      - $ref: '#/components/parameters/x402Token'
+      - name: byteCount
+        in: path
+        description: 'Size of raw data in bytes (before ANS-104 wrapping). At most
+
+          `MAX_DATA_ITEM_SIZE`, the largest single upload the bundler accepts;
+
+          the `maximum` below is its default (4 GiB).
+
+          '
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 4294967296
+          example: 1024
+      - name: tags
+        in: query
+        description: Number of user tags (default 0)
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 100
+          default: 0
+          example: 3
+      - name: contentType
+        in: query
+        description: MIME type (adds Content-Type tag if provided)
+        required: false
+        schema:
+          type: string
+          example: image/png
+      responses:
+        '200':
+          description: x402 pricing quote with payment requirements and overhead breakdown
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/X402PricingRawData'
+              examples:
+                PricingBasic:
+                  summary: Basic raw data pricing (no tags or content type)
+                  value:
+                    token: usdc-base
+                    currency: usdc
+                    network: base
+                    rawDataSize: 1024
+                    userTagCount: 0
+                    systemTagCount: 7
+                    totalTagCount: 7
+                    estimatedDataItemSize: 2576
+                    overhead: 1552
+                    winstonCost: '674782942'
+                    usdcAmount: '3642'
+                    x402Version: 1
+                    payment:
+                      scheme: exact
+                      network: base
+                      maxAmountRequired: '3642'
+                      resource: https://upload.example.com/v1/tx
+                      description: Upload 2576 bytes (raw data + ANS-104 overhead) to Arweave via AR.IO Bundler
+                      mimeType: application/json
+                      payTo: '0xCFd3f996447a541Cbfba5422310EDb417d9f2cE6'
+                      maxTimeoutSeconds: 3600
+                      asset: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
+                      extra:
+                        name: USD Coin
+                        version: '2'
+                PricingWithTags:
+                  summary: Raw data pricing with user tags and content type
+                  value:
+                    token: usdc-base
+                    currency: usdc
+                    network: base
+                    rawDataSize: 1024
+                    userTagCount: 3
+                    systemTagCount: 7
+                    totalTagCount: 11
+                    estimatedDataItemSize: 2832
+                    overhead: 1808
+                    winstonCost: '674782942'
+                    usdcAmount: '3642'
+                    x402Version: 1
+                    payment:
+                      scheme: exact
+                      network: base
+                      maxAmountRequired: '3642'
+                      resource: https://upload.example.com/v1/tx
+                      description: Upload 2832 bytes (raw data + ANS-104 overhead) to Arweave via AR.IO Bundler
+                      mimeType: application/json
+                      payTo: '0xCFd3f996447a541Cbfba5422310EDb417d9f2cE6'
+                      maxTimeoutSeconds: 3600
+                      asset: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
+                      extra:
+                        name: USD Coin
+                        version: '2'
+        '400':
+          description: Invalid request parameters
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                InvalidToken:
+                  summary: Invalid or unsupported token
+                  value: 'Invalid token "sol-mainnet". Supported tokens: usdc-base, base-usdc, usdc-base-mainnet, base-mainnet-usdc'
+                InvalidByteCount:
+                  summary: Invalid byte count
+                  value: Invalid byte count. Must be a positive integer.
+                ByteCountTooLarge:
+                  summary: Byte count exceeds maximum
+                  value: Byte count exceeds maximum allowed size of 4294967296 bytes
+                InvalidTags:
+                  summary: Invalid tags parameter
+                  value: Invalid tags parameter. Must be a non-negative integer.
+                TooManyTags:
+                  summary: Tag count exceeds maximum
+                  value: Tag count exceeds maximum of 100
+        '500':
+          description: Internal server error (pricing calculation failed)
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: Failed to calculate pricing
+      operationId: getPriceX402Data:token:byteCount
+      x-operation-id-source: derived
+components:
+  schemas:
+    X402PricingDataItem:
+      type: object
+      description: x402 pricing response for a complete signed ANS-104 data item
+      required:
+      - token
+      - currency
+      - network
+      - byteCount
+      - winstonCost
+      - usdcAmount
+      - x402Version
+      - payment
+      properties:
+        token:
+          type: string
+          description: The payment token used (e.g., usdc-base)
+          example: usdc-base
+        currency:
+          type: string
+          description: The payment currency (currently only usdc)
+          enum:
+          - usdc
+          example: usdc
+        network:
+          type: string
+          description: The payment network
+          enum:
+          - base
+          - base-mainnet
+          - base-sepolia
+          - ethereum-mainnet
+          - polygon-mainnet
+          example: base
+        byteCount:
+          type: integer
+          description: Size of the data item in bytes
+          example: 2048
+        winstonCost:
+          type: string
+          description: Base Winston cost from Arweave gateway (no markup)
+          example: '674782942'
+        usdcAmount:
+          type: string
+          description: Final USDC amount in atomic units (6 decimals) with markup applied
+          example: '3642'
+        x402Version:
+          type: integer
+          description: x402 protocol version
+          example: 1
+        payment:
+          type: object
+          description: x402-compliant payment requirements
+          required:
+          - scheme
+          - network
+          - maxAmountRequired
+          - resource
+          - description
+          - mimeType
+          - payTo
+          - maxTimeoutSeconds
+          - asset
+          properties:
+            scheme:
+              type: string
+              enum:
+              - exact
+              example: exact
+            network:
+              type: string
+              example: base
+            maxAmountRequired:
+              type: string
+              description: USDC amount in atomic units (6 decimals)
+              example: '3642'
+            resource:
+              type: string
+              description: Upload endpoint URL
+              example: https://upload.example.com/v1/x402/upload/signed
+            description:
+              type: string
+              example: Upload 2048 bytes (signed data item) to Arweave via AR.IO Bundler
+            mimeType:
+              type: string
+              example: application/octet-stream
+            payTo:
+              type: string
+              description: Recipient Ethereum address for USDC payment
+              example: '0xCFd3f996447a541Cbfba5422310EDb417d9f2cE6'
+            maxTimeoutSeconds:
+              type: integer
+              description: Payment authorization timeout
+              example: 3600
+            asset:
+              type: string
+              description: USDC contract address on the network
+              example: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
+            extra:
+              type: object
+              description: EIP-712 domain metadata
+              properties:
+                name:
+                  type: string
+                  example: USD Coin
+                version:
+                  type: string
+                  example: '2'
+    X402PricingRawData:
+      type: object
+      description: x402 pricing response for raw data (includes ANS-104 overhead calculation)
+      required:
+      - token
+      - currency
+      - network
+      - rawDataSize
+      - userTagCount
+      - systemTagCount
+      - totalTagCount
+      - estimatedDataItemSize
+      - overhead
+      - winstonCost
+      - usdcAmount
+      - x402Version
+      - payment
+      properties:
+        token:
+          type: string
+          description: The payment token used (e.g., usdc-base)
+          example: usdc-base
+        currency:
+          type: string
+          description: The payment currency (currently only usdc)
+          enum:
+          - usdc
+          example: usdc
+        network:
+          type: string
+          description: The payment network
+          enum:
+          - base
+          - base-mainnet
+          - base-sepolia
+          - ethereum-mainnet
+          - polygon-mainnet
+          example: base
+        rawDataSize:
+          type: integer
+          description: Size of raw data in bytes (before ANS-104 wrapping)
+          example: 1024
+        userTagCount:
+          type: integer
+          description: Number of user-provided tags
+          example: 3
+        systemTagCount:
+          type: integer
+          description: Number of system-added tags (Bundler, Upload-Type, etc.)
+          example: 7
+        totalTagCount:
+          type: integer
+          description: Total number of tags (user + system)
+          example: 11
+        estimatedDataItemSize:
+          type: integer
+          description: Estimated final data item size including ANS-104 overhead
+          example: 2832
+        overhead:
+          type: integer
+          description: ANS-104 overhead in bytes (signature, owner, tags, headers)
+          example: 1808
+        winstonCost:
+          type: string
+          description: Base Winston cost from Arweave gateway (no markup)
+          example: '674782942'
+        usdcAmount:
+          type: string
+          description: Final USDC amount in atomic units (6 decimals) with markup applied
+          example: '3642'
+        x402Version:
+          type: integer
+          description: x402 protocol version
+          example: 1
+        payment:
+          type: object
+          description: x402-compliant payment requirements
+          required:
+          - scheme
+          - network
+          - maxAmountRequired
+          - resource
+          - description
+          - mimeType
+          - payTo
+          - maxTimeoutSeconds
+          - asset
+          properties:
+            scheme:
+              type: string
+              enum:
+              - exact
+              example: exact
+            network:
+              type: string
+              example: base
+            maxAmountRequired:
+              type: string
+              description: USDC amount in atomic units (6 decimals)
+              example: '3642'
+            resource:
+              type: string
+              description: Upload endpoint URL
+              example: https://upload.example.com/v1/tx
+            description:
+              type: string
+              example: Upload 2832 bytes (raw data + ANS-104 overhead) to Arweave via AR.IO Bundler
+            mimeType:
+              type: string
+              example: image/png
+            payTo:
+              type: string
+              description: Recipient Ethereum address for USDC payment
+              example: '0xCFd3f996447a541Cbfba5422310EDb417d9f2cE6'
+            maxTimeoutSeconds:
+              type: integer
+              description: Payment authorization timeout
+              example: 3600
+            asset:
+              type: string
+              description: USDC contract address on the network
+              example: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
+            extra:
+              type: object
+              description: EIP-712 domain metadata
+              properties:
+                name:
+                  type: string
+                  example: USD Coin
+                version:
+                  type: string
+                  example: '2'
+  parameters:
+    x402Token:
+      name: token
+      in: path
+      description: 'x402 payment token in format {currency}-{network} OR {network}-{currency} (both supported).
+
+
+        **Supported Tokens (Enabled by Default):**
+
+        - usdc-base OR base-usdc: USDC on Base mainnet
+
+        - usdc-base-mainnet OR base-mainnet-usdc: Alternative name for Base mainnet
+
+
+        **Available (requires env config):**
+
+        - usdc-base-sepolia OR base-sepolia-usdc: USDC on Base Sepolia testnet (requires X402_BASE_TESTNET_ENABLED=true)
+
+        - usdc-ethereum-mainnet OR ethereum-mainnet-usdc: USDC on Ethereum mainnet (requires X402_ETH_ENABLED=true)
+
+        - usdc-polygon-mainnet OR polygon-mainnet-usdc: USDC on Polygon mainnet (requires X402_POLYGON_ENABLED=true)
+
+
+        **Note:** Both token formats are supported for convenience. Use whichever feels more natural.
+
+
+        **Future:** sol-mainnet, ar-mainnet, etc.
+
+        '
+      required: true
+      schema:
+        type: string
+        enum:
+        - usdc-base
+        - base-usdc
+        - usdc-base-mainnet
+        - base-mainnet-usdc
+        - usdc-base-sepolia
+        - base-sepolia-usdc
+        - usdc-ethereum-mainnet
+        - ethereum-mainnet-usdc
+        - usdc-polygon-mainnet
+        - polygon-mainnet-usdc
+        example: usdc-base
+    token:
+      name: token
+      in: path
+      description: The token to use for validating the transaction.
+      required: true
+      schema:
+        type: string
+        enum:
+        - arweave
+        - ethereum
+        - solana

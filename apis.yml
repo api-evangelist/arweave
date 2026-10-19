@@ -95,16 +95,16 @@ apis:
     url: https://docs.ar.io/build/upload/bundling-services
   - type: PricingPage
     url: https://docs.ar.io/build/upload/turbo-credits
-- aid: arweave:arweave-blocks-api
-  name: Arweave Blocks API
-  description: Endpoints for retrieving block data
-  humanURL: https://docs.arweave.org/developers/arweave-node-server/http-api
-  baseURL: https://arweave.net
+- aid: arweave:arweave-account-api
+  name: Arweave Account API
+  description: Account balance and wallet information
+  humanURL: https://gql-guide.vercel.app/
+  baseURL: https://arweave.net/graphql
   tags:
-  - Blocks
+  - Account
   properties:
   - type: OpenAPI
-    url: openapi/arweave-blocks-api-openapi.yml
+    url: openapi/arweave-account-api-openapi.yml
   - type: Documentation
     url: https://docs.arweave.org/developers/arweave-node-server/http-api
   - type: JSONSchema
@@ -128,16 +128,16 @@ apis:
   - type: Examples
     url: >-
       https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/examples/get-transaction-price.json
-- aid: arweave:arweave-chunks-api
-  name: Arweave Chunks API
-  description: Endpoints for uploading and downloading data chunks
-  humanURL: https://docs.arweave.org/developers/arweave-node-server/http-api
-  baseURL: https://arweave.net
+- aid: arweave:arweave-pricing-api
+  name: Arweave Pricing API
+  description: Pricing calculation endpoints
+  humanURL: https://gql-guide.vercel.app/
+  baseURL: https://arweave.net/graphql
   tags:
-  - Chunks
+  - Pricing
   properties:
   - type: OpenAPI
-    url: openapi/arweave-chunks-api-openapi.yml
+    url: openapi/arweave-pricing-api-openapi.yml
   - type: Documentation
     url: https://docs.arweave.org/developers/arweave-node-server/http-api
   - type: JSONSchema
@@ -161,18 +161,16 @@ apis:
   - type: Examples
     url: >-
       https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/examples/get-transaction-price.json
-- aid: arweave:arweave-network-api
-  name: Arweave Network API
-  description: Endpoints for querying network state and peer information
-  humanURL: https://docs.arweave.org/developers/arweave-node-server/http-api
-  baseURL: https://arweave.net
+- aid: arweave:arweave-service-info-api
+  name: Arweave Service Info API
+  description: Service information and health endpoints
+  humanURL: https://gql-guide.vercel.app/
+  baseURL: https://arweave.net/graphql
   tags:
-  - Networks
-  tags_raw:
-  - Network
+  - Service Info
   properties:
   - type: OpenAPI
-    url: openapi/arweave-network-api-openapi.yml
+    url: openapi/arweave-service-info-api-openapi.yml
   - type: Documentation
     url: https://docs.arweave.org/developers/arweave-node-server/http-api
   - type: JSONSchema
@@ -196,18 +194,16 @@ apis:
   - type: Examples
     url: >-
       https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/examples/get-transaction-price.json
-- aid: arweave:arweave-transactions-api
-  name: Arweave Transactions API
-  description: Endpoints for submitting and retrieving transactions
-  humanURL: https://docs.arweave.org/developers/arweave-node-server/http-api
-  baseURL: https://arweave.net
+- aid: arweave:arweave-transaction-data-api
+  name: Arweave Transaction Data API
+  description: Transaction status and metadata retrieval
+  humanURL: https://gql-guide.vercel.app/
+  baseURL: https://arweave.net/graphql
   tags:
-  - Transaction
-  tags_raw:
-  - Transactions
+  - Transaction Data
   properties:
   - type: OpenAPI
-    url: openapi/arweave-transactions-api-openapi.yml
+    url: openapi/arweave-transaction-data-api-openapi.yml
   - type: Documentation
     url: https://docs.arweave.org/developers/arweave-node-server/http-api
   - type: JSONSchema
@@ -231,16 +227,16 @@ apis:
   - type: Examples
     url: >-
       https://raw.githubusercontent.com/api-evangelist/arweave/refs/heads/main/examples/get-transaction-price.json
-- aid: arweave:arweave-wallets-api
-  name: Arweave Wallets API
-  description: Endpoints for querying wallet balances and transaction history
-  humanURL: https://docs.arweave.org/developers/arweave-node-server/http-api
-  baseURL: https://arweave.net
+- aid: arweave:arweave-upload-api
+  name: Arweave Upload API
+  description: Data item upload endpoints (single and multi-part)
+  humanURL: https://gql-guide.vercel.app/
+  baseURL: https://arweave.net/graphql
   tags:
-  - Wallets
+  - Upload
   properties:
   - type: OpenAPI
-    url: openapi/arweave-wallets-api-openapi.yml
+    url: openapi/arweave-upload-api-openapi.yml
   - type: Documentation
     url: https://docs.arweave.org/developers/arweave-node-server/http-api
   - type: JSONSchema

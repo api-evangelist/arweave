@@ -1,28 +1,22 @@
 {
   "provider": "arweave",
   "sources": [
-    "_original/openapi.yml"
+    "_original/arweave-openapi.json"
   ],
   "outputs": [
-    "arweave-blocks-api-openapi.yml",
-    "arweave-chunks-api-openapi.yml",
-    "arweave-network-api-openapi.yml",
-    "arweave-transactions-api-openapi.yml",
-    "arweave-wallets-api-openapi.yml"
+    "arweave-account-api-openapi.yml",
+    "arweave-pricing-api-openapi.yml",
+    "arweave-service-info-api-openapi.yml",
+    "arweave-transaction-data-api-openapi.yml",
+    "arweave-upload-api-openapi.yml"
   ],
   "archived": [],
   "errors": [],
   "warnings": [],
   "notes": [
     "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
-    "openapi.yml: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
-    "apis.yml register: already-registered"
+    "arweave-openapi.json: upgraded openapi 3.1.1 -> OpenAPI 3.2.0",
+    "apis.yml register: written (+5 apis, 7 total)"
   ],
-  "skipped": [
-    "arweave-blocks-api-openapi.yml: previously refined output, superseded by openapi/_original/",
-    "arweave-chunks-api-openapi.yml: previously refined output, superseded by openapi/_original/",
-    "arweave-network-api-openapi.yml: previously refined output, superseded by openapi/_original/",
-    "arweave-transactions-api-openapi.yml: previously refined output, superseded by openapi/_original/",
-    "arweave-wallets-api-openapi.yml: previously refined output, superseded by openapi/_original/"
-  ]
+  "skipped": []
 }

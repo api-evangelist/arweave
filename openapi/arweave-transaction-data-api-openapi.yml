@@ -1,0 +1,150 @@
+openapi: 3.2.0
+info:
+  title: Turbo Upload Service Transaction Data API
+  version: 1.5.0
+  description: The Turbo Upload Service supports posting signed data-items to Arweave using Turbo Credits.
+servers:
+- url: http://localhost:3001
+  description: Local development server
+- url: /v1
+  description: v1 API base path for new implementations
+- url: /
+  description: Root path for backwards compatibility
+tags:
+- name: Transaction Data
+  description: Transaction status and metadata retrieval
+paths:
+  /tx/:id/status:
+    servers:
+    - url: /v1
+    - url: /
+    get:
+      summary: Gets the status of a data item
+      tags:
+      - Transaction Data
+      responses:
+        '200':
+          description: The status of the data item
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataItemStatus'
+        '404':
+          description: Data item not found
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: TX doesn't exist
+      operationId: getTx:idStatus
+      x-operation-id-source: derived
+  /tx/:id/offsets:
+    servers:
+    - url: /v1
+    - url: /
+    get:
+      summary: Gets the offsets of a data item
+      tags:
+      - Transaction Data
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: The offsets of the data item
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OffsetsInfo'
+        '404':
+          description: Data item not found
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: TX doesn't exist
+      operationId: getTx:idOffsets
+      x-operation-id-source: derived
+components:
+  schemas:
+    OffsetsInfo:
+      type: object
+      properties:
+        rootBundleId:
+          type: string
+          description: The bundle id of the data item.
+          example: J40R1BgFSI1_7p25QW49T7P46BePJJnlDrsFGY1YWbM
+        startOffsetInRootBundle:
+          type: integer
+          description: The start offset in the root bundle tx of the raw data item.
+          example: 12345
+          required: false
+        parentDataItemId:
+          type: string
+          description: The parent data item id of the data item.
+          example: QpmY8mZmFEC8RxNsgbxSV6e36OF6quIYaPRKzvUco0o
+          required: false
+        startOffsetInParentDataItemPayload:
+          type: integer
+          description: The start offset in the parent data item payload of the raw data item.
+          example: 12345
+          required: false
+        rawContentLength:
+          type: integer
+          description: The length of the raw data item (i.e. headers and payload).
+          example: 123456
+        payloadContentType:
+          type: string
+          description: The content type of the data item payload.
+          example: application/json
+        payloadDataStart:
+          type: integer
+          description: The start offset of the payload data in the raw data item.
+          example: 1024
+    DataItemStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          description: The status of the data item.
+          example: CONFIRMED
+          enum:
+          - CONFIRMED
+          - FINALIZED
+        bundleId:
+          type: string
+          description: The bundle id of the data item.
+          example: QpmY8mZmFEC8RxNsgbxSV6e36OF6quIYaPRKzvUco0o
+        startOffsetInRootBundle:
+          type: integer
+          description: The start offset in the root bundle tx of the raw data item.
+          example: 12345
+          required: false
+        payloadContentType:
+          type: string
+          description: The content type of the data item payload.
+          example: application/json
+        payloadDataStart:
+          type: integer
+          description: The start offset of the payload data in the raw data item.
+          example: 1024
+        info:
+          type: string
+          description: The info of the data item.
+          example: pending
+          enum:
+          - new
+          - pending
+          - permanent
+        winc:
+          type: string
+          description: The winston price of the data item.
+          example: '1000000'
+  parameters:
+    id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        description: A data item id.
+        example: QpmY8mZmFEC8RxNsgbxSV6e36OF6quIYaPRKzvUco0o
