@@ -148,3 +148,9 @@ components:
         type: string
         description: A data item id.
         example: QpmY8mZmFEC8RxNsgbxSV6e36OF6quIYaPRKzvUco0o
+x-provenance:
+  method: harvested
+  publisher: Arweave
+  source: https://turbo.ardrive.io/openapi.json
+  note: split by refine-openapis from the provider's own published document, verified by fetch (openapi/_original/*.fetch.json);
+    stamped by stamp-openapi-provenance.py (roadmap#793)
