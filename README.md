@@ -64,45 +64,164 @@
 > Full detail: **[Where this data comes from](https://apievangelist.com/about/where-our-data-comes-from)**
 <!-- API-EVANGELIST-PROVENANCE:END -->
 
-Arweave is a permanent decentralized data storage network that enables developers to store data forever with a single upfront payment. It provides REST and GraphQL APIs for uploading data, querying blocks and transactions by tags and metadata, retrieving wallet balances, and accessing the permaweb data ecosystem.
+Arweave is a permanent decentralized data storage network that enables developers to store data forever with a single upfront payment. It provides REST and GraphQL APIs for uploading data, querying blocks and transactions by tags and metadata, retrieving wallet balances, and accessing the permaweb data ecosystem. The network uses the AR token for storage fees and supports bundled uploads via the Turbo service with fiat and multi-chain crypto payment options.
 
-## APIs
+**Areas:** Decentralized Storage · Blockchain · Permaweb · Web3 · Data Storage · GraphQL
 
-| API | Base URL | Description |
-|-----|----------|-------------|
-| HTTP Node API | https://arweave.net | Submit and retrieve transactions, upload chunks, query network state |
-| GraphQL API | https://arweave.net/graphql | Query transaction and block metadata by tags, owners, block height |
-| Turbo Upload API | https://turbo.ardrive.io | Managed bundling service with fiat and multi-chain crypto payment |
+## Arweave on APIs.io
 
-## Key Concepts
+Everything profiled for Arweave is published on APIs.io rather than in this repository. Start at the provider page — **[apis.io/providers/arweave/](https://apis.io/providers/arweave/)** — or go straight to one of the APIs or properties below.
 
-- **AR Token**: Native token; amounts in winstons (1 AR = 10^12 winstons)
-- **Permanent Storage**: Pay once; the protocol endowment funds storage indefinitely
-- **ANS-104 Bundles**: Pack multiple items into a single Arweave transaction for efficiency
-- **Turbo Credits**: Pre-purchased upload credits usable via the managed Turbo service
-- **Free Tier**: Uploads under 100 KiB via Turbo are free with no account required
+### APIs (7)
 
-## Documentation
+- [Arweave GraphQL API](https://apis.io/apis/arweave/arweave-graphql-api/) — GraphQL API for querying Arweave transaction and block metadata by tags, owner addresses, recipients, block height ranges, and transaction IDs. Supports…
+- [Arweave Turbo Upload API](https://apis.io/apis/arweave/arweave-turbo-upload-api/) — Managed bundling upload service (ar.io Turbo) that implements ANS-104 bundling for high-throughput data uploads to Arweave. Handles millions of uploads…
+- [Arweave Blocks API](https://apis.io/apis/arweave/arweave-blocks-api/) — Endpoints for retrieving block data
+- [Arweave Chunks API](https://apis.io/apis/arweave/arweave-chunks-api/) — Endpoints for uploading and downloading data chunks
+- [Arweave Network API](https://apis.io/apis/arweave/arweave-network-api/) — Endpoints for querying network state and peer information
+- [Arweave Transactions API](https://apis.io/apis/arweave/arweave-transactions-api/) — Endpoints for submitting and retrieving transactions
+- [Arweave Wallets API](https://apis.io/apis/arweave/arweave-wallets-api/) — Endpoints for querying wallet balances and transaction history
 
-- Developer Docs: https://docs.arweave.org/developers
-- Permaweb Cookbook: https://cookbook.arweave.net/
-- ar.io Build Docs: https://docs.ar.io/build/
-- GraphQL Guide: https://gql-guide.vercel.app/
-- GitHub: https://github.com/ArweaveTeam
+### Published properties
 
-## Repository Contents
+Each property below is a page on APIs.io carrying the machine-readable artifact and what it says.
 
-```
-apis.yml                  # APIs.json 0.19 provider profile
-plans/plans.yml           # Pricing plans and tiers
-rate-limits/rate-limits.yml  # Rate limit documentation
-finops/finops.yml         # Cost drivers and optimization guidance
-```
+#### GraphQL (1)
 
-## Links
+GraphQL schemas.
 
-- Website: https://www.arweave.org/
-- Discord: https://discord.gg/arweave
-- Twitter: https://twitter.com/ArweaveTeam
-- Blog: https://arweave.medium.com/
-- Status: https://status.ar.io/
+- [Arweave GraphQL API](https://apis.io/graphqls/arweave/arweave-graphql/)
+
+#### JSON Schema (3)
+
+The data models the API reads and writes.
+
+- [Arweave Data Chunk](https://apis.io/schemas/arweave/chunk/)
+- [Arweave Network Info](https://apis.io/schemas/arweave/network-info/)
+- [Arweave Transaction](https://apis.io/schemas/arweave/transaction/)
+
+#### JSON-LD (1)
+
+Linked-data contexts for the provider's vocabulary.
+
+- [Arweave Context](https://apis.io/jsonld/arweave/arweave-context/)
+
+#### Examples (4)
+
+Example requests and responses.
+
+- [Get Network Info](https://apis.io/examples/arweave/get-network-info/)
+- [Get Transaction Price](https://apis.io/examples/arweave/get-transaction-price/)
+- [Get Wallet Balance](https://apis.io/examples/arweave/get-wallet-balance/)
+- [Submit Transaction](https://apis.io/examples/arweave/submit-transaction/)
+
+#### Collections (10)
+
+Postman and Open Collection request collections.
+
+- [Arweave HTTP Node Blocks API](https://apis.io/collections/arweave/open-arweave-blocks-api/)
+- [Arweave HTTP Node Chunks API](https://apis.io/collections/arweave/open-arweave-chunks-api/)
+- [Arweave HTTP Node Network API](https://apis.io/collections/arweave/open-arweave-network-api/)
+- [Arweave HTTP Node Transactions API](https://apis.io/collections/arweave/open-arweave-transactions-api/)
+- [Arweave HTTP Node Wallets API](https://apis.io/collections/arweave/open-arweave-wallets-api/)
+- [Arweave HTTP Node Blocks API](https://apis.io/collections/arweave/postman-arweave-blocks-api/)
+- [Arweave HTTP Node Chunks API](https://apis.io/collections/arweave/postman-arweave-chunks-api/)
+- [Arweave HTTP Node Network API](https://apis.io/collections/arweave/postman-arweave-network-api/)
+- [Arweave HTTP Node Transactions API](https://apis.io/collections/arweave/postman-arweave-transactions-api/)
+- [Arweave HTTP Node Wallets API](https://apis.io/collections/arweave/postman-arweave-wallets-api/)
+
+#### Governance rules (1)
+
+Spectral rulesets for the provider's contracts.
+
+- [Arweave — jsonschema rules](https://apis.io/rules/arweave/arweave-jsonschema-spectral-rules/)
+
+#### Security (1)
+
+Authentication, trust centre, and vulnerability disclosure.
+
+- [Arweave Domain Security](https://apis.io/security/arweave/arweave-domain-security/)
+
+#### Plans and pricing (1)
+
+Published plans, tiers and prices.
+
+- [Plans](https://apis.io/plans/arweave/plans/)
+
+#### Rate limits (1)
+
+Published request limits.
+
+- [Rate Limits](https://apis.io/rate-limits/arweave/rate-limits/)
+
+#### FinOps (1)
+
+What the API costs to run, by operation.
+
+- [Finops](https://apis.io/finops/arweave/finops/)
+
+## Where to find this API
+
+Links to the company's own pages. This repository publishes no copy of their specifications — the canonical document is theirs and lives at the URLs below.
+
+- [Website](https://www.arweave.org/)
+- [Documentation](https://docs.arweave.org/developers)
+- [Getting started](https://docs.ar.io/build/)
+- [Blog](https://www.arweave.org/blog/)
+- [Terms of service](https://www.arweave.org/legal/terms-of-use)
+- [Privacy policy](https://www.arweave.org/legal/privacy-policy)
+- [GitHub](https://github.com/ArweaveTeam)
+- [Status](https://status.ar.io/)
+
+## API Evangelist rating
+
+**Kin Score 33.0** — thin · rubric 0.24.0 · scored 2026-10-17
+
+| Facet | Score |
+|---|---|
+| Discoverability | 66.1 |
+| Contract quality | 63.9 |
+| Contract governance | 23.5 |
+| Operational transparency | 10.5 |
+| Developer ergonomics | 29.8 |
+| Access clarity | 7.9 |
+
+**Agent readiness 20.5** — agent-aware
+
+| Agent-readiness dimension | Result |
+|---|---|
+| Spec Presence | yes |
+| Agentic Access | — |
+| Reversibility Documented | — |
+| MCP Server | — |
+| Auth Clarity | — |
+| Idempotency | — |
+| Error Semantics | — |
+| OpenAPI Examples | verified |
+| Rate Limit Signal | documented (partial credit) |
+| Event Surface Described | — |
+| Agent Skills | — |
+| Well Known Catalog | — |
+| Consent Identity | — |
+| Agent Card | — |
+| Dry Run Mode | — |
+| Delegated Identity | — |
+| Protected Resource Metadata | — |
+| Dynamic Client Registration | — |
+| Agentic Commerce | — |
+
+**Regulatory alignment 10.8** — Horizontal (data, software, accessibility, platform)
+
+The rubric is published at [github.com/api-evangelist/kin-score](https://github.com/api-evangelist/kin-score). The per-check breakdown behind these numbers — which checks were earned, partial or missed — along with score history and how this provider compares to its peers, is available at [apis.io/providers/arweave/](https://apis.io/providers/arweave/).
+
+## How this profile is made
+
+API Evangelist profiles a company's public API surface the way a developer would find it: the website, developer portal and documentation, the specifications it publishes, its public repositories, and its pricing, status and changelog pages. From that it derives the properties above — contracts split per API, workflows, schemas, collections, governance rules, plans and rate limits — and scores them against the published [Kin Score rubric](https://github.com/api-evangelist/kin-score).
+
+The artifacts are published on [APIs.io](https://apis.io), not in this repository. This repository is the public record for Arweave: the place to say something is wrong, missing or out of date, and to ask for a re-score or a removal.
+
+## Open an issue
+
+- **Something about this listing** — a wrong description, a missing API, a stale artifact or a question about the rating: [open an issue on this repository](https://github.com/api-evangelist/arweave/issues/new).
+- **A new API, or one that is not in the catalog yet** — [submit it on APIs.io](https://apis.io/add/).
+- **Anything else** — [the APIs.io inbox](https://github.com/api-search/inbox/issues/new) or [info@apievangelist.com](mailto:info@apievangelist.com).
